@@ -1,0 +1,53 @@
+{
+  "$schema": "https://www.schemastore.org/claude-code-marketplace.json",
+  "name": "stefs-plugins",
+  "description": "Stef's Claude Code plugins — the portable layer of engineering and documentation conventions, plus general-purpose utilities.",
+  "version": "0.1.0",
+  "owner": {
+    "name": "Stefan Horner",
+    "url": "https://github.com/tedslittlerobot"
+  },
+  "metadata": {
+    "pluginRoot": "./plugins"
+  },
+  "plugins": [
+    {
+      "name": "conventions",
+      "source": "./plugins/conventions",
+      "displayName": "Conventions",
+      "description": "Nine skills carrying the portable layer of a project's conventions: how conventions themselves are recorded, plus SPA frontends, Terraform/AWS infrastructure, Go and Node Lambdas, MySQL, documentation, the glossary and product requirements. Every skill is model-invoked on topic match; the plugin registers no hooks and adds no executable code.",
+      "author": {
+        "name": "Stefan Horner",
+        "url": "https://github.com/tedslittlerobot"
+      },
+      "homepage": "https://github.com/tedslittlerobot/stefs-claude-plugins",
+      "repository": "https://github.com/tedslittlerobot/stefs-claude-plugins",
+      "license": "MIT",
+      "category": "productivity",
+      "keywords": [
+        "conventions",
+        "documentation",
+        "standards"
+      ]
+    },
+    {
+      "name": "utils",
+      "source": "./plugins/utils",
+      "displayName": "Utils",
+      "description": "General-purpose utility commands, skills and agents for Claude Code, including the default-on auto-summary-commit workflow: a pair of hooks offers a reviewed commit at the end of every turn that changed files, scoped to the paths that turn actually changed.",
+      "author": {
+        "name": "Stefan Horner",
+        "url": "https://github.com/tedslittlerobot"
+      },
+      "homepage": "https://github.com/tedslittlerobot/stefs-claude-plugins",
+      "repository": "https://github.com/tedslittlerobot/stefs-claude-plugins",
+      "license": "MIT",
+      "category": "utilities",
+      "keywords": [
+        "utilities",
+        "productivity",
+        "workflow"
+      ]
+    }
+  ]
+}
