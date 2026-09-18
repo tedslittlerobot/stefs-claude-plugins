@@ -1,7 +1,7 @@
 {
   "$schema": "https://www.schemastore.org/claude-code-marketplace.json",
   "name": "stefs-plugins",
-  "description": "Stef's Claude Code plugins — the portable layer of engineering and documentation conventions, plus general-purpose utilities.",
+  "description": "Stef's Claude Code plugins — the portable layer of software and project architecture conventions, plus general-purpose utilities.",
   "version": "0.1.0",
   "owner": {
     "name": "Stefan Horner",
@@ -12,10 +12,10 @@
   },
   "plugins": [
     {
-      "name": "conventions",
-      "source": "./plugins/conventions",
-      "displayName": "Conventions",
-      "description": "Nine skills carrying the portable layer of a project's conventions: how conventions themselves are recorded, plus SPA frontends, Terraform/AWS infrastructure, Go and Node Lambdas, MySQL, documentation, the glossary and product requirements. Every skill is model-invoked on topic match; the plugin registers no hooks and adds no executable code.",
+      "name": "arc-conventions",
+      "source": "./plugins/arc-conventions",
+      "displayName": "Arc Conventions",
+      "description": "Nine skills carrying the portable layer of a project's software and project architecture conventions: how conventions themselves are recorded, plus SPA frontends, Terraform/AWS infrastructure, Go and Node Lambdas, MySQL, documentation, the glossary and product requirements. Every skill is model-invoked on topic match; the plugin registers no hooks and adds no executable code.",
       "author": {
         "name": "Stefan Horner",
         "url": "https://github.com/tedslittlerobot"
@@ -26,6 +26,7 @@
       "category": "productivity",
       "keywords": [
         "conventions",
+        "architecture",
         "documentation",
         "standards"
       ]

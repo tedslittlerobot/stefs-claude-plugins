@@ -385,7 +385,7 @@ deliberately left uncommitted.
 
 ## Related
 
-- `conventions` skill, in the sibling [`conventions`
-  plugin](../../../conventions) — where a project records its own commit-message style, and why the
+- `conventions` skill, in the sibling [`arc-conventions`
+  plugin](../../../arc-conventions) — where a project records its own commit-message style, and why the
   project file wins over the default in step 4. It is not required: step 4 falls back to reading the
   style off `git log` when the skill is not installed

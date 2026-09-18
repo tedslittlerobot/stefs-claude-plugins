@@ -1,7 +1,11 @@
-# conventions
+# arc-conventions
 
-The portable layer of engineering, architecture, and documentation conventions, as nine
-model-invoked skills.
+The portable layer of software and project **architecture** conventions, as nine model-invoked
+skills — engineering, infrastructure and documentation rules that hold across projects.
+
+The `arc-` prefix is a scope, not decoration: these are the architecture conventions specifically.
+A future conventions plugin with a different focus and a different set of rules gets its own
+prefix rather than being folded in here, so a project can install one scope without the other.
 
 See the [repository README](../../README.md) for the two-layer model this sits in, installation, the
 full skill list, and how to add to a skill.

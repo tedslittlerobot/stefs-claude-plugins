@@ -1,19 +1,19 @@
 # Stef's Claude Plugins
 
 A [Claude Code](https://code.claude.com/docs) plugin marketplace hosting two plugins: the
-**portable layer** of our engineering and documentation conventions, and a collection of
+**portable layer** of our software and project architecture conventions, and a collection of
 general-purpose utilities.
 
 | Plugin | Covers | Changes a session on its own? |
 | --- | --- | --- |
-| [`conventions`](plugins/conventions) | Nine model-invoked skills carrying rules that apply across projects: frontends, infrastructure, Lambdas, MySQL, documentation, glossary, product requirements, and how a project records its own conventions | No — no hooks, no executable code |
+| [`arc-conventions`](plugins/arc-conventions) | Nine model-invoked skills carrying the **architecture** conventions that apply across projects: frontends, infrastructure, Lambdas, MySQL, documentation, glossary, product requirements, and how a project records its own conventions | No — no hooks, no executable code |
 | [`utils`](plugins/utils) | General-purpose commands, skills and agents, including the default-on `auto-summary-commit` workflow | **Yes** — installing it turns commit-per-prompt on. See [The commit hooks](#the-commit-hooks) |
 
 ## Install
 
 ```
 /plugin marketplace add tedslittlerobot/stefs-claude-plugins
-/plugin install conventions@stefs-plugins
+/plugin install arc-conventions@stefs-plugins
 /plugin install utils@stefs-plugins
 ```
 
@@ -21,7 +21,7 @@ Or from the CLI:
 
 ```bash
 claude plugin marketplace add tedslittlerobot/stefs-claude-plugins
-claude plugin install conventions@stefs-plugins
+claude plugin install arc-conventions@stefs-plugins
 claude plugin install utils@stefs-plugins
 ```
 
@@ -44,7 +44,7 @@ against your working tree:
 claude plugin marketplace add ~/Developer/claude/stefs-claude-plugins
 ```
 
-## The `conventions` plugin
+## The `arc-conventions` plugin
 
 Conventions come in two layers, and keeping them apart is what makes any of this reusable:
 
@@ -123,7 +123,7 @@ To switch it off:
 | Always       | Set `AUTO_SUMMARY_COMMIT=off` in the environment                                |
 | Entirely     | Don't install `utils`, or remove `plugins/utils/hooks/` from your fork |
 
-Installing `conventions` alone changes nothing about a session until a skill matches.
+Installing `arc-conventions` alone changes nothing about a session until a skill matches.
 
 ## Repository layout
 
@@ -132,7 +132,7 @@ Installing `conventions` alone changes nothing about a session until a skill mat
 ├── .claude-plugin/
 │   └── marketplace.json            # marketplace "stefs-plugins" — lists the plugins below
 └── plugins/
-    ├── conventions/                # the portable conventions skills
+    ├── arc-conventions/            # the portable architecture-convention skills
     │   ├── .claude-plugin/plugin.json
     │   └── skills/<skill-name>/
     │       ├── SKILL.md            # frontmatter + the core rules
@@ -161,7 +161,7 @@ file.
 - **`reference/*.md` holds the detail**, and `SKILL.md` must point at it explicitly by filename.
   Splitting one skill into per-topic reference files is cheaper than splitting it into several
   skills, since every skill's description competes for trigger match
-- **Keep conventions skills portable.** No service names, no repository paths, no project-specific
+- **Keep `arc-conventions` skills portable.** No service names, no repository paths, no project-specific
   values. Those belong in the consuming project's `conventions/` file. Where a concrete example
   genuinely teaches the rule better than an abstraction would, frame it as an example
 - **Record the reasoning, and prefer the failure that motivated the rule.** A bare rule gets
@@ -173,7 +173,7 @@ file.
 ## Validate
 
 ```bash
-claude plugin validate plugins/conventions --strict
+claude plugin validate plugins/arc-conventions --strict
 claude plugin validate plugins/utils --strict
 ```
 
@@ -184,9 +184,14 @@ This repository replaces two separate marketplaces, each of which carried one of
 [`claude-utils`](https://github.com/tedslittlerobot/claude-utils). Their install commands
 (`conventions@arc-conventions`, `claude-utils@claude-utils`) are superseded by the ones above.
 
-The `claude-utils` plugin was renamed `utils` in the move — the `claude-` prefix said nothing once
-the plugin no longer had to carry its own marketplace's name. Its command namespace moved with it,
-so `/claude-utils:hello` is now `/utils:hello`.
+Both plugins were renamed in the move. `claude-utils` became `utils` — the `claude-` prefix said
+nothing once the plugin no longer had to carry its own marketplace's name — and its command
+namespace moved with it, so `/claude-utils:hello` is now `/utils:hello`. `conventions` became
+`arc-conventions`, narrowing the name to the scope it actually covers: software and project
+*architecture*. Conventions with a different focus and a different set of rules are expected later,
+and they get their own plugin rather than being folded into this one, so a project can install one
+scope without the other. Skill names are unchanged, so a project `conventions/` file that names a
+skill keeps working as it is.
 
 ## License
 

@@ -13,21 +13,21 @@ It carries two independent plugins, and the split matters when deciding where so
 
 | Plugin | Holds | Registers hooks? |
 | --- | --- | --- |
-| `conventions` | Rules to follow on topic match — the portable layer of engineering and documentation conventions | No, and must not |
+| `arc-conventions` | Rules to follow on topic match — the portable layer of software and project *architecture* conventions | No, and must not |
 | `utils` | General-purpose tooling: commands, agents, and skills that describe an *action* to take | Yes — the two auto-summary-commit hooks |
 
-A skill that states a rule belongs in `conventions`. A skill that does something at the end of
-every turn belongs in `utils`. That distinction is why `auto-summary-commit` is not a
-conventions skill despite being about commits.
+A skill that states an architecture rule belongs in `arc-conventions`. A skill that does something
+at the end of every turn belongs in `utils`. That distinction is why `auto-summary-commit` is not an
+`arc-conventions` skill despite being about commits.
 
 ## Commands
 
 ```
-claude plugin validate plugins/conventions --strict
+claude plugin validate plugins/arc-conventions --strict
 claude plugin validate plugins/utils --strict
 /plugin marketplace add tedslittlerobot/stefs-claude-plugins   # consumers; hosted on GitHub
 /plugin marketplace add ~/Developer/claude/stefs-claude-plugins # this clone, to work on the plugins
-/plugin install conventions@stefs-plugins
+/plugin install arc-conventions@stefs-plugins
 /plugin install utils@stefs-plugins
 /plugin marketplace update stefs-plugins                        # pull the latest commit
 /reload-plugins                                                 # after changing anything but a SKILL.md
@@ -43,8 +43,8 @@ Three nested levels, each with its own manifest:
 
 ```
 .claude-plugin/marketplace.json     # marketplace "stefs-plugins", pluginRoot ./plugins
-plugins/conventions/
-  .claude-plugin/plugin.json        # plugin "conventions"
+plugins/arc-conventions/
+  .claude-plugin/plugin.json        # plugin "arc-conventions"
   skills/<skill-name>/
     SKILL.md                        # YAML frontmatter (name, description) + the always-loaded rules
     reference/*.md                  # detail, loaded only when SKILL.md points at it by filename
@@ -58,13 +58,18 @@ plugins/utils/
 ```
 
 `metadata.pluginRoot` is `./plugins`, so a third plugin means creating `plugins/<name>/` and
-appending an entry to `marketplace.json`. A new skill or command needs no registration beyond its
+appending an entry to `marketplace.json`. **Conventions plugins are scoped by prefix.**
+`arc-conventions` carries the software and project *architecture* rules and nothing else; a set of
+conventions with a different focus — a different subject, a different audience, a different reason
+to be followed — becomes its own `<scope>-conventions` plugin rather than more skills in this one.
+Folding them together would mean a project that wants one scope loads the other's descriptions into
+every session, competing for trigger match against skills it will never want. A new skill or command needs no registration beyond its
 file. Reference bundled files from hooks with `${CLAUDE_PLUGIN_ROOT}`, never a relative or absolute
 path — the plugin is copied to a versioned cache directory on install.
 
 ### The two-layer model
 
-This is the organising idea behind every `conventions` skill, and the reason that plugin exists.
+This is the organising idea behind every `arc-conventions` skill, and the reason that plugin exists.
 
 | Layer | Lives in | Contains |
 | --- | --- | --- |
@@ -77,7 +82,7 @@ or chosen values has broken the split — those lines belong in the consuming re
 what belongs in a project file versus in `architecture/`, `glossary/`, `instructions/`,
 `proposals/` or `requirements/`.
 
-The nine conventions skills divide as: one meta-skill (`conventions`), five per-stack (`frontend`,
+The nine `arc-conventions` skills divide as: one meta-skill (`conventions`), five per-stack (`frontend`,
 `infrastructure`, `lambdas-go`, `lambdas-node`, `mysql`) and three per-document-kind
 (`documentation`, `glossary`, `product-requirements`). Skills cross-reference each other by name in
 a `## Related` section rather than duplicating rules — `lambdas-node` defers to `lambdas-go` for
@@ -176,7 +181,7 @@ The rules in the README's "Adding to a skill" section are binding here:
   the old failure is usually why the new rule is shaped as it is
 - Prose wraps at 100 columns; tables and code blocks run long
 
-Every conventions `SKILL.md` closes with the same two sections, and a new skill should keep the
+Every `arc-conventions` `SKILL.md` closes with the same two sections, and a new skill should keep the
 shape: a `## References` section listing each `reference/*.md` with a one-line note on what it
 holds (skills with no `reference/` directory omit it), then `## Related` naming the sibling skills
 that carry adjacent rules. `lambdas-node` is the one skill with a reference file but no
@@ -190,9 +195,15 @@ This repository replaces two separate marketplaces, one per plugin:
 (marketplace `claude-utils`). Both are superseded by `stefs-plugins`; the old install commands no
 longer describe how these plugins are distributed.
 
-The `claude-utils` plugin was renamed `utils` at the same time, taking its command namespace with
-it: `/claude-utils:<name>` is now `/utils:<name>`. Anything still referring to the old plugin name
-or namespace is stale, with the exception of the two paragraphs above.
+Both plugins were renamed at the same time. `claude-utils` became `utils`, taking its command
+namespace with it: `/claude-utils:<name>` is now `/utils:<name>`. `conventions` became
+`arc-conventions`, narrowing the name to the architecture scope it actually covers so that a
+later conventions plugin with a different focus has a name available to it. Skill names were left
+alone in both renames — a project `conventions/` file names skills, not plugins, and renaming the
+`conventions` skill would have broken every one of those files for no gain.
+
+Anything still referring to the old plugin names or command namespace is stale, with the exception
+of the two paragraphs above.
 
 ## Other Agent Configs
 
