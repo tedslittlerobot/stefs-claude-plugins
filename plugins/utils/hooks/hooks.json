@@ -1,0 +1,27 @@
+{
+  "description": "Drives the auto-summary-commit skill. UserPromptSubmit fingerprints the working tree before the turn; Stop compares, and if this turn changed anything, blocks the stop once and hands the model the list of paths it changed.",
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/auto-summary-commit.sh\" pre",
+            "timeout": 15
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/auto-summary-commit.sh\" stop",
+            "timeout": 15
+          }
+        ]
+      }
+    ]
+  }
+}
