@@ -1,0 +1,18 @@
+{
+  "name": "conventions",
+  "displayName": "Conventions",
+  "version": "0.1.0",
+  "description": "The portable layer of engineering and documentation conventions: frontend, infrastructure, lambdas (Go and Node), MySQL, documentation, glossary and product requirements — plus the meta-skill for how a project records its own conventions on top.",
+  "author": {
+    "name": "Stefan Horner",
+    "url": "https://github.com/tedslittlerobot"
+  },
+  "homepage": "https://github.com/tedslittlerobot/stefs-claude-plugins",
+  "repository": "https://github.com/tedslittlerobot/stefs-claude-plugins",
+  "license": "MIT",
+  "keywords": [
+    "conventions",
+    "documentation",
+    "standards"
+  ]
+}
