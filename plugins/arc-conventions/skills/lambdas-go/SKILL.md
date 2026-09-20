@@ -1,6 +1,6 @@
 ---
 name: lambdas-go
-description: Go AWS Lambda conventions — directory naming by trigger (ninja-, api-<method>-, sqs-, bus-), one Go module per Lambda compiled to a bootstrap binary, the main.go/handler.go root package with everything else in sub-packages, Go package naming, the structured log line format, file organisation, build commands and testing. Use when writing, editing, reviewing or testing Go Lambda code, creating a new Lambda directory, or deciding which package something belongs in.
+description: Go AWS Lambda conventions — directory naming by trigger (ninja-, api-<method>-, sqs-, bus-, s3-), one Go module per Lambda compiled to a bootstrap binary, the main.go/handler.go root package with everything else in sub-packages, Go package naming, the structured log line format, file organisation, build commands and testing. Use when writing, editing, reviewing or testing Go Lambda code, creating a new Lambda directory, or deciding which package something belongs in.
 ---
 
 # Go Lambda Conventions
@@ -29,6 +29,7 @@ is visible from the directory name alone**:
 | --- | --- | --- |
 | API Gateway route | `api-<http-method>-<purpose>` | `api-get-profile` for `GET /api/me/profile` |
 | SQS queue | `sqs-<sqs-queue-name>` | `sqs-new-users` for the `new-users` queue |
+| S3 lifecycle event | `s3-<what-it-handles>` | `s3-upload-scan` for `ObjectCreated:*` on the uploads bucket |
 | EventBridge bus event | `bus-<what-the-lambda-does>` | `bus-send-welcome-email`, subscribed to `user.registered` |
 | Manual invocation only (`aws lambda invoke`, no route or event source) | `ninja-<purpose>` | `ninja-add-user` |
 | Anything else | the function's purpose | `register-user`, `validate-token` |
@@ -45,6 +46,15 @@ is visible from the directory name alone**:
   directory listing, which is exactly what trigger-based naming is for
 - The event a `bus-` Lambda subscribes to belongs in its `schema.md` and README invocation section,
   where the full event pattern can be written out; the directory name carries the behaviour
+- An **`s3-` Lambda's name after the prefix is terse, and says whatever makes it clearest among its
+  siblings** — the lifecycle event alone (`s3-object-created`) when one Lambda handles one event on
+  one bucket and nothing else could be meant, or a short summary of what it does (`s3-upload-scan`,
+  `s3-thumbnail`) when the bucket, the prefix filter or a sibling Lambda would otherwise be
+  ambiguous. Prefer the summary as soon as there is a second `s3-` Lambda in the service: two
+  directories named for their events answer *which bucket?* for neither
+- The bucket, the event pattern and any key prefix filter belong in the Lambda's `schema.md` and
+  README invocation section, where they can be written out in full — the directory name carries the
+  trigger kind and the behaviour, the same split as `bus-`
 - The `ninja-` prefix exists so an operational/admin utility is identifiable at a glance and never
   mistaken for a user-facing endpoint
 - **Corrected:** this rule used to read `sqs-handler-<sqs-queue-name>`. The `handler-` was

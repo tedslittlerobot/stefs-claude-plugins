@@ -1,6 +1,6 @@
 ---
 name: lambdas-node
-description: Node.js AWS Lambda conventions — when Node is justified over Go, ESM/.mjs modules, the nodejs runtime and index.handler entry point, factory-function dependency injection, node --test with co-located .test.mjs files, the structured log line format, npm-install-on-package packaging, and the same trigger-based directory naming as Go Lambdas (api-<method>-, sqs-, bus-, ninja-). Use when writing, editing, reviewing or testing a Node.js Lambda, or deciding whether a Lambda may be written in Node at all.
+description: Node.js AWS Lambda conventions — when Node is justified over Go, ESM/.mjs modules, the nodejs runtime and index.handler entry point, factory-function dependency injection, node --test with co-located .test.mjs files, the structured log line format, npm-install-on-package packaging, and the same trigger-based directory naming as Go Lambdas (api-<method>-, sqs-, bus-, s3-, ninja-). Use when writing, editing, reviewing or testing a Node.js Lambda, or deciding whether a Lambda may be written in Node at all.
 ---
 
 # Node.js Lambda Conventions
@@ -63,6 +63,7 @@ Note this differs from a Go Lambda's `source_path`, which is a list with explici
 | --- | --- |
 | API Gateway route | `api-<http-method>-<purpose>` (route under an `/api` prefix) |
 | SQS queue | `sqs-<sqs-queue-name>` (drop a `.fifo` suffix) |
+| S3 lifecycle event | `s3-<what-it-handles>` — the event, or a terse summary of the work; see `lambdas-go` |
 | EventBridge bus event | `bus-<what-the-lambda-does>`, not the event name — see `lambdas-go` |
 | Manual invocation only | `ninja-<purpose>` |
 | A provider trigger, or anything else | the function's purpose — `custom-email-sender` |
