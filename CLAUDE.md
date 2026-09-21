@@ -37,6 +37,27 @@ Skills are model-invoked, so the way to verify a skill change is to check that t
 `description` still contains the vocabulary that should trigger it, and that any `reference/*.md`
 file the change adds is named explicitly from its `SKILL.md`.
 
+### Bump the plugin version with every change to it
+
+**Any change to a plugin's contents bumps that plugin's `version` in
+`plugins/<name>/.claude-plugin/plugin.json`, in the same commit** — a new skill, an edited
+`SKILL.md`, a new or changed `reference/*.md`, a hook script, a command. Both plugins are
+versioned independently; bump the one that changed.
+
+The version is not decoration, it is the install cache key. An installed plugin is copied to
+`~/.claude/plugins/cache/<marketplace>/<plugin>/<version>/`, and `/plugin marketplace update`
+pulls the repository but will not re-copy into a version directory it already has. Adding the
+`plan-of-action` skill without a bump produced exactly that: the marketplace clone held all ten
+skills at the right commit, `~/.claude/plugins/cache/stefs-plugins/arc-conventions/0.1.0/` still
+held the nine from three days earlier, and the new skill was invisible in Claude with nothing
+wrong with it and nothing to see in `git log`. Pushing and updating again cannot fix it; only a
+new version number or deleting the stale cache directory can.
+
+`marketplace.json` has a `version` of its own, for the marketplace rather than the plugins. It
+does not key the cache and does not need bumping for a skill change — but the per-plugin
+`description` in that file is what the plugin browser shows, so a change that dates it (a skill
+count, a list of what the plugin covers) is corrected there in the same commit.
+
 ## Architecture
 
 Three nested levels, each with its own manifest:
