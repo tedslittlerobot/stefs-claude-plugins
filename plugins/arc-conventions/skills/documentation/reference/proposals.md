@@ -20,6 +20,7 @@ several proposals may address the same service without colliding:
 ```
 proposals/<proposal-slug>/
   proposal.md                       # the proposal itself — always this filename
+  plan-<iteration>-<description>.md # Plan of Action stages — see the `plan-of-action` skill
   proposal--<section-slug>.py       # diagram scripts (see reference/diagrams.md)
   proposal--<section-slug>.png      # their rendered output, embedded in proposal.md
   <supplementary>.md                # any number of supporting documents
@@ -56,6 +57,16 @@ cannot be recovered later from the code:
 - **Impact on what exists today**, naming the files and resources the proposal would change or
   remove
 
+## The Plan of Action
+
+Once a proposal's design is settled, it is turned into a **Plan of Action** before any of it is
+built: a staged implementation plan written for an AI agent to carry out, one
+`plan-<iteration>-<description>.md` file per stage in the proposal's own directory, linked in order
+from `proposal.md`.
+
+**The `plan-of-action` skill governs it** — the stage naming, where the boundaries go, what a stage
+file contains and how one is implemented. This skill covers only the proposal.
+
 ## Lifecycle
 
 A proposal is a **living document while its design is under discussion**, and is edited in place as
@@ -67,7 +78,8 @@ Once a proposal is built:
 - the description of what now exists belongs in `architecture/`
 - the operational side belongs in `instructions/`
 - **the proposal itself stays where it is**, as the record of why the design is the shape it is. It
-  is not deleted and not moved
+  is not deleted and not moved. **Its Plan of Action stages stay with it**, as the record of the
+  order the work was actually done in
 - **its status line is updated** to say it has been implemented, and to point at the documentation
   that now describes the real thing
 

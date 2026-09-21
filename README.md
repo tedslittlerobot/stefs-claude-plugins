@@ -6,7 +6,7 @@ general-purpose utilities.
 
 | Plugin | Covers | Changes a session on its own? |
 | --- | --- | --- |
-| [`arc-conventions`](plugins/arc-conventions) | Nine model-invoked skills carrying the **architecture** conventions that apply across projects: frontends, infrastructure, Lambdas, MySQL, documentation, glossary, product requirements, and how a project records its own conventions | No — no hooks, no executable code |
+| [`arc-conventions`](plugins/arc-conventions) | Ten model-invoked skills carrying the **architecture** conventions that apply across projects: frontends, infrastructure, Lambdas, MySQL, documentation, glossary, plans of action, product requirements, and how a project records its own conventions | No — no hooks, no executable code |
 | [`utils`](plugins/utils) | General-purpose commands, skills and agents, including the default-on `auto-summary-commit` workflow | **Yes** — installing it turns commit-per-prompt on. See [The commit hooks](#the-commit-hooks) |
 
 ## Install
@@ -60,7 +60,7 @@ what is genuinely specific to that repository.
 The `conventions` skill documents this arrangement in full, including what belongs in a project file
 versus in architecture documentation, a glossary entry, an instruction or a proposal.
 
-Each of the nine skills is model-invoked — its `description` decides when it loads, so the body
+Each of the ten skills is model-invoked — its `description` decides when it loads, so the body
 stays out of context until the work actually calls for it. Nothing here fires on its own: the
 plugin adds no hooks and changes nothing about a session in which no skill matches.
 
@@ -73,6 +73,7 @@ plugin adds no hooks and changes nothing about a session in which no skill match
 | `lambdas-node` | Node.js Lambdas: when Node is justified at all, ESM, factory-function DI, `node --test`, packaging |
 | `mysql` | MySQL/Aurora schema and query conventions |
 | `documentation` | The three tenses of documentation, API docs, READMEs, proposals, diagrams |
+| `plan-of-action` | The staged implementation plan a settled proposal becomes: stage naming, where the boundaries and checkpoints go, and implementing it one stage at a time |
 | `glossary` | The project-level glossary: one file per term, the entry template, the index, and linking rather than restating |
 | `product-requirements` | Requirements and user stories: sections, Gherkin, acceptance criteria, test-coverage notes, risk assessment |
 

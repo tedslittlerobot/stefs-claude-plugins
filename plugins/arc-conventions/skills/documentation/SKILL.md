@@ -45,6 +45,7 @@ instructions/
   setup/<topic>.md                         # first-time setup tasks specifically
 proposals/
   <proposal-slug>/proposal.md              # a design not yet built
+  <proposal-slug>/plan-<n>-<desc>.md       # its Plan of Action — `plan-of-action` skill
 glossary/                                  # governed by the `glossary` skill, not this one
 ```
 
@@ -92,6 +93,7 @@ Load the reference file for the specific document type being written:
 ## Related
 
 - `conventions` skill — what belongs in `conventions/` rather than in a document here
+- `plan-of-action` skill — the staged plan a settled proposal becomes, and how it is implemented
 - `glossary` skill — where a term's meaning is recorded
 - `lambdas-go` / `lambdas-node` skills — the `schema.md` that accompanies every Lambda `README.md`
 - `product-requirements` skill — `requirements/`, which is governed separately

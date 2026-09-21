@@ -82,9 +82,12 @@ or chosen values has broken the split — those lines belong in the consuming re
 what belongs in a project file versus in `architecture/`, `glossary/`, `instructions/`,
 `proposals/` or `requirements/`.
 
-The nine `arc-conventions` skills divide as: one meta-skill (`conventions`), five per-stack (`frontend`,
-`infrastructure`, `lambdas-go`, `lambdas-node`, `mysql`) and three per-document-kind
-(`documentation`, `glossary`, `product-requirements`). Skills cross-reference each other by name in
+The ten `arc-conventions` skills divide as: one meta-skill (`conventions`), five per-stack (`frontend`,
+`infrastructure`, `lambdas-go`, `lambdas-node`, `mysql`) and four per-document-kind
+(`documentation`, `glossary`, `plan-of-action`, `product-requirements`). `plan-of-action` is the
+one that also carries a procedure — implementing the plan, stage by stage — and it lives here
+rather than in `utils` because the document and its execution are the same subject, and both are
+meaningless without the `proposals/` layout the `documentation` skill defines. Skills cross-reference each other by name in
 a `## Related` section rather than duplicating rules — `lambdas-node` defers to `lambdas-go` for
 the shared trigger-naming rules, and both defer to `conventions` for precedence. Cross-plugin
 references work the same way: `auto-summary-commit` names the `conventions` skill for a project's
