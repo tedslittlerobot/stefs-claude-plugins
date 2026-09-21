@@ -1,8 +1,8 @@
 {
   "name": "arc-conventions",
   "displayName": "Arc Conventions",
-  "version": "0.1.0",
-  "description": "The portable layer of software and project *architecture* conventions: frontend, infrastructure, lambdas (Go and Node), MySQL, documentation, glossary and product requirements — plus the meta-skill for how a project records its own conventions on top.",
+  "version": "0.2.0",
+  "description": "The portable layer of software and project *architecture* conventions: frontend, infrastructure, lambdas (Go and Node), MySQL, documentation, glossary, plans of action and product requirements — plus the meta-skill for how a project records its own conventions on top.",
   "author": {
     "name": "Stefan Horner",
     "url": "https://github.com/tedslittlerobot"

@@ -15,7 +15,7 @@
       "name": "arc-conventions",
       "source": "./plugins/arc-conventions",
       "displayName": "Arc Conventions",
-      "description": "Nine skills carrying the portable layer of a project's software and project architecture conventions: how conventions themselves are recorded, plus SPA frontends, Terraform/AWS infrastructure, Go and Node Lambdas, MySQL, documentation, the glossary and product requirements. Every skill is model-invoked on topic match; the plugin registers no hooks and adds no executable code.",
+      "description": "Ten skills carrying the portable layer of a project's software and project architecture conventions: how conventions themselves are recorded, plus SPA frontends, Terraform/AWS infrastructure, Go and Node Lambdas, MySQL, documentation, the glossary, the staged plan of action a proposal becomes, and product requirements. Every skill is model-invoked on topic match; the plugin registers no hooks and adds no executable code.",
       "author": {
         "name": "Stefan Horner",
         "url": "https://github.com/tedslittlerobot"
