@@ -1,6 +1,6 @@
 ---
 name: plan-of-action
-description: Turning a settled proposal into a Plan of Action — a staged implementation plan written for an AI agent to carry out, one plan-<n>-<description>.md file per stage in the proposal's own directory, with a checkpoint between stages and human steps called out explicitly. Use when a proposal's design is settled and it is time to plan the build, when writing a plan of action or splitting one into stages, and when implementing one — executing a proposal, working through the next stage, or asking what to build next from proposals/.
+description: Turning a settled proposal into a Plan of Action — a staged implementation plan written for an AI agent to carry out, one plan-<n>-<description>.md file per stage in the proposal's own directory, with a checkpoint between stages and human steps called out explicitly. Use when a proposal's design is settled and it is time to plan the build, when writing a plan of action or splitting one into stages, and when implementing one — executing a proposal, working through the next stage, prefixing the commits a plan run makes, or asking what to build next from proposals/.
 ---
 
 # Plan of Action
@@ -61,9 +61,12 @@ to stop.
 
 ## What a stage file contains
 
-- **The instructions for that stage, in order** — the files to change, the commands to run, the
-  end state to arrive at. Concrete enough to follow without re-deriving the design; where the
-  *why* matters, link back to the section of `proposal.md` that argues it rather than restating it
+- **The instructions for that stage, as numbered sections** — the files to change, the commands to
+  run, the end state to arrive at. Concrete enough to follow without re-deriving the design; where
+  the *why* matters, link back to the section of `proposal.md` that argues it rather than restating
+  it. The numbers are addresses: they are what the implementing agent's commit subjects cite, so
+  once work has started a new section is appended rather than inserted, because renumbering the
+  sections after it orphans every commit already made
 - **Human steps, named as such.** Some work cannot be done by the agent — issuing a credential,
   flipping a console setting, obtaining an approval, anything needing a login the agent does not
   have. Call these out explicitly at the point they are needed
@@ -83,8 +86,9 @@ pulls decisions forward into a stage that was deliberately not making them yet.
 - **Clear the stage's checkpoint before starting the next stage.** A failing checkpoint is the end
   of the run, not a note to carry forward; the next stage is written on the assumption that this
   one landed
-- **Commit at each stage boundary**, so which stages are done is legible from `git log` rather than
-  from memory. A session that resumes a part-built plan finds out where it got to that way
+- **Commit as the work lands, with a prefixed subject** — see *Commit subjects* below — so where
+  the run got to is legible from `git log` rather than from memory. A session that resumes a
+  part-built plan finds out where it got to that way
 - **When reality contradicts the plan, stop and amend the plan** rather than improvising past it.
   The divergence — the thing the plan assumed that turned out not to hold — is exactly what the
   next reader needs, and a plan that has been quietly diverged from is worse than no plan at all,
@@ -94,6 +98,47 @@ pulls decisions forward into a stage that was deliberately not making them yet.
 in `architecture/`, the operational side in `instructions/`, and the proposal's status line is
 updated to say it has been implemented and to point at both. The plan stages stay where they are,
 with the proposal. See the `documentation` skill.
+
+## Commit subjects
+
+**Every commit made while implementing a plan is prefixed with the proposal and the section of the
+plan it came from:**
+
+```
+<Proposal Name> Proposal <stage>.<section>: <subject>
+```
+
+```
+User Invitations Proposal 02.1: Database updates
+User Invitations Proposal 13.15: Final Testing of Invitations
+```
+
+- **`<Proposal Name>`** is the proposal's own name, as its `proposal.md` title gives it —
+  `proposals/user-invitations/` implementing *User Invitations* gives `User Invitations Proposal`
+- **`<stage>`** is the number in the stage file's name, **exactly as written there, padding
+  included**. `plan-02-update-database.md` gives `02` and `plan-2-update-database.md` gives `2`;
+  normalising it either way breaks the match between a commit and the file it names
+- **`<section>`** is the number of the section *within that stage file* that the commit's work
+  belongs to, not a running count of commits
+- **The subject after the colon** is written the way any other commit subject on the project is
+  written — the prefix replaces none of that, and whatever subject-length limit the project holds
+  itself to covers the whole line, prefix included
+
+**Several commits may share one prefix.** A section is a unit of the plan, not a unit of committing;
+splitting it across commits where that makes the diffs readable is expected, and needs no
+distinguishing suffix. What must not happen is the reverse — one commit spanning two sections —
+because the prefix then names only one of them and the other's work is invisible in the log.
+
+**The prefix is what makes a run legible from outside it.** Without it, `git log` over a
+half-implemented plan is a list of ordinary subjects with nothing saying which proposal they serve
+or how far through its stages they got, and a session resuming that work has to read diffs to find
+out. With it, `git log --oneline --grep 'User Invitations Proposal'` is the progress report, and
+the last subject in it says exactly which stage and section to pick up from.
+
+**Corrected:** this rule previously said only to *commit at each stage boundary*, with no prefix
+and no mention of sections. That was too coarse in both directions — it made a whole stage the
+smallest committable unit, and it left the commits of a plan run indistinguishable from every other
+commit on the branch.
 
 ## Related
 

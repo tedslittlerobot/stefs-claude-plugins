@@ -236,6 +236,12 @@ example `rename studies endpoint to study_memberships`, not
 Summarise the *change*, not the process — what the repo looks like now, not that you were asked to
 do something.
 
+**If the turn's work came from a stage of a Plan of Action, the subject carries that plan's
+prefix** — `<Proposal Name> Proposal <stage>.<section>: ` before the subject above, as in
+`User Invitations Proposal 02.1: add the invitations table`. The 80-character limit covers the
+prefix too. The `plan-of-action` skill in the sibling `arc-conventions` plugin gives the full rule;
+this is only the reminder that a plan run's commits are not styled like the rest.
+
 ### 5. Write the body: Prompt, then Summary
 
 The body is two sections, in this order, with these headings literally:
@@ -389,3 +395,5 @@ deliberately left uncommitted.
   plugin](../../../arc-conventions) — where a project records its own commit-message style, and why the
   project file wins over the default in step 4. It is not required: step 4 falls back to reading the
   style off `git log` when the skill is not installed
+- `plan-of-action` skill, in that same sibling plugin — the `<Proposal Name> Proposal <stage>.<section>: `
+  prefix step 4 applies while a Plan of Action is being implemented, and what each part of it means
