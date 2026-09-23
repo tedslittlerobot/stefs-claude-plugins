@@ -67,12 +67,49 @@ to stop.
   it. The numbers are addresses: they are what the implementing agent's commit subjects cite, so
   once work has started a new section is appended rather than inserted, because renumbering the
   sections after it orphans every commit already made
-- **Human steps, named as such.** Some work cannot be done by the agent — issuing a credential,
-  flipping a console setting, obtaining an approval, anything needing a login the agent does not
-  have. Call these out explicitly at the point they are needed
+- **Human steps, named as such, with whatever they have to run.** Some work cannot be done by the
+  agent — issuing a credential, flipping a console setting, obtaining an approval, anything
+  needing a login the agent does not have. Call these out explicitly at the point they are needed,
+  and see *Human steps* below for what one contains
 - **The checkpoint, at the end** — the tests to run, the command whose output should have changed,
   the thing to look at in a console. A stage with no way to verify it says so, rather than leaving
   the reader to wonder whether a check was forgotten
+
+## Human steps
+
+**A human step that involves running something gives both halves: the instruction, and the exact
+thing to run in a copyable block.** Project scripts, `aws` and other CLI invocations, SQL queries,
+migrations, `terraform` commands — if the human's job is to execute it, the plan writes it out
+ready to paste, not a description of what to assemble.
+
+````markdown
+**Human step — grant the processor role read access to the invitations bucket.** The deploy in
+section 4 will fail without it. Run:
+
+```bash
+aws iam attach-role-policy \
+  --role-name invitations-processor \
+  --policy-arn arn:aws:iam::123456789012:policy/invitations-bucket-read
+```
+
+Confirm with `aws iam list-attached-role-policies --role-name invitations-processor`, which
+should now list the policy.
+````
+
+**Neither half works alone.** An instruction on its own makes the human reconstruct a command the
+plan's author already had in front of them, which is where the wrong profile, the wrong
+environment and the half-remembered flag come from. A bare block is worse: pasted into a terminal
+with nothing saying what it does or what a good result looks like, it gets run blind — and a step
+is a human step precisely because it is the part the agent cannot do and cannot undo.
+
+- **Fill in every value the plan already knows.** The bucket, the table, the role, the region: if
+  the proposal settled it, it belongs in the command rather than as `<bucket-name>`. Mark what
+  genuinely varies, and say where to get it
+- **Say what the result should look like** — the output, the row count, the exit status, the thing
+  now visible in a console. That is how the human knows to carry on rather than to stop
+- **Never write a secret into the block.** A command may name where a credential comes from — an
+  environment variable, a profile, a secret store path — but a plan file is committed, and a
+  credential pasted into one is in `git log` for good
 
 ## Implementing the plan
 
@@ -80,9 +117,11 @@ to stop.
 not read ahead into later stages. Reading ahead spends the context the split exists to save, and
 pulls decisions forward into a stage that was deliberately not making them yet.
 
-- **Stop and prompt the human at a human step**, then wait. Do not work around it, and do not
-  assume it has been done because the plan says it should be — the whole reason it is in the plan
-  is that the agent cannot verify it
+- **Stop and prompt the human at a human step**, then wait — handing them the commands the plan
+  gives, with anything only knowable now filled in: the id that was just generated, the ARN of the
+  resource this stage created, the environment actually being worked on. Do not work around it, and
+  do not assume it has been done because the plan says it should be — the whole reason it is in the
+  plan is that the agent cannot verify it
 - **Clear the stage's checkpoint before starting the next stage.** A failing checkpoint is the end
   of the run, not a note to carry forward; the next stage is written on the assumption that this
   one landed
