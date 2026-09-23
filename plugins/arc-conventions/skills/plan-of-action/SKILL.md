@@ -1,6 +1,6 @@
 ---
 name: plan-of-action
-description: Turning a settled proposal into a Plan of Action — a staged implementation plan written for an AI agent to carry out, one plan-<n>-<description>.md file per stage in the proposal's own directory, with a checkpoint between stages and human steps called out explicitly. Use when a proposal's design is settled and it is time to plan the build, when writing a plan of action or splitting one into stages, and when implementing one — executing a proposal, working through the next stage, prefixing the commits a plan run makes, or asking what to build next from proposals/.
+description: Turning a settled proposal into a Plan of Action — a staged implementation plan written for an AI agent to carry out, one plan-<n>-<description>.md file per stage in the proposal's own directory, each opening with a status header, with a checkpoint between stages and human steps called out explicitly. Use when a proposal's design is settled and it is time to plan the build, when writing a plan of action or splitting one into stages, and when implementing one — executing a proposal, working through the next stage, prefixing the commits a plan run makes, or asking what to build next from proposals/.
 ---
 
 # Plan of Action
@@ -61,6 +61,8 @@ to stop.
 
 ## What a stage file contains
 
+- **The status header, before anything else** — where this stage has got to, what it depends on
+  and where it sits in the plan. See *The stage header* below
 - **The instructions for that stage, as numbered sections** — the files to change, the commands to
   run, the end state to arrive at. Concrete enough to follow without re-deriving the design; where
   the *why* matters, link back to the section of `proposal.md` that argues it rather than restating
@@ -74,6 +76,56 @@ to stop.
 - **The checkpoint, at the end** — the tests to run, the command whose output should have changed,
   the thing to look at in a console. A stage with no way to verify it says so, rather than leaving
   the reader to wonder whether a check was forgotten
+
+## The stage header
+
+**Every stage file opens with a status header:** one blockquote, before the first heading, saying
+where this stage has got to and how it sits in the rest of the plan. It is what a session resuming
+a part-built plan reads first, and it carries what `git log` cannot — that the build is finished
+but the apply is not, that a human step at the foot of the file is still outstanding, that a check
+was made from a diff because the credentials to run it were not there.
+
+Six parts, in this order:
+
+| Part | Holds |
+| --- | --- |
+| **Status** | Where this stage is, in one line — one of the four states below |
+| **Build record** | The commits this stage was built in, each with a word on what it covers |
+| **Divergences** | What the plan assumed that turned out not to hold, numbered, each saying what was done instead — or one line pointing at the steps, once they carry the detail |
+| **Standing preamble** | Two fixed paragraphs, identical in every stage file of every proposal: that this is an execution plan for an agent rather than a description of the system, and that a divergence is corrected in place and said |
+| **Dependencies** | Which earlier stages this one needs, linked, and **why** it needs them — plus anything else that changes how the file should be read |
+| **Stage index** | Every stage of the plan, linked, in order, with this one bold, unlinked and marked `(this)` |
+
+**The last three are written when the file is; the first three appear as they become true.** A
+stage that has not started carries a status and nothing else above the preamble.
+
+| Status | Means |
+| --- | --- |
+| `**Status: Not Started.**` | Written, not begun |
+| `**Status: In Progress — Step 3 Done.**` | Begun — name the last step that landed, never a percentage |
+| `**Status: BUILT, and its checkpoint cleared. NOT YET DEPLOYED**` | The repository is finished and the world is not. Say what is outstanding, and any ordering constraint on it |
+| `**Status: COMPLETE and DEPLOYED.**` | Both. Say what was confirmed live, and name what was *not* exercised |
+
+- **Capitals are for the state that will mislead someone.** `NOT YET DEPLOYED` shouts because a
+  stage whose code is merged and whose apply has not run is the one a later reader most reliably
+  mistakes for finished — and the one where that mistake costs the most
+- **Update the header as the stage runs, not at the end.** A header that is only made true on
+  completion is wrong for exactly the window in which someone is most likely to pick the work up:
+  mid-stage, from a new session, with no memory of it
+- **The build record maps steps to commits.** The commit prefix (below) makes a stage's commits
+  findable from the log; the header is what says which step each one was, and what is still only
+  half-committed
+- **A divergence goes in both places.** The full account lives under the step it happened in, where
+  someone following the plan will hit it; the header carries the one-line version, because the
+  header is read first and a divergence nobody sees is one that gets made again. **Record the cost,
+  not only the correction** — that an omission caused a failed apply is the part that stops the
+  next plan omitting the same thing
+- **Dependencies say why.** "Depends on Stage 1" gives the reader nothing to act on; naming what of
+  Stage 1's this stage is a transcription of tells them what breaks if they run it early, and lets
+  them judge whether the part they need is already there
+- **The stage index makes every file an entry point.** `proposal.md` indexes the stages, but a
+  reader arriving at stage 6 from a commit message should not have to go back up to find out what
+  else exists or where they are in it
 
 ## Human steps
 
@@ -125,6 +177,9 @@ pulls decisions forward into a stage that was deliberately not making them yet.
 - **Clear the stage's checkpoint before starting the next stage.** A failing checkpoint is the end
   of the run, not a note to carry forward; the next stage is written on the assumption that this
   one landed
+- **Bring the header up to date in the same commit as the work it describes.** The status, the new
+  commit in the build record, a divergence just corrected: all of it is part of the step, not
+  tidying to be done afterwards. A header updated later is a header that is wrong in between
 - **Commit as the work lands, with a prefixed subject** — see *Commit subjects* below — so where
   the run got to is legible from `git log` rather than from memory. A session that resumes a
   part-built plan finds out where it got to that way
@@ -178,6 +233,11 @@ the last subject in it says exactly which stage and section to pick up from.
 and no mention of sections. That was too coarse in both directions — it made a whole stage the
 smallest committable unit, and it left the commits of a plan run indistinguishable from every other
 commit on the branch.
+
+## References
+
+- **`reference/stage-header.md`** — the standing preamble to copy, and the same stage file's header
+  worked through all four states, from not started to deployed
 
 ## Related
 
