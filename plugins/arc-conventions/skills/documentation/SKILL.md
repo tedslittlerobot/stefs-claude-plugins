@@ -1,6 +1,6 @@
 ---
 name: documentation
-description: How to write the project's markdown documents and which context each belongs in — architecture/ for what IS built, instructions/ for what a human does, proposals/ for what could be built, plus API overview documents, Lambda and shared-library READMEs, and the Mingrammer/MermaidJS diagram conventions. Use when writing or editing any markdown document, deciding where a document belongs, adding a README or api.md, writing a proposal, or creating an architecture or ER diagram.
+description: How to write the project's markdown documents and which context each belongs in — architecture/ for what IS built, instructions/ for what a human does, proposals/ for what could be built, plus API overview documents, Lambda and shared-library READMEs, and the Mingrammer/MermaidJS diagram conventions. Use when writing or editing any markdown document, deciding where a document belongs, adding a README or api.md, writing a proposal or recording a decision in one, evaluating a suggested design, or creating an architecture or ER diagram.
 ---
 
 # Documentation Conventions
@@ -27,6 +27,16 @@ as the current design.
 
 Getting the tense wrong is the commonest documentation fault. Before writing, decide which of the
 three questions the document answers, and put it in the matching directory.
+
+**Writing a proposal has two further rules**, set out in full in `reference/proposals.md`:
+
+- **Evaluate each input before recording it as a decision.** A suggestion — the user's, a
+  ticket's, or your own — is weighed against the problem, its cost and what it conflicts with; if
+  it does not hold up, say so to the user before recording anything
+- **Write nothing outside `proposals/<proposal-slug>/` without asking.** Several proposals may be
+  written at once by different agents in the same tree, so everything outside the proposal's own
+  directory is shared ground. A change the proposal implies elsewhere is recorded in it and raised
+  with the user, not made
 
 ## Structure
 
@@ -86,7 +96,8 @@ Load the reference file for the specific document type being written:
   `architecture/<service>/api.md` overview document
 - **`reference/readmes.md`** — the required four-section format for a Lambda `README.md` and for a
   shared-library `README.md`
-- **`reference/proposals.md`** — the layout, required content and lifecycle of a proposal
+- **`reference/proposals.md`** — the layout, required content and lifecycle of a proposal, and the
+  rules for writing one: evaluating inputs, and staying inside its directory
 - **`reference/diagrams.md`** — Mingrammer Diagrams for architecture/infrastructure/flow diagrams,
   MermaidJS `erDiagram` for data models, and the shared PNG naming pattern
 

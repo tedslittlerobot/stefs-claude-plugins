@@ -57,6 +57,62 @@ cannot be recovered later from the code:
 - **Impact on what exists today**, naming the files and resources the proposal would change or
   remove
 
+## Writing a Proposal
+
+Two rules govern the act of writing one, as distinct from what the finished document contains.
+
+### Evaluate each input before recording it as a decision
+
+**Everything put forward for the proposal is weighed before it is written down as decided** — a
+suggestion from the user, a line lifted from a ticket or a requirements file, an approach carried
+over from another document, and the writer's own first idea alike. For each one, ask:
+
+- does it actually solve the problem the proposal states, or a neighbouring one?
+- what does it cost — in complexity, in migration, in what it rules out later?
+- what does it conflict with — the system as `architecture/` describes it, the project's
+  `conventions/`, another decision already recorded in this proposal?
+- what is the obvious alternative, and why is this better than it?
+
+**If it holds up, record it with that argument.** If it does not, **say so to the user before
+recording anything** — name the concern, and the alternative if there is one. Do not record it as
+decided and move on, and do not quietly substitute a different decision; the user makes the call.
+If they keep it over the objection, record the decision *and* the objection, so the next reader
+sees that the risk was known and accepted rather than missed.
+
+The reason is downstream. A settled proposal is turned into a Plan of Action that is written
+*without relitigating the design* (see the `plan-of-action` skill), so a decision that was only
+transcribed becomes an instruction that nobody ever examined. And a decision whose only argument is
+"it was asked for" fails the content rule above — *decisions, with the argument that settled them*
+— because there is no argument to record.
+
+### Write nothing outside the proposal's directory without asking
+
+**While writing a proposal, every file written is inside `proposals/<proposal-slug>/`.** Code,
+`architecture/`, `instructions/`, `glossary/`, `conventions/`, `requirements/`, READMEs,
+configuration and other proposals are all out of bounds until the user has confirmed the specific
+change. Reading them is expected — a proposal cannot be evaluated against a system nobody looked
+at — but writing to them is not.
+
+When the proposal implies a change elsewhere, **record it in the proposal and ask**, rather than
+making it:
+
+- a change the design would make goes under *Impact on what exists today*
+- a new term goes in the proposal's own prose, with its glossary entry listed as a follow-up —
+  not added to `glossary/`, which describes vocabulary the system already has
+- a stale or wrong document spotted along the way is noted, and raised with the user, not fixed in
+  passing
+
+**Several proposals may be in progress at once, written by different agents in the same working
+tree.** A proposal's directory belongs to that proposal alone, so writes inside it cannot collide;
+everything outside it is shared ground. An edit there can clash with another agent's edit to the
+same file, be overwritten by it, or be swept into that agent's commit as if it were its work. The
+same applies to committing: **stage the proposal's paths by name**, never `git add -A` or
+`git add .`, because the tree holds other agents' unfinished files.
+
+It is also the tense rule applied to writing. A proposal is conditional; editing `architecture/` or
+the code to match it makes the present tense describe something that has not been decided, let
+alone built.
+
 ## The Plan of Action
 
 Once a proposal's design is settled, it is turned into a **Plan of Action** before any of it is

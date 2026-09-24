@@ -27,6 +27,12 @@ an agent implementing it has no way to tell the guess from the decisions. A non-
 can be carried into the stage that needs it, said plainly as a question rather than dressed up as a
 step.
 
+**Writing the plan stays inside the proposal's directory**, as writing the proposal does: the
+stage files are the only thing written, and nothing outside `proposals/<proposal-slug>/` is touched
+until implementation begins or the user confirms the change. Other agents may be writing other
+proposals in the same tree at the same time. The rule and its reasoning are in the
+`documentation` skill's `reference/proposals.md`.
+
 ## Stages
 
 A Plan of Action may be split into **stages**, one file per stage, alongside `proposal.md`:
