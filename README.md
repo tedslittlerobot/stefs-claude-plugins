@@ -82,7 +82,7 @@ plugin adds no hooks and changes nothing about a session in which no skill match
 | Kind    | Name                  | Covers                                                                                                                                                           |
 | ------- | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | Command | `/utils:hello`        | A smoke test — reports what the plugin currently provides                                                                                                        |
-| Skill   | `auto-summary-commit` | The default commit workflow: after any prompt that changed files, stage them, show the summary, and commit onto the current branch once reviewed — recording the prompt and the summary in the commit body |
+| Skill   | `auto-summary-commit` | The default commit workflow: after any prompt that changed files, stage them and commit onto the current branch straight away — recording the prompt and the summary in the commit body |
 
 ### The commit hooks
 
@@ -98,12 +98,13 @@ The plugin ships a pair of hooks that drive it:
 rather than a reconstruction of it. Then the skill does the rest: stage exactly those paths, and
 commit onto the current branch with a body of `## Prompt` and `## Summary`.
 
-It only stops to ask when the summary has something in it worth answering — a choice offered, a
-trade-off flagged, an assumption stated, work left out. A turn that just reports what changed
-commits straight away; the summary is on screen either way, so a question there would review
-nothing. When it does ask, the options are **Commit it**, **Not yet, still working**, **I'll
-commit it myself**, and **Stop asking this session** — only the last switches anything off, and
-the middle two record the paths so the eventual commit still covers them.
+It commits straight away on the great majority of turns, so every prompt leaves its prompt and
+outcome in `git log` — a history, an audit trail, and a rollback point. Caveats, assumptions and
+follow-up questions in the summary go into the commit body rather than holding it up. It stops to
+ask only when something is majorly wrong with the change, or when an open question decides whether
+the work is the right work at all. When it does ask, the options are **Commit it**, **Not yet, still
+working**, **I'll commit it myself**, and **Stop asking this session** — only the last switches
+anything off, and the middle two record the paths so the eventual commit still covers them.
 
 The baseline is the point. Asking only "is the tree dirty" fires on work that was already
 uncommitted when the session started, re-asks every turn once you have declined, and lets

@@ -18,7 +18,7 @@ General-purpose utility commands, skills and agents for Claude Code.
 | `UserPromptSubmit` | `pre`  | Fingerprints the dirty paths in the working tree, and records the prompt; prints nothing                                     |
 | `Stop`             | `stop` | Fingerprints again; if this turn changed anything, feeds back an instruction to run the `auto-summary-commit` skill on exactly those paths |
 
-Neither commits anything itself — staging, the summary and the question are the skill's job. See
+Neither commits anything itself — staging, the summary and the commit are the skill's job. See
 the [repository README](../../README.md#the-commit-hooks) for what silences them.
 
 ## Layout

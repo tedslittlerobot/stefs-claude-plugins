@@ -150,9 +150,9 @@ or produce a mis-attributed commit:
   even with deferrals outstanding — otherwise a single "not yet" would nag for the rest of the
   session
 - **The hook never decides whether to ask the user.** It says "run the skill" and lists the
-  paths; whether that ends in a four-option question or a straight commit is the skill's call,
-  made from the shape of the turn's summary. Putting that decision in the hook would mean encoding
-  a judgement about prose in bash
+  paths; whether that ends in a straight commit (the default) or a four-option question (only
+  when something is majorly wrong or an open question blocks the prompt's purpose) is the skill's
+  call. Putting that decision in the hook would mean encoding a judgement about prose in bash
 - **The message stays short, and never restates the skill.** Whatever the hook emits is printed
   to the user verbatim as `Stop hook feedback: ...`, and a long one is truncated mid-sentence in
   the terminal. It carries only what the skill cannot work out for itself — the path list and the

@@ -1,6 +1,6 @@
 ---
 name: auto-summary-commit
-description: The default commit workflow — after ANY prompt that created, edited, deleted, moved or generated files in a git repository, stage the work, show the user the summary that is about to become the commit body, and commit onto the current branch once they have reviewed it. Use at the end of every file-changing prompt (writing code, editing docs, refactoring, fixing a bug, applying review feedback, running a formatter) unless the user has said not to commit. Also use when a prompt says "auto summary commit", "summary commit", "/auto-summary-commit", or asks to commit the work just done. Hooks in this plugin also invoke it by name at the end of a file-changing turn, with the list of paths that turn changed.
+description: The default commit workflow — after ANY prompt that created, edited, deleted, moved or generated files in a git repository, stage the work and commit it straight away onto the current branch, with the prompt and the user-facing summary as the commit body, so every turn leaves an auditable history and a git-level rollback point. Asks first only when something is majorly wrong or an open question blocks the purpose of the prompt. Use at the end of every file-changing prompt (writing code, editing docs, refactoring, fixing a bug, applying review feedback, running a formatter) unless the user has said not to commit. Also use when a prompt says "auto summary commit", "summary commit", "/auto-summary-commit", or asks to commit the work just done. Hooks in this plugin also invoke it by name at the end of a file-changing turn, with the list of paths that turn changed.
 ---
 
 # Auto Summary Commit
@@ -68,8 +68,10 @@ Do **not** run it if:
   marker, `touch "${TMPDIR:-/tmp}/claude-auto-summary-commit-<session id>.off"`, using the path
   the hook printed rather than reconstructing it. (`AUTO_SUMMARY_COMMIT=off` in the environment
   switches it off permanently, for a user who never wants this.)
-- **The work is incomplete, or a verification step is still failing.** Finish or report first; a
-  half-done change should not be recorded as if it were done.
+- **The work is still in progress within this turn.** Finish it first — the skill runs last. If
+  the turn is *ending* with the change broken — a verification step on the work itself still
+  failing — that is not a reason to skip silently: it is the "majorly wrong" case in "Whether to
+  ask at all", and the user is asked.
 - **Nothing git would record changed.** A question answered, a file read, a command run, a
   scratchpad file written, a gitignored or build-output file touched, an edit to a file outside
   the repository — none of these are a change as far as this skill is concerned. If
@@ -83,28 +85,30 @@ Do **not** run it if:
 
 ## Whether to ask at all
 
-Asking is for **decisions, not ceremony**. The summary is printed either way — the question is
-only worth a round trip when the summary contains something the user might want to act on before
-it is recorded in `git log`.
+**Commit without asking. That is the default, and it should hold for the great majority of
+turns.** The commit exists to record the prompt and its outcome — a history of what was done and
+why, an audit trail, and a rollback point at the git level for every turn. A commit that waits on
+a question is a turn with no rollback point until someone answers it, and a declined one is a gap
+in the record.
 
-**Commit without asking** when the turn is a plain account of completed work: these files changed,
-this is why, the tests pass, done. Nothing offered, nothing flagged, nothing left open. Most turns
-are this, and stopping to ask is pure tax on them.
+**Everything the summary says goes into the commit, not in front of it.** Caveats, trade-offs,
+assumptions, work deliberately left out, options for a follow-up, an offer to do more, something
+found along the way: all of that is exactly what the Summary section is there to preserve, and
+recording it is the point rather than a reason to hold off. The user reads it on screen either
+way; if they disagree with any of it, the next prompt changes it and the next commit records the
+change — or `git reset --soft HEAD~1` undoes it outright. Neither is harder after the commit than
+before it.
 
-**Ask** when the summary contains any of these, because each is something the user may want to
-answer, overrule or add to *before* it becomes the permanent record:
+**Ask only in two cases:**
 
-| Signal in your summary | Looks like |
-| --- | --- |
-| A question to the user | "Want me to update the callers too?" |
-| Options or alternatives | "Two ways to do this: A keeps the API, B is faster" |
-| A caveat, risk or trade-off | "This adds ~10ms to the cold path" |
-| An assumption they might reject | "I assumed the legacy column can go" |
-| Work deliberately left out | "I skipped the migration — it needs a maintenance window" |
-| Something you found that changes the picture | "This also turns out to be the cause of #412" |
+| Case | Looks like | Is not |
+| --- | --- | --- |
+| **Something is majorly wrong with what is about to be committed** | Verification failing on the work itself; the change looks destructive in a way the prompt did not ask for (mass deletions, a dropped table, a rewritten history file); the staged set contains paths you cannot account for; the work turns out to contradict what the prompt asked for | A minor caveat, a known limitation, a test that was already failing before the turn and is said so |
+| **An open question to the user that functionally blocks the purpose of the prompt** | "I couldn't tell whether you wanted the endpoint renamed or aliased, and these two need different migrations — which?", where the committed work would be the wrong work under one answer | "Want me to update the callers too?" — an offer of further work; the prompt's purpose is met either way |
 
-A useful test: **would the commit be different if the user disagreed with a sentence in this
-summary?** If yes, ask. If the summary is only reporting what is now true in the repo, commit.
+The test for the second case: **if the user gave the other answer, would this commit need to be
+thrown away rather than built on?** If it would be built on — extended, adjusted, followed up —
+commit, and leave the question in the summary for them to answer next.
 
 Three cases override all of that:
 
@@ -114,13 +118,22 @@ Three cases override all of that:
 | said "auto summary commit" | **Commit**, whatever the summary looks like |
 | was only a commit request ("/auto-summary-commit") | **Commit** — the user is already looking at the work |
 
-> **This used to say: always ask.** The rule was "never commit unreviewed work the user has not
-> seen", with a yes/no on every turn that did any work. The trouble is that the summary is on
-> screen before the question either way, so on a routine turn the question reviewed nothing — it
-> just demanded a keystroke to confirm what the user had already read. That tax is what made the
-> original opt-in version of this skill fail in the opposite direction; a tax on every turn gets
-> routed around. The reviewing that actually mattered was always the other case: a summary that
-> raises a choice, where committing first would record a decision the user never got to make.
+> **Corrected twice.** This first said **always ask**: "never commit unreviewed work the user has
+> not seen", with a yes/no on every turn that did any work. The summary is on screen before the
+> question either way, so on a routine turn the question reviewed nothing — it just demanded a
+> keystroke to confirm what the user had already read.
+>
+> It then said **ask whenever the summary raises anything** — a question, options, a caveat or
+> trade-off, an assumption the user might reject, work left out, a finding that changes the
+> picture — under the test "would the commit be different if the user disagreed with a sentence in
+> this summary?". That test passes on almost every substantial turn, because almost every
+> substantial summary states an assumption or a caveat, so in practice it still asked most of the
+> time. It treated the commit as a point of no return when it is the opposite: a commit is the
+> cheapest thing in the repository to revise or undo, and an uncommitted turn is the one with
+> nothing to roll back to. Worse, a turn that ended in "not yet" or "I'll commit it myself" left
+> its prompt and summary unrecorded — the loss this skill exists to prevent. Only a problem that
+> would make the commit itself wrong, or a question whose answer decides whether the work is the
+> right work at all, justifies holding it back.
 
 Whichever way it goes, the commit is local and reversible — say the short SHA when reporting it,
 so `git reset --soft HEAD~1` is available if the user wanted something else.
@@ -180,12 +193,14 @@ without the content.
 
 Work out from "Whether to ask at all" above which case this is.
 
-**If no question is warranted**, go straight to step 4, commit, and report it — subject line,
-short SHA, and anything you deliberately left unstaged. Do not announce that you skipped a
-question.
+**If no question is warranted — the usual case** — go straight to steps 4–7, commit, then
+`rm -f <deferred> <prompt>` as for "Commit it" below, and report it: subject line, short SHA, and
+anything you deliberately left unstaged. Do not announce that you skipped a question, and do not
+hold the commit back for the caveats or follow-up questions in your summary — they go into its
+body.
 
-**If it is warranted**, the user needs the summary in front of them before they answer. What that
-takes depends on how you got here:
+**If it is warranted** — one of the two cases above, and only those — the user needs the summary in
+front of them before they answer. What that takes depends on how you got here:
 
 - **The hook invoked you** — the turn was ending, so your summary of the work is already on screen
   immediately above. It is the commit body; do not restate, re-summarise or re-format it. Print
@@ -371,12 +386,12 @@ deliberately left uncommitted.
 
 ## Never
 
-- **Never commit past an open decision.** Committing without asking is for summaries that only
-  report what is now true. The moment yours offers a choice, flags a trade-off, states an
-  assumption or leaves something out, the question in step 3 is mandatory — otherwise the commit
-  records as settled something the user never got to settle. (This bullet used to read "never
-  commit unreviewed work the user has not seen"; see "Whether to ask at all" for why that was
-  wrong.)
+- **Never commit past a blocking problem.** Something majorly wrong with the change, or an open
+  question whose answer decides whether the work is the right work at all, makes the question in
+  step 3 mandatory. Nothing short of that does. (This bullet used to read "never commit past an
+  open decision", which made any caveat or assumption in the summary a reason to ask, and before
+  that "never commit unreviewed work the user has not seen"; see "Whether to ask at all" for why
+  both were wrong.)
 - **Never commit when the prompt said to hold off.** "Don't commit yet" outranks every other rule
   here, including "auto summary commit" appearing elsewhere in the same prompt.
 - **Never change branch.** Commit onto the branch that is checked out, as-is — no new branch, no

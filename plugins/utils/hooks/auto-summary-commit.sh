@@ -228,8 +228,8 @@ fi
 
 read -r -d '' CONTEXT <<'EOF' || true
 Uncommitted work from this session. Run the `auto-summary-commit` skill before
-ending this turn and follow it exactly — including its rule for whether to ask
-the user first or simply commit.
+ending this turn and follow it exactly — including its rule for when to commit
+straight away and when to ask the user first.
 
 Stage only these paths — the list already excludes anything that was dirty
 before the turn started, and includes work an earlier answer deferred (__COUNT__):
