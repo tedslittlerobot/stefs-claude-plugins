@@ -11,9 +11,15 @@ the API is the reader it is designed for first.
 
 A few choices run through all of it:
 
-- **`snake_case`** for every key, parameter, error code and enum value
+- **`snake_case`** for every key, parameter, error code and enum value; **`kebab-case`** for URL
+  path segments
 - **Arrays are always arrays.** In a query string that is the parameter repeated with a `[]`
-  suffix — `?status[]=paid&status[]=refunded` — and never a comma-separated string
+  suffix — `?filter[status][]=paid&filter[status][]=refunded` — and never a comma-separated string
+- **A tidy list query string**: filters under `filter[...]`, search as `q`, and page-based
+  pagination with `page` and `per_page` by default
+- **`422` for a validation failure the user can fix, `400` for a malformed request**
+- **Versioning is avoided**, and when a resource must break, the replacement is a suffixed resource
+  (`/api/users-v2`), not a version prefix on the whole API
 - **Strict in what it accepts.** Unknown parameters and fields are errors, not silently ignored
 - **Every response is `{ "data": ... }` or `{ "error": ... }`**
 

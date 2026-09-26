@@ -35,7 +35,7 @@
       "name": "api-conventions",
       "source": "./plugins/api-conventions",
       "displayName": "API Conventions",
-      "description": "One skill carrying the portable layer of HTTP/JSON API conventions, written for the human calling the API first: general design principles, resource and field naming (snake_case throughout), the response envelope, list endpoints with search, filtering, sorting and pagination, the error format, methods and status codes, idempotency, versioning and breaking changes, and auth and rate limiting. Query-string arrays are always repeated name[] parameters, never comma-separated strings. Model-invoked on topic match; the plugin registers no hooks and adds no executable code.",
+      "description": "One skill carrying the portable layer of HTTP/JSON API conventions, written for the human calling the API first: general design principles, resource and field naming (snake_case keys, kebab-case paths), the response envelope, list endpoints with q search, filter[...] parameters, sort[] and page-based pagination, the error format with 422 for validation and 400 for malformed requests, methods and status codes, idempotency, avoiding versioning and suffixing a resource (users-v2) when it must break, and auth and rate limiting. Query-string arrays are always repeated name[] parameters, never comma-separated strings. Model-invoked on topic match; the plugin registers no hooks and adds no executable code.",
       "author": {
         "name": "Stefan Horner",
         "url": "https://github.com/tedslittlerobot"

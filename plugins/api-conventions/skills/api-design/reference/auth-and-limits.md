@@ -65,10 +65,10 @@ documentation for each endpoint answers both.
 ## Other Limits
 
 - **Request body size** has a documented maximum; beyond it is `413` — see `errors.md`
-- **`page_size`** and bulk batch sizes have documented maximums — see `lists.md` and
+- **`per_page`** and bulk batch sizes have documented maximums — see `lists.md` and
   `methods-and-status-codes.md`
 - **String fields** have documented maximum lengths, validated on input, so the limit is a clear
-  `400` rather than a database truncation or a `500`
+  `422` rather than a database truncation or a `500`
 
 ## CORS
 

@@ -4,22 +4,36 @@ How resources are addressed, and how their representation is shaped, named and t
 
 ## URLs
 
-- **Collections are plural nouns**: `/orders`, `/customers`, `/line_items`. A single resource is
+- **Collections are plural nouns**: `/orders`, `/customers`, `/line-items`. A single resource is
   the collection plus its ID: `/orders/{order_id}`
-- **Path segments are `snake_case`**, the same casing as keys. The collection a resource lives at
-  then matches the key it appears under when embedded — `/line_items` and `"line_items": [...]` —
-  so there is one name to learn rather than a URL spelling and a JSON spelling
+- **Path segments are `kebab-case`**: `/line-items`, `/shipping-address`,
+  `/users/{user_id}/reset-password`. Hyphens are the web's own idiom for words in a URL — they read
+  cleanly in an address bar and a log line, they survive being shown as an underlined link (where an
+  underscore disappears into the underline), and search engines and most tools treat them as word
+  separators
+- **Everything else stays `snake_case`.** Path *parameter names* in documentation (`{order_id}`),
+  query parameters, and any value that names a JSON key — so it is `/orders/{order_id}/line-items`
+  but `?include[]=line_items`, because `include[]` names the key the related resource will appear
+  under. The rule of thumb: a path segment is part of an **address**, and is kebab-case; anything
+  that names **data** is snake_case
 - **Lowercase only**, no trailing slash, no file extensions (`/orders.json`)
-- **Nest at most one level**, and only for genuine ownership: `/orders/{order_id}/line_items`
+- **Nest at most one level**, and only for genuine ownership: `/orders/{order_id}/line-items`
   exists because a line item cannot exist without its order.
-  `/customers/{id}/orders/{id}/line_items` does not — deep paths force a client to know the whole ancestry just to address a leaf, and they
-  break when a relationship turns out to be many-to-many. Anything reachable by ID alone gets a
-  top-level route, and a cross-cutting view is a filter: `/orders?customer_id[]=...`
-- **Singletons are singular**: `/me`, `/orders/{order_id}/shipping_address` — there is exactly one,
+  `/customers/{id}/orders/{id}/line-items` does not — deep paths force a client to know the whole
+  ancestry just to address a leaf, and they break when a relationship turns out to be
+  many-to-many. Anything reachable by ID alone gets a top-level route, and a cross-cutting view is
+  a filter: `/orders?filter[customer_id][]=...`
+- **Singletons are singular**: `/me`, `/orders/{order_id}/shipping-address` — there is exactly one,
   so a plural would suggest a list that never comes
 - **Path parameters are named for what they are** in documentation — `{order_id}`, not `{id}` —
   so a path with two IDs in it is still unambiguous to read
 - Verbs appear in a path only as **action endpoints** — see `methods-and-status-codes.md`
+- A resource that has had to break gains a **`-v<n>` suffix** — `/users-v2` — rather than the API
+  gaining a version prefix. See `versioning.md`
+
+**Corrected:** path segments used to be `snake_case` (`/line_items`), so that a collection's URL
+matched the JSON key it is embedded under. That consistency is between two things nobody confuses —
+an address and a data key — and it cost the URL the conventions every other website uses.
 
 ## The Envelope
 

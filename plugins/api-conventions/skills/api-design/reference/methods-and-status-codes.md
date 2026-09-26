@@ -25,12 +25,14 @@ returns. Error status codes are in `errors.md`.
 ## Request Bodies
 
 - **The body is the resource's fields, unenveloped** — see `resources-and-fields.md`
-- **Unknown fields are rejected**, with the field named in the error. A typo like
+- **Unknown fields are rejected** with a `400`, with the field named in the error. A typo like
   `"shiping_address"` otherwise succeeds with the address silently not set
-- **Read-only fields are rejected** when sent (`id`, `created_at`, a computed `total`), rather than
-  ignored. Ignoring them lets a client believe it set a `status` it cannot set
-- **Report every validation failure at once**, not the first one found. A form with four mistakes
-  should not take four round trips to fix — see `errors.md`
+- **Read-only fields are rejected** with a `400` when sent (`id`, `created_at`, a computed
+  `total`), rather than ignored. Ignoring them lets a client believe it set a `status` it cannot set
+- **Values that fail validation are a `422`**, listing every invalid field with a message the
+  client can show its user — see `errors.md` for where `400` ends and `422` begins
+- **Report every failure at once**, not the first one found. A form with four mistakes should not
+  take four round trips to fix
 
 ## Create — `POST /<collection>`
 
@@ -46,9 +48,9 @@ returns. Error status codes are in `errors.md`.
 RFC 7396, sent as ordinary `application/json`):
 
 - **A key that is present sets the field.** A key that is absent leaves the field unchanged
-- **`null` clears a nullable field.** On a non-nullable field it is a validation error
+- **`null` clears a nullable field.** On a non-nullable field it is a `422`
 - **Arrays are replaced whole**, not merged or appended to. To add one item to a large collection,
-  use the sub-resource: `POST /orders/{order_id}/line_items`
+  use the sub-resource: `POST /orders/{order_id}/line-items`
 - **Nested objects merge key by key**, following the same rules
 - Returns **`200 OK` with the full updated resource**, so the client sees the result of any
   server-side derivation (a recomputed total, an updated `updated_at`)
@@ -64,12 +66,12 @@ whole (a settings blob, a file), or for a create-at-a-known-URL; everything else
 ## Actions — `POST /<collection>/{id}/<verb>`
 
 A state transition with its own rules, side effects or permissions is an **action endpoint**,
-named with a `snake_case` verb:
+named with a `kebab-case` verb, like every other path segment:
 
 ```
 POST /orders/{order_id}/cancel
 POST /invoices/{invoice_id}/send
-POST /users/{user_id}/reset_password
+POST /users/{user_id}/reset-password
 ```
 
 - Prefer this over `PATCH { "status": "cancelled" }` whenever changing the field *does* something —
@@ -104,7 +106,7 @@ A `POST` that creates something or has side effects accepts an **`Idempotency-Ke
 client-generated unique string, typically a UUID:
 
 ```bash
-curl -X POST https://api.example.com/v1/payments \
+curl -X POST https://example.com/api/payments \
   -H "Authorization: Bearer $TOKEN" \
   -H "Idempotency-Key: 9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d" \
   -H "Content-Type: application/json" \
@@ -163,10 +165,10 @@ An operation that cannot finish within a normal request (an export, a bulk impor
 ## Bulk Operations
 
 Offer bulk endpoints only where clients genuinely need them, as an action on the collection
-(`POST /orders/bulk_cancel`, body `{ "order_ids": [...] }`). They are hard to get right, so:
+(`POST /orders/bulk-cancel`, body `{ "order_ids": [...] }`). They are hard to get right, so:
 
 - **Say whether it is all-or-nothing or per-item**, and prefer all-or-nothing where the store
   allows it. A partial success is the hardest result for a person to reason about
 - A per-item operation returns **`200` with a result per item**, in request order, each carrying
   either the resource or an error object — and the caller must check each one
-- Bound the batch size and document it, like `page_size`
+- Bound the batch size and document it, like `per_page`

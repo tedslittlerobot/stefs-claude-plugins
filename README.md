@@ -83,16 +83,16 @@ plugin adds no hooks and changes nothing about a session in which no skill match
 ## The `api-conventions` plugin
 
 The same two-layer model applies: the `api-design` skill carries the portable rules, and a
-consuming repository records its chosen values (page size limits, ID format, the version prefix)
-and registered exceptions in `conventions/api.md`, which wins where the two differ.
+consuming repository records its chosen values (ID format, which endpoints use cursor pagination
+and why) and registered exceptions in `conventions/api.md`, which wins where the two differ.
 
 | Skill | Covers |
 | --- | --- |
-| `api-design` | HTTP/JSON APIs, designed for the human calling them first: general principles, URLs and the `data`/`error` envelope, `snake_case` naming and data types, methods, `PATCH` semantics and status codes, list endpoints (search, filtering, sorting, cursor and page pagination), the error format, versioning and deprecation, auth, request IDs and rate limiting |
+| `api-design` | HTTP/JSON APIs, designed for the human calling them first: general principles, `kebab-case` URLs and the `data`/`error` envelope, `snake_case` naming and data types, methods, `PATCH` semantics and status codes, list endpoints (`q` search, `filter[...]`, `sort[]`, page-based pagination by default, cursors where needed), the error format and `400` versus `422`, versioning by resource suffix and deprecation, auth, request IDs and rate limiting |
 
 Two choices run through all of it: every key and parameter name is `snake_case`, and an array is
 always an array — in a query string, the parameter repeated with a `[]` suffix
-(`?status[]=paid&status[]=refunded`), never a comma-separated string.
+(`?filter[status][]=paid&filter[status][]=refunded`), never a comma-separated string.
 
 ## The `utils` plugin
 
@@ -185,8 +185,9 @@ file.
   Splitting one skill into per-topic reference files is cheaper than splitting it into several
   skills, since every skill's description competes for trigger match
 - **Keep conventions skills portable** — `arc-conventions` and `api-conventions` alike. No
-  service names, no repository paths, no project-specific values. Those belong in the consuming project's `conventions/` file. Where a concrete example
-  genuinely teaches the rule better than an abstraction would, frame it as an example
+  service names, no repository paths, no project-specific values. Those belong in the consuming
+  project's `conventions/` file. Where a concrete example genuinely teaches the rule better than
+  an abstraction would, frame it as an example
 - **Record the reasoning, and prefer the failure that motivated the rule.** A bare rule gets
   deleted the first time it is inconvenient; a rule with its reason attached gets followed, or gets
   changed deliberately

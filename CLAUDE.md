@@ -19,8 +19,8 @@ It carries three independent plugins, and the split matters when deciding where 
 
 A skill that states an architecture rule belongs in `arc-conventions`; one that states how an
 API's requests, responses, lists or errors are shaped belongs in `api-conventions`. A skill that
-does something at the end of every turn belongs in `utils`. That distinction is why `auto-summary-commit` is not an
-`arc-conventions` skill despite being about commits.
+does something at the end of every turn belongs in `utils`. That distinction is why
+`auto-summary-commit` is not an `arc-conventions` skill despite being about commits.
 
 ## Commands
 
