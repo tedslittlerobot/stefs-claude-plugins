@@ -1,7 +1,7 @@
 {
   "$schema": "https://www.schemastore.org/claude-code-marketplace.json",
   "name": "stefs-plugins",
-  "description": "Stef's Claude Code plugins — the portable layer of software and project architecture conventions and of HTTP/JSON API conventions, plus general-purpose utilities.",
+  "description": "Stef's Claude Code plugins — the portable layer of software and project architecture conventions, plus general-purpose utilities.",
   "version": "0.1.0",
   "owner": {
     "name": "Stefan Horner",
@@ -15,7 +15,7 @@
       "name": "arc-conventions",
       "source": "./plugins/arc-conventions",
       "displayName": "Arc Conventions",
-      "description": "Ten skills carrying the portable layer of a project's software and project architecture conventions: how conventions themselves are recorded, plus SPA frontends, Terraform/AWS infrastructure, Go and Node Lambdas, MySQL, documentation, the glossary, the staged plan of action a proposal becomes, and product requirements. Every skill is model-invoked on topic match; the plugin registers no hooks and adds no executable code.",
+      "description": "Eleven skills carrying the portable layer of a project's software and project architecture conventions: how conventions themselves are recorded, plus HTTP/JSON API design (payloads, list endpoints, errors, versioning), SPA frontends, Terraform/AWS infrastructure, Go and Node Lambdas, MySQL, documentation, the glossary, the staged plan of action a proposal becomes, and product requirements. Every skill is model-invoked on topic match; the plugin registers no hooks and adds no executable code.",
       "author": {
         "name": "Stefan Horner",
         "url": "https://github.com/tedslittlerobot"
@@ -28,28 +28,8 @@
         "conventions",
         "architecture",
         "documentation",
-        "standards"
-      ]
-    },
-    {
-      "name": "api-conventions",
-      "source": "./plugins/api-conventions",
-      "displayName": "API Conventions",
-      "description": "One skill carrying the portable layer of HTTP/JSON API conventions, written for the human calling the API first: general design principles, resource and field naming (snake_case keys, kebab-case paths), the response envelope, list endpoints with q search, filter[...] parameters, sort[] and page-based pagination, the error format with 422 for validation and 400 for malformed requests, methods and status codes, idempotency, avoiding versioning and suffixing a resource (users-v2) when it must break, and auth and rate limiting. Query-string arrays are always repeated name[] parameters, never comma-separated strings. Model-invoked on topic match; the plugin registers no hooks and adds no executable code.",
-      "author": {
-        "name": "Stefan Horner",
-        "url": "https://github.com/tedslittlerobot"
-      },
-      "homepage": "https://github.com/tedslittlerobot/stefs-claude-plugins",
-      "repository": "https://github.com/tedslittlerobot/stefs-claude-plugins",
-      "license": "MIT",
-      "category": "productivity",
-      "keywords": [
-        "conventions",
-        "api",
-        "rest",
-        "http",
-        "json"
+        "standards",
+        "api"
       ]
     },
     {

@@ -20,7 +20,7 @@ Conventions come in two layers, and keeping them apart is what makes any of this
 
 | Layer | Lives in | Contains |
 | --- | --- | --- |
-| **Portable** | A skill (`documentation`, `frontend`, `infrastructure`, `lambdas-go`, `lambdas-node`, `mysql`, `glossary`, `product-requirements`) | The rule and its reasoning, stated without reference to any one project's services, paths or vocabulary |
+| **Portable** | A skill (`api-design`, `documentation`, `frontend`, `infrastructure`, `lambdas-go`, `lambdas-node`, `mysql`, `glossary`, `product-requirements`) | The rule and its reasoning, stated without reference to any one project's services, paths or vocabulary |
 | **Project** | `conventions/<topic>.md` in the repository | What this project's rules are *on top of* that: which paths the rules apply to, the project's chosen values, its registered exceptions, and its worked examples |
 
 A project conventions file is therefore usually **short**. It opens by saying what it applies to and
@@ -116,4 +116,5 @@ reads as maintained; one that has never changed reads as aspirational.
   `proposals/`) and how they differ by tense
 - `glossary` skill — where the *meaning* of a term is recorded, as opposed to a rule about it
 - The per-stack skills — `frontend`, `infrastructure`, `lambdas-go`, `lambdas-node`, `mysql`,
-  `product-requirements` — carry the portable layer these project files sit on top of
+  `product-requirements` — and the stack-independent `api-design` carry the portable layer these
+  project files sit on top of

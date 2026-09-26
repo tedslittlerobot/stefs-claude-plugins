@@ -10,7 +10,7 @@ practice, **not** an implementation of any one specification — they borrow fro
 and the public APIs people find easiest to use, and depart from each wherever the departure is
 easier for a person to read, guess and debug. A project records its own chosen values and
 registered exceptions in `conventions/api.md`; where that file and this skill disagree, **the
-project file wins** (see the `conventions` skill, where installed, for the two-layer model).
+project file wins** (see the `conventions` skill for the two-layer model).
 
 ## Principles
 
@@ -123,10 +123,14 @@ These hold everywhere; the reference files give the detail and the reasoning.
 
 ## Related
 
-- `documentation` skill (in `arc-conventions`), where installed — its API-docs reference covers the
-  OpenAPI file that is the contract for an API designed here, and the `api.md` overview beside it
-- `mysql` skill (in `arc-conventions`), where installed — shares the `snake_case` naming, which
-  lets a field keep one name from column to JSON key; the rule above against leaking the storage
-  model still decides *whether* a column is exposed
-- `conventions` skill (in `arc-conventions`), where installed — how the project's own
-  `conventions/api.md` sits on top of this skill, and precedence when they disagree
+- `documentation` skill — its API-docs reference covers the OpenAPI file that is the contract for
+  an API designed here, and the `api.md` overview beside it
+- `lambdas-go` / `lambdas-node` skills — an API route is served by an `api-<method>-<purpose>`
+  Lambda, one per route; this skill decides what that Lambda accepts and returns
+- `infrastructure` skill — its frontend-hosting reference explains why every route sits under an
+  `/api` path prefix
+- `mysql` skill — shares the `snake_case` naming, which lets a field keep one name from column to
+  JSON key; the rule above against leaking the storage model still decides *whether* a column is
+  exposed
+- `conventions` skill — how the project's own `conventions/api.md` sits on top of this skill, and
+  precedence when they disagree

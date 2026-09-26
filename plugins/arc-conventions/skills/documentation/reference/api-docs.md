@@ -1,7 +1,9 @@
 # API Documentation
 
 Two documents describe every service's HTTP surface, and they are not alternatives: the OAS file is
-the contract, the `api.md` overview is the map.
+the contract, the `api.md` overview is the map. What goes *into* that contract — URLs, payload
+shapes, list parameters, pagination, error bodies and status codes — is the `api-design` skill's
+subject; this file covers only how it is documented.
 
 ## OpenAPI Specification
 

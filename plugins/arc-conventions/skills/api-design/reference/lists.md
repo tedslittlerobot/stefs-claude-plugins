@@ -79,9 +79,9 @@ A query parameter that takes several values is written **once per value, with a 
   `filter[status][]` — not quietly accepted, because then half a team's scripts use one form and
   half the other, and neither is sure which is canonical
 - **Never a comma-separated string.** `filter[status][]=paid,refunded` is one value,
-  `paid,refunded`, which matches no status and is rejected as such; it is never split. Splitting on commas breaks the
-  first time a value legitimately contains one — `filter[tag][]=red, white and blue`, a name, an
-  address — and there is no escaping scheme a person would guess. It also makes every client
+  `paid,refunded`, which matches no status and is rejected as such; it is never split. Splitting
+  on commas breaks the first time a value legitimately contains one —
+  `filter[tag][]=red, white and blue`, a name, an address — and there is no escaping scheme a person would guess. It also makes every client
   hand-roll a join and every server a split, where a repeated parameter is something every HTTP
   library already produces and parses
 - The brackets make the array-ness visible in the URL itself: a person reading
@@ -103,8 +103,9 @@ A query parameter that takes several values is written **once per value, with a 
 Filters are nested under **`filter`**, keyed by the field they filter on: `filter[<field>]`.
 
 - **Equality filters are arrays, and mean "any of"**:
-  `?filter[status][]=paid&filter[status][]=refunded` returns orders that are paid *or* refunded. Use the array form even for fields that usually take
-  one value — `filter[customer_id][]=cus_3k9d2` — because "any of these" is almost always wanted
+  `?filter[status][]=paid&filter[status][]=refunded` returns orders that are paid *or* refunded.
+  Use the array form even for fields that usually take one value —
+  `filter[customer_id][]=cus_3k9d2` — because "any of these" is almost always wanted
   eventually, and turning a scalar parameter into an array later is a breaking change
 - **Different filters combine with AND**: `?filter[status][]=paid&filter[customer_id][]=cus_3k9d2`
   is paid orders *belonging to* that customer

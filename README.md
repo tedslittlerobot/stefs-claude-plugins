@@ -1,13 +1,12 @@
 # Stef's Claude Plugins
 
-A [Claude Code](https://code.claude.com/docs) plugin marketplace hosting three plugins: the
-**portable layer** of our software and project architecture conventions, the portable layer of our
-HTTP/JSON API conventions, and a collection of general-purpose utilities.
+A [Claude Code](https://code.claude.com/docs) plugin marketplace hosting two plugins: the
+**portable layer** of our software and project architecture conventions, and a collection of
+general-purpose utilities.
 
 | Plugin | Covers | Changes a session on its own? |
 | --- | --- | --- |
-| [`arc-conventions`](plugins/arc-conventions) | Ten model-invoked skills carrying the **architecture** conventions that apply across projects: frontends, infrastructure, Lambdas, MySQL, documentation, glossary, plans of action, product requirements, and how a project records its own conventions | No — no hooks, no executable code |
-| [`api-conventions`](plugins/api-conventions) | One model-invoked skill carrying the **HTTP/JSON API** conventions: design principles, request and response formats, list endpoints (search, filtering, sorting, pagination), errors, status codes, versioning, auth and rate limiting | No — no hooks, no executable code |
+| [`arc-conventions`](plugins/arc-conventions) | Eleven model-invoked skills carrying the **architecture** conventions that apply across projects: API design, frontends, infrastructure, Lambdas, MySQL, documentation, glossary, plans of action, product requirements, and how a project records its own conventions | No — no hooks, no executable code |
 | [`utils`](plugins/utils) | General-purpose commands, skills and agents, including the default-on `auto-summary-commit` workflow | **Yes** — installing it turns commit-per-prompt on. See [The commit hooks](#the-commit-hooks) |
 
 ## Install
@@ -15,7 +14,6 @@ HTTP/JSON API conventions, and a collection of general-purpose utilities.
 ```
 /plugin marketplace add tedslittlerobot/stefs-claude-plugins
 /plugin install arc-conventions@stefs-plugins
-/plugin install api-conventions@stefs-plugins
 /plugin install utils@stefs-plugins
 ```
 
@@ -24,11 +22,10 @@ Or from the CLI:
 ```bash
 claude plugin marketplace add tedslittlerobot/stefs-claude-plugins
 claude plugin install arc-conventions@stefs-plugins
-claude plugin install api-conventions@stefs-plugins
 claude plugin install utils@stefs-plugins
 ```
 
-The three plugins are independent — install any of them on its own. Verify `utils` with
+The two plugins are independent — install either on its own. Verify `utils` with
 `/utils:hello`.
 
 Updating the marketplace —
@@ -63,13 +60,14 @@ what is genuinely specific to that repository.
 The `conventions` skill documents this arrangement in full, including what belongs in a project file
 versus in architecture documentation, a glossary entry, an instruction or a proposal.
 
-Each of the ten skills is model-invoked — its `description` decides when it loads, so the body
+Each of the eleven skills is model-invoked — its `description` decides when it loads, so the body
 stays out of context until the work actually calls for it. Nothing here fires on its own: the
 plugin adds no hooks and changes nothing about a session in which no skill matches.
 
 | Skill | Covers |
 | --- | --- |
 | `conventions` | How a project records its own conventions: the `conventions/` directory, what belongs there versus elsewhere, precedence, and how to write a rule so the reasoning survives |
+| `api-design` | HTTP/JSON APIs, designed for the human calling them first: principles, `kebab-case` URLs and the `data`/`error` envelope, `snake_case` naming and data types, methods and status codes, list endpoints (`q` search, `filter[...]`, `sort[]`, page-based pagination), errors and `400` versus `422`, versioning by resource suffix, auth and rate limiting |
 | `frontend` | SPA frontends: AlpineJS + Tailwind v4 + Pinecone Router with no build step, layout, routing, runtime config, S3 deployment, design idiom, accessibility |
 | `infrastructure` | Terraform and AWS: tfvars and workspaces, recorded outputs, naming and tagging, S3/CloudFront hosting, Route 53/SES, Cognito, WAF |
 | `lambdas-go` | Go Lambdas: trigger-based naming, module layout, package naming, logging, shared libraries, testing |
@@ -79,20 +77,6 @@ plugin adds no hooks and changes nothing about a session in which no skill match
 | `plan-of-action` | The staged implementation plan a settled proposal becomes: stage naming, where the boundaries and checkpoints go, and implementing it one stage at a time |
 | `glossary` | The project-level glossary: one file per term, the entry template, the index, and linking rather than restating |
 | `product-requirements` | Requirements and user stories: sections, Gherkin, acceptance criteria, test-coverage notes, risk assessment |
-
-## The `api-conventions` plugin
-
-The same two-layer model applies: the `api-design` skill carries the portable rules, and a
-consuming repository records its chosen values (ID format, which endpoints use cursor pagination
-and why) and registered exceptions in `conventions/api.md`, which wins where the two differ.
-
-| Skill | Covers |
-| --- | --- |
-| `api-design` | HTTP/JSON APIs, designed for the human calling them first: general principles, `kebab-case` URLs and the `data`/`error` envelope, `snake_case` naming and data types, methods, `PATCH` semantics and status codes, list endpoints (`q` search, `filter[...]`, `sort[]`, page-based pagination by default, cursors where needed), the error format and `400` versus `422`, versioning by resource suffix and deprecation, auth, request IDs and rate limiting |
-
-Two choices run through all of it: every key and parameter name is `snake_case`, and an array is
-always an array — in a query string, the parameter repeated with a `[]` suffix
-(`?filter[status][]=paid&filter[status][]=refunded`), never a comma-separated string.
 
 ## The `utils` plugin
 
@@ -142,8 +126,7 @@ To switch it off:
 | Always       | Set `AUTO_SUMMARY_COMMIT=off` in the environment                                |
 | Entirely     | Don't install `utils`, or remove `plugins/utils/hooks/` from your fork |
 
-Installing `arc-conventions` or `api-conventions` alone changes nothing about a session until a
-skill matches.
+Installing `arc-conventions` alone changes nothing about a session until a skill matches.
 
 ## Repository layout
 
@@ -157,9 +140,6 @@ skill matches.
     │   └── skills/<skill-name>/
     │       ├── SKILL.md            # frontmatter + the core rules
     │       └── reference/*.md      # detail, loaded only when SKILL.md points at it
-    ├── api-conventions/            # the portable HTTP/JSON API-convention skill, same shape
-    │   ├── .claude-plugin/plugin.json
-    │   └── skills/api-design/      # SKILL.md + reference/*.md
     └── utils/                      # general-purpose utilities
         ├── .claude-plugin/plugin.json
         ├── commands/               # slash commands
@@ -171,7 +151,7 @@ skill matches.
         └── scripts/                # helper scripts
 ```
 
-`metadata.pluginRoot` is `./plugins`, so another plugin means creating `plugins/<name>/` and
+`metadata.pluginRoot` is `./plugins`, so a third plugin means creating `plugins/<name>/` and
 appending an entry to `marketplace.json`. A new skill or command needs no registration beyond its
 file.
 
@@ -184,10 +164,9 @@ file.
 - **`reference/*.md` holds the detail**, and `SKILL.md` must point at it explicitly by filename.
   Splitting one skill into per-topic reference files is cheaper than splitting it into several
   skills, since every skill's description competes for trigger match
-- **Keep conventions skills portable** — `arc-conventions` and `api-conventions` alike. No
-  service names, no repository paths, no project-specific values. Those belong in the consuming
-  project's `conventions/` file. Where a concrete example genuinely teaches the rule better than
-  an abstraction would, frame it as an example
+- **Keep `arc-conventions` skills portable.** No service names, no repository paths, no project-specific
+  values. Those belong in the consuming project's `conventions/` file. Where a concrete example
+  genuinely teaches the rule better than an abstraction would, frame it as an example
 - **Record the reasoning, and prefer the failure that motivated the rule.** A bare rule gets
   deleted the first time it is inconvenient; a rule with its reason attached gets followed, or gets
   changed deliberately
@@ -198,7 +177,6 @@ file.
 
 ```bash
 claude plugin validate plugins/arc-conventions --strict
-claude plugin validate plugins/api-conventions --strict
 claude plugin validate plugins/utils --strict
 ```
 

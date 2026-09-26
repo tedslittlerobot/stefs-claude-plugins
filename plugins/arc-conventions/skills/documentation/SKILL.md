@@ -104,6 +104,8 @@ Load the reference file for the specific document type being written:
 ## Related
 
 - `conventions` skill — what belongs in `conventions/` rather than in a document here
+- `api-design` skill — how the API an OAS file and `api.md` describe should itself be shaped:
+  URLs, payloads, list endpoints, errors and status codes
 - `plan-of-action` skill — the staged plan a settled proposal becomes, and how it is implemented
 - `glossary` skill — where a term's meaning is recorded
 - `lambdas-go` / `lambdas-node` skills — the `schema.md` that accompanies every Lambda `README.md`
