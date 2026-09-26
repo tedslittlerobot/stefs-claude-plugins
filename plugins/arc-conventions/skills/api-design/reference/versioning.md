@@ -48,8 +48,10 @@ until clients move:
 - Changing the meaning of an existing field or value, even with the same name and type
 - Changing a status code or an error `code` for an existing situation
 - Adding pagination to a list that previously returned everything
-- Changing a scalar parameter to an array parameter, which is why equality filters start as
-  arrays — see `lists.md`
+- Changing a scalar parameter to an array parameter. Where several values are wanted, add a
+  separate array form alongside instead — which is why filters take multiple values through an
+  additive `[in][]` operator rather than by turning `filter[status]` into an array — see
+  `lists.md`
 
 When unsure, it is breaking. The test is whether any correct client written against the current
 documentation could stop working.

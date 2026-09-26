@@ -29,7 +29,7 @@ cope with whatever it is given and a person will not.
 - **Strict in what it accepts.** Unknown query parameters, unknown body fields, malformed values
   and read-only fields are *rejected* with an error that names them, never silently ignored. This
   deliberately inverts Postel's law: a lenient API turns typos into silent wrong answers —
-  `?filter[stauts][]=paid` ignored as unknown returns *every* order, and a script built on that
+  `?filter[stauts]=paid` ignored as unknown returns *every* order, and a script built on that
   result refunds, deletes or emails the lot. Leniency also becomes contract: once a client relies
   on a quirk being accepted, it cannot be removed
 - **Errors are written to be acted on.** An error says what was wrong, where, and how to fix it,
@@ -61,9 +61,8 @@ These hold everywhere; the reference files give the detail and the reasoning.
   own `Hyphenated-Case`
 - **Arrays are always arrays — never comma-separated strings.** In a JSON body that is a JSON
   array. In a query string it is the parameter repeated with a `[]` suffix:
-  `?filter[status][]=paid&filter[status][]=refunded`. A single value is still
-  `filter[status][]=paid`, an array of one. `filter[status]=paid,refunded` is rejected with an
-  error naming the `filter[status][]` form, not split. A
+  `?filter[status][in][]=paid&filter[status][in][]=refunded`. A single value is still
+  `filter[status][in][]=paid`, an array of one. A comma-joined value is never split. A
   comma-joined string breaks the first time a value contains a comma (a tag, a name, an address),
   pushes a bespoke parsing step into every client and server, and makes an array
   indistinguishable from a scalar that happens to contain a comma. See `reference/lists.md`
@@ -72,7 +71,8 @@ These hold everywhere; the reference files give the detail and the reasoning.
   a bare resource. A bare array cannot grow a `pagination` key later without breaking every client
 - **Resources live at plural, `kebab-case` collection URLs** — `/orders`, `/orders/{order_id}`,
   `/orders/{order_id}/line-items` — nested at most one level deep
-- **Lists keep a tidy top level**: filters nest under `filter[...]`, text search is `q`, and
+- **Lists keep a tidy top level**: filters nest under `filter[...]` — plain equality, `[in][]` for
+  any of several values, and `[gt]`/`[gte]`/`[lt]`/`[lte]` for ranges — text search is `q`, and
   pagination is **page-based by default** with `page` and `per_page` (default 25, maximum 150) and
   a `pagination` object of `current_page`, `per_page`, `total_pages` and `total_items`. Cursor
   pagination is for data that is very large, of unknown size, or volatile. See `reference/lists.md`

@@ -57,9 +57,10 @@ A `422`, for example — the same shape serves every error status:
   its field without rewriting it, so it does not lean on parameter names or API jargon. A `400` is
   fixed by the developer of the client, so its messages name parameters and forms exactly — see
   "400 or 422" below
-- **Say how to fix it** when the fix is known: "Use filter[status][] to pass one or more statuses,
-  for example ?filter[status][]=paid." An error that names the correct form is the cheapest
-  documentation an API has, because it is read at exactly the moment it is needed
+- **Say how to fix it** when the fix is known: "Use filter[status][in][] to pass several
+  statuses, for example ?filter[status][in][]=paid&filter[status][in][]=refunded." An error that
+  names the correct form is the cheapest documentation an API has, because it is read at exactly
+  the moment it is needed
 - **Include the offending value** where it is safe to echo, and the allowed values where they are
   a short list
 - Do not start with "Error:" or end with a stack of codes; it is already an error, and the codes
@@ -92,9 +93,9 @@ it is a `422`; if no answer they could give would help, it is a `400`.
 | A required field is missing or empty | The body is not parseable JSON |
 | An email, date or postcode is in the wrong format | A value has the wrong JSON type — a string where a number belongs |
 | A number is too small or too large; a string too long or too short | An unknown field in the body, or an unknown query parameter |
-| A value is not one of the allowed values (`filter[status][]=payed`) | A read-only field was sent |
-| `per_page` above 150, or `page` below 1 | An array parameter without its `[]` (`filter[status]=paid`) |
-| A date range whose end is before its start | An unknown `filter`, `sort[]`, `include[]` or `fields[]` name |
+| A value is not one of the allowed values (`filter[status]=payed`) | A read-only field was sent |
+| `per_page` above 150, `page` below 1, or more `[in][]` values than the documented cap | An array parameter without its `[]` (`filter[status][in]=paid`) |
+| A range whose lower bound is above its upper bound | An unknown `filter`, filter operator, `sort[]`, `include[]` or `fields[]` name |
 | A value that must be unique is already taken (an email address) | |
 
 - **A `422` lists every invalid parameter**, one `details` entry each, with its own `code` and a
@@ -124,8 +125,8 @@ Collapsing them made every client inspect detail codes to tell a user's mistake 
   as `line_items[2].quantity` is ambiguous as soon as a key contains a dot or a bracket
 - For a query parameter, `path` is the parameter's name split at its brackets, followed by an
   index if the problem is with one element of an array:
-  `?filter[status][]=paid&filter[status][]=payed` gives
-  `"source": "query", "path": ["filter", "status", 1]`. A range operator is a key:
+  `?filter[status][in][]=paid&filter[status][in][]=payed` gives
+  `"source": "query", "path": ["filter", "status", "in", 1]`. A range operator is a key:
   `["filter", "created_at", "gte"]`
 - A problem with the request as a whole rather than one field (two mutually exclusive fields both
   sent) has `"path": []` and names the fields in its `message`

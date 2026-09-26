@@ -8,8 +8,8 @@ A complete example, which the rest of this file explains:
 ```bash
 curl -G https://example.com/api/orders \
   -H "Authorization: Bearer $TOKEN" \
-  --data-urlencode "filter[status][]=paid" \
-  --data-urlencode "filter[status][]=refunded" \
+  --data-urlencode "filter[status][in][]=paid" \
+  --data-urlencode "filter[status][in][]=refunded" \
   --data-urlencode "filter[created_at][gte]=2026-09-01T00:00:00Z" \
   --data-urlencode "filter[created_at][lt]=2026-10-01T00:00:00Z" \
   --data-urlencode "q=blue widget" \
@@ -71,68 +71,126 @@ Anything else at the top level is an unknown parameter, and an error.
 A query parameter that takes several values is written **once per value, with a `[]` suffix**:
 
 ```
-?filter[status][]=paid&filter[status][]=refunded
+?filter[status][in][]=paid&filter[status][in][]=refunded
 ```
 
-- **The `[]` is part of the name and is required.** `filter[status][]=paid` is an array of one.
-  `filter[status]=paid` on an array parameter is rejected with an error naming
-  `filter[status][]` — not quietly accepted, because then half a team's scripts use one form and
-  half the other, and neither is sure which is canonical
-- **Never a comma-separated string.** `filter[status][]=paid,refunded` is one value,
+- **The `[]` is part of the name and is required.** `filter[status][in][]=paid` is an array of
+  one. `filter[status][in]=paid` is rejected with an error naming `filter[status][in][]` — not
+  quietly accepted, because then half a team's scripts use one form and half the other, and
+  neither is sure which is canonical
+- **Never a comma-separated string.** `filter[status][in][]=paid,refunded` is one value,
   `paid,refunded`, which matches no status and is rejected as such; it is never split. Splitting
   on commas breaks the first time a value legitimately contains one —
-  `filter[tag][]=red, white and blue`, a name, an address — and there is no escaping scheme a person would guess. It also makes every client
-  hand-roll a join and every server a split, where a repeated parameter is something every HTTP
-  library already produces and parses
+  `filter[tag][in][]=red, white and blue`, a name, an address — and there is no escaping scheme a
+  person would guess. It also makes every client hand-roll a join and every server a split, where
+  a repeated parameter is something every HTTP library already produces and parses
 - The brackets make the array-ness visible in the URL itself: a person reading
-  `?filter[status][]=paid` knows they could add a second value, which `?filter[status]=paid` does
-  not tell them
+  `?filter[status][in][]=paid` knows they could add a second value
 - It works with plain repeated-key parsers too — to Go's `net/url` or Python's `parse_qs` the key is
-  simply the literal string `filter[status][]` with several values — and with bracket-aware ones
-  (Rack, PHP, Node's `qs`), which nest it as `filter.status`. No custom parsing is needed on either
-  side
-- Clients will often percent-encode the brackets (`filter%5Bstatus%5D%5B%5D=paid`); the server
-  decodes before matching. Documentation and examples show the brackets unencoded, because that is
-  what a person reads and types
+  simply the literal string `filter[status][in][]` with several values — and with bracket-aware
+  ones (Rack, PHP, Node's `qs`), which nest it as `filter.status.in`. No custom parsing is needed on
+  either side
+- Clients will often percent-encode the brackets (`filter%5Bstatus%5D%5Bin%5D%5B%5D=paid`); the
+  server decodes before matching. Documentation and examples show the brackets unencoded, because
+  that is what a person reads and types
 - **Order is preserved** and meaningful where the parameter says so (`sort[]`), and irrelevant
-  where it does not (`filter[status][]`)
+  where it does not (`[in][]`)
 - Duplicate values are harmless and treated as one
 
 ## Filtering
 
-Filters are nested under **`filter`**, keyed by the field they filter on: `filter[<field>]`.
+Filters are nested under **`filter`**, keyed by the field they filter on: `filter[<field>]`, or
+`filter[<field>][<operator>]` for anything other than plain equality.
 
-- **Equality filters are arrays, and mean "any of"**:
-  `?filter[status][]=paid&filter[status][]=refunded` returns orders that are paid *or* refunded.
-  Use the array form even for fields that usually take one value —
-  `filter[customer_id][]=cus_3k9d2` — because "any of these" is almost always wanted
-  eventually, and turning a scalar parameter into an array later is a breaking change
-- **Different filters combine with AND**: `?filter[status][]=paid&filter[customer_id][]=cus_3k9d2`
-  is paid orders *belonging to* that customer
-- **Boolean filters are scalar** `true` or `false` — `?filter[is_archived]=false` — nothing else
-  (`1`, `yes`) is accepted
-- **Ranges use a bracketed operator after the field**, which says explicitly whether a bound is
-  inclusive:
+### Operators
 
-  | Operator | Means | Example |
-  | --- | --- | --- |
-  | `[gt]` | greater than | `filter[total][gt]=100.00` |
-  | `[gte]` | greater than or equal | `filter[created_at][gte]=2026-09-01T00:00:00Z` |
-  | `[lt]` | less than | `filter[created_at][lt]=2026-10-01T00:00:00Z` |
-  | `[lte]` | less than or equal | `filter[quantity][lte]=10` |
+| Operator | Means | Example | Typical MySQL |
+| --- | --- | --- | --- |
+| *(none)* | equal to | `filter[status]=paid` | `status = ?` |
+| `[in][]` | equal to any of | `filter[status][in][]=paid&filter[status][in][]=refunded` | `status IN (?, ?)` |
+| `[gt]` | greater than | `filter[total][gt]=100.00` | `total > ?` |
+| `[gte]` | greater than or equal | `filter[created_at][gte]=2026-09-01T00:00:00Z` | `created_at >= ?` |
+| `[lt]` | less than | `filter[created_at][lt]=2026-10-01T00:00:00Z` | `created_at < ?` |
+| `[lte]` | less than or equal | `filter[quantity][lte]=10` | `quantity <= ?` |
 
-  A time window is written **half-open** — `[gte]` the start, `[lt]` the end — so consecutive
-  windows (September, then October) neither overlap nor leave a gap at midnight. Named bounds like
-  `created_after` / `created_before` read slightly better but leave inclusivity to the
-  documentation, and "is the 1st included?" is the question every reader asks
+Each filterable field documents which operators it supports; an operator a field does not support
+is an unknown parameter, and a `400`. The operators say explicitly whether a bound is inclusive.
+Named bounds like `created_after` / `created_before` read slightly better but leave inclusivity to
+the documentation, and "is the 1st included?" is the question every reader asks.
+
+### Equality and `[in]`
+
+- **Plain equality is a single value**: `?filter[status]=paid`
+- **`[in][]` matches any of several values**:
+  `?filter[status][in][]=paid&filter[status][in][]=refunded` returns orders that are paid *or*
+  refunded. It is an array parameter, so every value is its own `[]` entry — never
+  `filter[status][in][]=paid,refunded`
+- It typically maps to a MySQL `IN (...)` clause, **with one bound placeholder per value** — never
+  values interpolated into the SQL string. Build the placeholder list from the number of values
+  received
+- **The number of values is capped**, with the cap documented (typically 100); more is a `422`
+  stating the cap. An unbounded `IN` list is an unbounded query, and some drivers and proxies fail
+  outright past a few thousand placeholders
+- **An empty `[in]` cannot be sent** — a query string has no way to express an array of zero
+  values, because no entries means no parameter. So an absent `[in]` means *no filter*, not "match
+  nothing"; a client building one from an empty selection omits the filter or skips the request
+- `[in]` with a single value is valid and means the same as plain equality. A client that builds
+  the list from a multi-select does not need a special case for one selection
+
+### Ranges and between
+
+**Operators on the same field combine with AND, so a lower and an upper bound together make a
+range.** A *between* filter is `[gte]` and `[lte]` on one field:
+
+```
+?filter[total][gte]=10.00&filter[total][lte]=50.00
+```
+
+That is orders with a total from 10.00 to 50.00, **both ends included** — `total BETWEEN ? AND ?`
+in MySQL, whose `BETWEEN` is inclusive at both ends. Mix the operators to choose which ends are
+included: `[gt]` and `[lt]` exclude both, `[gte]` and `[lt]` include only the start.
+
+**A time window is written half-open** — `[gte]` the start, `[lt]` the end:
+
+```
+?filter[created_at][gte]=2026-09-01T00:00:00Z&filter[created_at][lt]=2026-10-01T00:00:00Z
+```
+
+That is all of September and nothing of October. Consecutive windows written this way neither
+overlap nor leave a gap. An inclusive `[lte]` end would need `2026-09-30T23:59:59Z`, which misses
+anything in the last second that has fractional seconds, and a between on timestamps is where that
+bug usually lives. Use `[gte]`/`[lte]` for whole values (amounts, quantities, calendar dates) and
+`[gte]`/`[lt]` for instants.
+
+A range whose lower bound is above its upper bound is a `422` (`invalid_range`), not an empty
+result.
+
+### Combining filters
+
+- **Different fields combine with AND**:
+  `?filter[status][in][]=paid&filter[status][in][]=refunded&filter[customer_id]=cus_3k9d2` is paid
+  or refunded orders *belonging to* that customer
+- There is no OR across different fields. A query that needs one is a sign the endpoint needs a
+  documented filter of its own, or a search
+
+### Other rules
+
+- **Boolean filters are `true` or `false`** — `?filter[is_archived]=false` — nothing else (`1`,
+  `yes`) is accepted
 - **`null` matching**, where needed, is its own documented filter (`filter[has_shipped]=false`,
-  `filter[cancelled_at][exists]=false`) rather than a magic string like `filter[status][]=null`
+  `filter[cancelled_at][exists]=false`) rather than a magic string like `filter[status]=null`
 - **Only documented fields are filterable, and an unknown filter is an error.** This is the rule
   from `SKILL.md` that matters most here: an ignored filter returns an unfiltered list, and an
   unfiltered list fed to a bulk operation is how an entire table gets updated
-- **Invalid values are errors too**: `filter[status][]=payed` is a `422` naming the allowed values,
+- **Invalid values are errors too**: `filter[status]=payed` is a `422` naming the allowed values,
   not an empty result — an empty result reads as "none match", which is a wrong answer rather than
   a failed request. See `errors.md` for which failures are `400` and which `422`
+
+**Corrected:** equality filters used to be arrays in every case — `filter[status][]=paid`, meaning
+"any of" — on the grounds that any-of is almost always wanted eventually, and changing a scalar
+parameter to an array later is a breaking change. The `[in]` operator removes that reason: adding
+`[in]` to a field is additive, so plain equality can stay the single value it looks like, and
+"any of" is said explicitly rather than implied by a `[]`.
 
 **Corrected:** filters used to be flat top-level parameters (`?status[]=paid`), with the control
 parameters (`search`, `sort[]`, `page_size`, `cursor`, …) reserved by name, on the grounds that the
@@ -249,7 +307,7 @@ A cursor-paginated endpoint takes `cursor` and `per_page` (same default and maxi
   "per_page": 50,
   "has_more": true,
   "next_cursor": "eyJjIjoiMjAyNi0wOS0yNFQwODowMTowOVoiLCJpIjoib3JkXzhmMmsxIn0",
-  "next_url": "https://example.com/api/events?filter[type][]=login&sort[]=-created_at&per_page=50&cursor=eyJjIjoi..."
+  "next_url": "https://example.com/api/events?filter[type]=login&sort[]=-created_at&per_page=50&cursor=eyJjIjoi..."
 }
 ```
 

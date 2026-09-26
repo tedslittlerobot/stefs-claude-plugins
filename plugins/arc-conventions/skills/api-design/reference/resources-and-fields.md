@@ -22,7 +22,7 @@ How resources are addressed, and how their representation is shaped, named and t
   `/customers/{id}/orders/{id}/line-items` does not — deep paths force a client to know the whole
   ancestry just to address a leaf, and they break when a relationship turns out to be
   many-to-many. Anything reachable by ID alone gets a top-level route, and a cross-cutting view is
-  a filter: `/orders?filter[customer_id][]=...`
+  a filter: `/orders?filter[customer_id]=...`
 - **Singletons are singular**: `/me`, `/orders/{order_id}/shipping-address` — there is exactly one,
   so a plural would suggest a list that never comes
 - **Path parameters are named for what they are** in documentation — `{order_id}`, not `{id}` —
