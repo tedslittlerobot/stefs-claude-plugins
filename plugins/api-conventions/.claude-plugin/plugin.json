@@ -1,0 +1,20 @@
+{
+  "name": "api-conventions",
+  "displayName": "API Conventions",
+  "version": "0.1.0",
+  "description": "The portable layer of HTTP/JSON API conventions: request and response formats, naming, list endpoints (search, filtering, sorting, pagination), errors, methods and status codes, versioning, and auth and rate limiting — written for the human reading and calling the API first.",
+  "author": {
+    "name": "Stefan Horner",
+    "url": "https://github.com/tedslittlerobot"
+  },
+  "homepage": "https://github.com/tedslittlerobot/stefs-claude-plugins",
+  "repository": "https://github.com/tedslittlerobot/stefs-claude-plugins",
+  "license": "MIT",
+  "keywords": [
+    "conventions",
+    "api",
+    "rest",
+    "http",
+    "json"
+  ]
+}

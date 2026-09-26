@@ -9,25 +9,29 @@ no linter; the deliverable is markdown consumed by Claude Code's skill and comma
 the shell scripts `utils`' hooks run. Outside `plugins/utils/hooks/` and
 `plugins/utils/scripts/` there is no executable code at all.
 
-It carries two independent plugins, and the split matters when deciding where something goes:
+It carries three independent plugins, and the split matters when deciding where something goes:
 
 | Plugin | Holds | Registers hooks? |
 | --- | --- | --- |
 | `arc-conventions` | Rules to follow on topic match — the portable layer of software and project *architecture* conventions | No, and must not |
+| `api-conventions` | Rules to follow on topic match — the portable layer of HTTP/JSON *API* conventions, in one skill (`api-design`) with per-topic reference files | No, and must not |
 | `utils` | General-purpose tooling: commands, agents, and skills that describe an *action* to take | Yes — the two auto-summary-commit hooks |
 
-A skill that states an architecture rule belongs in `arc-conventions`. A skill that does something
-at the end of every turn belongs in `utils`. That distinction is why `auto-summary-commit` is not an
+A skill that states an architecture rule belongs in `arc-conventions`; one that states how an
+API's requests, responses, lists or errors are shaped belongs in `api-conventions`. A skill that
+does something at the end of every turn belongs in `utils`. That distinction is why `auto-summary-commit` is not an
 `arc-conventions` skill despite being about commits.
 
 ## Commands
 
 ```
 claude plugin validate plugins/arc-conventions --strict
+claude plugin validate plugins/api-conventions --strict
 claude plugin validate plugins/utils --strict
 /plugin marketplace add tedslittlerobot/stefs-claude-plugins   # consumers; hosted on GitHub
 /plugin marketplace add ~/Developer/claude/stefs-claude-plugins # this clone, to work on the plugins
 /plugin install arc-conventions@stefs-plugins
+/plugin install api-conventions@stefs-plugins
 /plugin install utils@stefs-plugins
 /plugin marketplace update stefs-plugins                        # pull the latest commit
 /reload-plugins                                                 # after changing anything but a SKILL.md
@@ -41,7 +45,7 @@ file the change adds is named explicitly from its `SKILL.md`.
 
 **Any change to a plugin's contents bumps that plugin's `version` in
 `plugins/<name>/.claude-plugin/plugin.json`, in the same commit** — a new skill, an edited
-`SKILL.md`, a new or changed `reference/*.md`, a hook script, a command. Both plugins are
+`SKILL.md`, a new or changed `reference/*.md`, a hook script, a command. Each plugin is
 versioned independently; bump the one that changed.
 
 The version is not decoration, it is the install cache key. An installed plugin is copied to
@@ -69,6 +73,9 @@ plugins/arc-conventions/
   skills/<skill-name>/
     SKILL.md                        # YAML frontmatter (name, description) + the always-loaded rules
     reference/*.md                  # detail, loaded only when SKILL.md points at it by filename
+plugins/api-conventions/
+  .claude-plugin/plugin.json        # plugin "api-conventions"
+  skills/api-design/                # same shape: SKILL.md + reference/*.md
 plugins/utils/
   .claude-plugin/plugin.json        # plugin "utils"
   commands/<name>.md                # slash commands, /utils:<name>
@@ -78,7 +85,7 @@ plugins/utils/
   scripts/                          # helpers invoked by hooks and commands
 ```
 
-`metadata.pluginRoot` is `./plugins`, so a third plugin means creating `plugins/<name>/` and
+`metadata.pluginRoot` is `./plugins`, so another plugin means creating `plugins/<name>/` and
 appending an entry to `marketplace.json`. **Conventions plugins are scoped by prefix.**
 `arc-conventions` carries the software and project *architecture* rules and nothing else; a set of
 conventions with a different focus — a different subject, a different audience, a different reason
@@ -90,7 +97,9 @@ path — the plugin is copied to a versioned cache directory on install.
 
 ### The two-layer model
 
-This is the organising idea behind every `arc-conventions` skill, and the reason that plugin exists.
+This is the organising idea behind every conventions skill, and the reason those plugins exist.
+`api-conventions` follows it exactly as `arc-conventions` does, with `conventions/api.md` as its
+project file.
 
 | Layer | Lives in | Contains |
 | --- | --- | --- |
