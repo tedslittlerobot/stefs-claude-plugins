@@ -32,8 +32,9 @@ points at them.
 
 `api-design` is the one skill not tied to a stack. Its rules — `snake_case` keys, `kebab-case`
 paths, arrays as repeated `name[]` query parameters and never comma-separated strings, `filter[...]`
-and `q` on list endpoints, page-based pagination by default, `422` for validation failures, and a
-`-v2` resource suffix instead of a version prefix — hold whatever serves the API. A project's
+and `q` on list endpoints, page-based pagination by default, `/me/` for the current user's own
+resources, nested objects for related resources, `422` for validation failures, gzipped responses,
+and a `-v2` resource suffix instead of a version prefix — hold whatever serves the API. A project's
 chosen values and exceptions go in its `conventions/api.md`.
 
 ## Hooks

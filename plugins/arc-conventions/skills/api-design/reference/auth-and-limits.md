@@ -1,7 +1,8 @@
 # Auth, Request IDs and Limits
 
 The cross-cutting concerns every endpoint shares: how a caller proves who it is, what happens when
-it is not allowed, how a request is traced, and how the API protects itself.
+it is not allowed, how a request is traced, how the API protects itself, and how responses are
+cached and compressed.
 
 ## Authentication
 
@@ -80,6 +81,33 @@ from browsers sends no CORS headers at all.
 ## Caching
 
 - Responses to authenticated requests default to `Cache-Control: no-store` unless an endpoint
-  documents otherwise — a shared cache that stores one user's `GET /me` serves it to the next
+  documents otherwise — a shared cache that stores one user's `GET /api/me/profile` serves it to
+  the next. Anything under `/me/` is never shared-cacheable, whatever else is
 - Public, cacheable resources send an explicit `Cache-Control` with a `max-age`, and an `ETag` so
   a client can revalidate with `If-None-Match` and get a `304 Not Modified`
+
+## Compression
+
+**Responses are gzipped.** Every JSON response is compressed with gzip for any client that sends
+`Accept-Encoding: gzip`, with `Content-Encoding: gzip` and `Vary: Accept-Encoding` on the response.
+
+- JSON is verbose and repetitive — the same keys on every item of a list, nested related resources
+  repeated across a page — and it compresses to a small fraction of its size. That is what makes
+  the readable choices elsewhere in this skill (full-word keys, every key always present, nested
+  objects rather than IDs to look up) cheap on the wire
+- **Honour `Accept-Encoding`; never send gzip to a client that did not ask for it.** A plain
+  `curl` sends no `Accept-Encoding`, and a gzipped body sent to it prints as binary noise in the
+  terminal. `curl --compressed` asks for gzip and decompresses it; documentation examples may use
+  it
+- Enable it at whichever layer serves the response — the framework, a gateway or the CDN — once,
+  rather than per endpoint. A platform's minimum-size threshold (small responses left
+  uncompressed, where compression costs more than it saves) is fine
+- Brotli (`br`) may be offered alongside gzip where the platform supports it; gzip is the one every
+  client can rely on
+- **An endpoint whose response body both carries a secret and reflects attacker-controllable input**
+  (a token-issuing endpoint that echoes a parameter back) is the one case to consider leaving
+  uncompressed: compression's output size can leak the secret a byte at a time (the BREACH attack).
+  Bearer tokens travel in request headers, which response compression does not touch, so this
+  rarely applies
+- Request bodies are not required to be compressed, and the server need not accept compressed
+  ones

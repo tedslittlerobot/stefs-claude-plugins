@@ -23,13 +23,51 @@ How resources are addressed, and how their representation is shaped, named and t
   ancestry just to address a leaf, and they break when a relationship turns out to be
   many-to-many. Anything reachable by ID alone gets a top-level route, and a cross-cutting view is
   a filter: `/orders?filter[customer_id]=...`
-- **Singletons are singular**: `/me`, `/orders/{order_id}/shipping-address` — there is exactly one,
-  so a plural would suggest a list that never comes
+- **Singletons are singular**: `/me/profile`, `/orders/{order_id}/shipping-address` — there is
+  exactly one, so a plural would suggest a list that never comes
 - **Path parameters are named for what they are** in documentation — `{order_id}`, not `{id}` —
   so a path with two IDs in it is still unambiguous to read
 - Verbs appear in a path only as **action endpoints** — see `methods-and-status-codes.md`
+- **Resources belonging to the current user live under `/me/`** — see below
 - A resource that has had to break gains a **`-v<n>` suffix** — `/users-v2` — rather than the API
   gaining a version prefix. See `versioning.md`
+
+## The Current User: `/me/`
+
+**An endpoint that returns resources belonging to the current, authenticated user starts with a
+`/me/` path segment**, straight after any fixed prefix the API has:
+
+```
+GET /api/me                  # the current user
+GET /api/me/profile          # their profile — a singleton
+GET /api/me/posts            # the posts they wrote
+GET /api/me/posts/{post_id}  # one of them
+POST /api/me/posts           # write one, as them
+```
+
+**An endpoint without `/me/` is general purpose.** `/api/posts` is *the* posts collection: it
+returns what the caller is permitted to see, and it may well check permissions against the current
+user, but it is never quietly narrowed to "the caller's own posts". Those are `/api/me/posts`.
+
+- **Whose data it is, is in the URL.** A person reading `/api/me/posts` in a log, a browser tab or
+  a code review knows it is the caller's posts; reading `/api/posts` they know it is not. An
+  endpoint whose meaning changes with who calls it, without saying so, is read wrongly by everyone
+  who did not write it
+- **There is no user ID to tamper with.** Under `/me/` the user comes from the credentials and
+  nowhere else — never from a path, query or body parameter. `/api/users/{user_id}/posts` called
+  with the caller's own ID works right up until someone changes the ID, and whether that leaks
+  another user's posts depends on an authorization check that has to be remembered on every such
+  endpoint. `/api/me/posts` has no ID to change
+- **Something under `/me/` that is not the caller's is `404`**: `/api/me/posts/{post_id}` for a
+  post someone else wrote does not exist *for this caller* — see `auth-and-limits.md`
+- **`/me/` is a scope, not a nesting level.** `/api/me/posts/{post_id}/comments` is one level of
+  nesting under `posts`, the same as `/api/posts/{post_id}/comments` would be
+- **A general endpoint may still be filtered by user**: `/api/posts?filter[author_id]=…` is a
+  general query that happens to name an author, and it answers the same way for every caller who is
+  allowed to see those posts. It is not a substitute for `/me/posts`, because it takes the user ID
+  from the request
+- Every `/me/` response varies by caller, so it is never shared-cacheable — see the caching rules
+  in `auth-and-limits.md`
 
 **Corrected:** path segments used to be `snake_case` (`/line_items`), so that a collection's URL
 matched the JSON key it is embedded under. That consistency is between two things nobody confuses —
@@ -153,10 +191,24 @@ has neither; wrapping it only adds a level every caller has to type.
 
 ## Related Resources
 
-- **By default a resource references others by ID**: `"customer_id": "cus_3k9d2"`. Responses stay
-  small, predictable and cacheable
-- **A client may ask for related resources to be embedded** with `include[]`:
-  `GET /orders/ord_8f2k1?include[]=customer&include[]=line_items`. The related resource then
+- **A relation is always referenced by ID**: `"customer_id": "cus_3k9d2"`, present whether or not
+  the related resource is also returned
+- **When a related resource is returned, it is a nested object** under the relation's key, inside
+  the resource it belongs to — `"customer": { ... }` on the order, `"line_items": [ ... ]` as an
+  array of objects. Not flattened into the parent as a handful of copied fields (`customer_name`,
+  `customer_email`), and not sideloaded into a separate top-level list keyed by type, as JSON:API's
+  `included` does
+- Nesting is preferred because it is how a person reads the data: the customer is *on* the order.
+  A sideloaded response makes every client — and every person reading one in a terminal — join it
+  back together by ID; a flattened one freezes an arbitrary subset of the related resource's
+  fields, and grows another `customer_<something>` field each time someone needs one more
+- The cost is repetition — a page of orders from one customer repeats that customer on each. That
+  is accepted: it keeps each item self-contained, and response compression (see
+  `auth-and-limits.md`) removes most of the bytes
+- **Which relations are returned** is the endpoint's choice, documented: one that clients nearly
+  always need (an order's line items) may be nested by default; the rest are nested on request
+  with `include[]`:
+  `GET /orders/ord_8f2k1?include[]=customer&include[]=line_items`. Either way the related resource
   appears under its own key *alongside* the ID, which stays:
 
   ```json
@@ -170,8 +222,8 @@ has neither; wrapping it only adds a level every caller has to type.
   }
   ```
 
-- Each resource documents which relations it can include. An unknown `include[]` value is an
-  error, like any unknown parameter
+- Each resource documents which relations it nests by default and which it can include. An
+  unknown `include[]` value is an error, like any unknown parameter
 - When a relation is includable but was not included, its key is **absent** — the one place a
   documented key may be missing, because the client controls it explicitly. A `null` would claim
   there is no customer

@@ -1,6 +1,6 @@
 ---
 name: api-design
-description: HTTP/JSON API design conventions — request and response formats, snake_case keys and query parameters, kebab-case URL paths, arrays in query strings as repeated name[] parameters (never comma-separated strings), the data/error response envelope, resource URLs, HTTP methods and status codes, list and index endpoints (q text search, filter[...] parameters, sort[], page and per_page pagination, the pagination object, cursor pagination), the error response format, 400 versus 422 and validation errors, IDs, timestamps, money, enums and nulls, PATCH semantics, idempotency keys, versioning by resource suffix (users-v2) and breaking changes, auth headers and rate limiting. Use when designing, building, reviewing or documenting a REST or HTTP API, an endpoint, controller or route handler, an OpenAPI schema, a JSON request or response payload, or an API client, or when asked how an endpoint should paginate, filter, sort, search or report an error.
+description: HTTP/JSON API design conventions — request and response formats, snake_case keys and query parameters, kebab-case URL paths, arrays in query strings as repeated name[] parameters (never comma-separated strings), the data/error response envelope, resource URLs, /me/ endpoints for the current user's resources, nested related objects and include[], HTTP methods and status codes, list and index endpoints (q text search, filter[...] parameters, sort[], page and per_page pagination, the pagination object, cursor pagination), the error response format, 400 versus 422 and validation errors, IDs, timestamps, money, enums and nulls, PATCH semantics, idempotency keys, versioning by resource suffix (users-v2) and breaking changes, auth headers, rate limiting, caching and gzip compression. Use when designing, building, reviewing or documenting a REST or HTTP API, an endpoint, controller or route handler, an OpenAPI schema, a JSON request or response payload, or an API client, or when asked how an endpoint should paginate, filter, sort, search or report an error.
 ---
 
 # API Design Conventions
@@ -71,6 +71,13 @@ These hold everywhere; the reference files give the detail and the reasoning.
   a bare resource. A bare array cannot grow a `pagination` key later without breaking every client
 - **Resources live at plural, `kebab-case` collection URLs** — `/orders`, `/orders/{order_id}`,
   `/orders/{order_id}/line-items` — nested at most one level deep
+- **The current user's own resources live under `/me/`** — `/api/me/profile`, `/api/me/posts` —
+  with the user taken from the credentials, never from a parameter. An endpoint without `/me/` is
+  general purpose: it may check the caller's permissions, but is never quietly narrowed to "the
+  caller's own". See `reference/resources-and-fields.md`
+- **Related resources are returned as nested objects** — `"customer": { ... }` inside the order,
+  alongside `customer_id` — not flattened into copied fields, and not sideloaded into a separate
+  top-level list
 - **Lists keep a tidy top level**: filters nest under `filter[...]` — plain equality, `[in][]` for
   any of several values, and `[gt]`/`[gte]`/`[lt]`/`[lte]` for ranges — text search is `q`, and
   pagination is **page-based by default** with `page` and `per_page` (default 25, maximum 150) and
@@ -85,6 +92,8 @@ These hold everywhere; the reference files give the detail and the reasoning.
   input constraint, and the user can fix it by changing an answer — lists every invalid parameter
   with a code and a message fit to show the user. A `400` is a bug in the client. See
   `reference/errors.md`
+- **Responses are gzipped** for every client that sends `Accept-Encoding: gzip`. See
+  `reference/auth-and-limits.md`
 - **Out-of-range input errors loudly, now** — a `per_page` of 500 is a `422` stating the maximum,
   never silently clamped to 150. A silent correction surfaces later, far from its cause, as data
   that seems to be missing
@@ -105,9 +114,9 @@ These hold everywhere; the reference files give the detail and the reasoning.
 
 ## References
 
-- **`reference/resources-and-fields.md`** — kebab-case URLs and nesting, the response envelope,
-  field naming, data types (IDs, timestamps, money, enums, booleans, nulls), related resources and
-  `include[]`, sparse `fields[]`
+- **`reference/resources-and-fields.md`** — kebab-case URLs and nesting, `/me/` for the current
+  user's resources, the response envelope, field naming, data types (IDs, timestamps, money,
+  enums, booleans, nulls), nested related resources and `include[]`, sparse `fields[]`
 - **`reference/methods-and-status-codes.md`** — what each method means, request bodies, `PATCH`
   semantics, action endpoints, success status codes, idempotency keys, optimistic concurrency,
   long-running and bulk operations
@@ -119,7 +128,7 @@ These hold everywhere; the reference files give the detail and the reasoning.
 - **`reference/versioning.md`** — what is and is not a breaking change, what clients must
   tolerate, versioning a single resource with a `-v<n>` suffix, and deprecation
 - **`reference/auth-and-limits.md`** — authentication headers, `401` versus `403` versus `404`,
-  request IDs, rate limiting, CORS, and caching headers
+  request IDs, rate limiting, CORS, caching headers, and gzip response compression
 
 ## Related
 
