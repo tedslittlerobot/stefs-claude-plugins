@@ -4,6 +4,66 @@ How resources are addressed, and how their representation is shaped, named and t
 
 ## URLs
 
+### Anatomy
+
+Every path is built from the same parts, in the same order:
+
+```
+/api [/<service prefix>…] [/me] /<resources and verbs>
+
+/api/posts/{post_id}/comments       # resources only
+/api/billing/invoices               # a service prefix, then a resource
+/api/billing/me/invoices            # a service prefix, the current user, then a resource
+/api/auth/login                     # a non-resource scope, then a verb
+```
+
+- **`/api` comes first**, always — the `infrastructure` skill's frontend-hosting reference gives the
+  reason
+- **Project- or service-specific prefixes come next**, after `/api` and before any resource, `me`
+  or other segment: `/api/billing/…`, `/api/reporting/…`. Which prefixes exist is a project
+  decision, recorded in its `conventions/api.md`; a path does not invent a prefix that file does
+  not list
+- **`/me` comes next**, when the endpoint returns resources belonging to the current user — see
+  "The Current User" below
+- **Then the resources and verbs** the rest of this section describes
+- **There is no version prefix** anywhere in that sequence — no `/api/v2/…`. Changes should be
+  non-breaking wherever possible, and when a resource genuinely has to break, only that resource is
+  versioned, with a suffix: `/api/users-v2`. See `versioning.md`
+
+### What a path may name
+
+Every route is one of these, and a path is read as a sequence of them:
+
+| Kind | Example | Methods |
+| --- | --- | --- |
+| **A collection** | `/api/posts` | `GET` to list, `POST` to create |
+| **A resource** | `/api/posts/{post_id}` | `GET`, `PATCH`, `PUT`, `DELETE` |
+| **A singleton** | `/api/me/profile` | `GET`, `PATCH` |
+| **A verb on a resource** — preferred | `/api/orders/{order_id}/cancel` | `POST` |
+| **A verb on a collection** — preferred | `/api/orders/bulk-cancel`, `/api/invoices/export` | `POST` |
+| **A verb in a non-resource scope** | `/api/auth/login`, `/api/auth/logout` | `POST` |
+| **A top-level verb** — acceptable | `/api/search` | `POST` (or `GET` if it is safe) |
+
+- **Create, read, update and delete are never verbs in a path.** They are what the HTTP methods
+  already say: `POST /api/posts`, not `/api/posts/create`; `PATCH /api/posts/{post_id}`, not
+  `/api/posts/{post_id}/update`; `DELETE`, not `/delete`; `GET /api/posts`, not `/api/get-posts` or
+  `/api/posts/list`. A verb in the path that repeats the method gives a reader two things to check
+  and a chance for them to disagree
+- **Explicit verbs are for operations that are not plain CRUD** — a state transition, a side
+  effect, a computation. Scope a verb to the resource or collection it acts on wherever there is
+  one: `/api/orders/{order_id}/cancel` says what is cancelled without any documentation
+- **A non-resource scope may group verbs by responsibility.** `/api/auth/login`,
+  `/api/auth/logout` and `/api/auth/refresh` sit under `auth`, which is not a resource — nothing is
+  listed, fetched or created at `/api/auth` — but an area of responsibility, and it tells the
+  reader what the verbs are about as clearly as a resource would
+- **A top-level verb is acceptable where nothing scopes it** — a search across several resource
+  types, say. It is the least preferred form, because a bare verb says nothing about what it acts
+  on: check first whether it belongs to a resource, a collection or a scope
+- Verbs lead with the verb, in `kebab-case`: `reset-password`, `bulk-cancel`, `export`. The rules
+  for what an action endpoint accepts and returns are in `methods-and-status-codes.md`
+
+### Naming
+
 - **Collections are plural nouns**: `/orders`, `/customers`, `/line-items`. A single resource is
   the collection plus its ID: `/orders/{order_id}`
 - **Path segments are `kebab-case`**: `/line-items`, `/shipping-address`,
@@ -17,25 +77,46 @@ How resources are addressed, and how their representation is shaped, named and t
   under. The rule of thumb: a path segment is part of an **address**, and is kebab-case; anything
   that names **data** is snake_case
 - **Lowercase only**, no trailing slash, no file extensions (`/orders.json`)
-- **Nest at most one level**, and only for genuine ownership: `/orders/{order_id}/line-items`
-  exists because a line item cannot exist without its order.
-  `/customers/{id}/orders/{id}/line-items` does not — deep paths force a client to know the whole
-  ancestry just to address a leaf, and they break when a relationship turns out to be
-  many-to-many. Anything reachable by ID alone gets a top-level route, and a cross-cutting view is
-  a filter: `/orders?filter[customer_id]=...`
 - **Singletons are singular**: `/me/profile`, `/orders/{order_id}/shipping-address` — there is
   exactly one, so a plural would suggest a list that never comes
 - **Path parameters are named for what they are** in documentation — `{order_id}`, not `{id}` —
   so a path with two IDs in it is still unambiguous to read
-- Verbs appear in a path only as **action endpoints** — see `methods-and-status-codes.md`
-- **Resources belonging to the current user live under `/me/`** — see below
-- A resource that has had to break gains a **`-v<n>` suffix** — `/users-v2` — rather than the API
-  gaining a version prefix. See `versioning.md`
+
+**Corrected:** path segments used to be `snake_case` (`/line_items`), so that a collection's URL
+matched the JSON key it is embedded under. That consistency is between two things nobody confuses —
+an address and a data key — and it cost the URL the conventions every other website uses.
+
+### Nesting
+
+A resource is nested under another in exactly two cases:
+
+- **It is only, or primarily, accessed through that relationship.** `/api/posts/{post_id}/comments`
+  — comments are read as *a post's* comments, and a comment is addressed within its post:
+  `/api/posts/{post_id}/comments/{comment_id}`
+- **It is scoped to the current user**: `/api/me/posts` nests the caller's posts under them, even
+  though posts are otherwise a top-level collection. See "The Current User" below
+
+Everything else is top-level. A resource that is regularly wanted on its own, or across parents —
+every order regardless of customer, one order by its ID from an email link — gets its own route,
+and the relationship becomes a filter: `/api/orders?filter[customer_id]=…`. Nesting it would force
+every caller to know the parent just to address it.
+
+- **Nest one level below a resource at most.**
+  `/api/customers/{customer_id}/orders/{order_id}/line-items` is too deep — deep paths make a client know the whole ancestry to address a leaf, and they break
+  when a relationship turns out to be many-to-many. The `/me` scope and service prefixes are not
+  resources, and do not count as a level
+- A nested collection behaves like any other — the same list parameters, pagination and errors
+
+**Corrected:** nesting used to be allowed "only for genuine ownership" — a line item cannot exist
+without its order. Existence was the wrong test: what decides whether a URL should be nested is how
+the resource is *reached*, and a resource that is only or mainly reached through its parent is
+nested whether or not it could exist without it. The `/me` case was also not stated here.
 
 ## The Current User: `/me/`
 
 **An endpoint that returns resources belonging to the current, authenticated user starts with a
-`/me/` path segment**, straight after any fixed prefix the API has:
+`/me/` path segment**, straight after `/api` and any service prefix — `/api/me/posts`,
+`/api/billing/me/invoices`:
 
 ```
 GET /api/me                  # the current user
@@ -68,10 +149,6 @@ user, but it is never quietly narrowed to "the caller's own posts". Those are `/
   from the request
 - Every `/me/` response varies by caller, so it is never shared-cacheable — see the caching rules
   in `auth-and-limits.md`
-
-**Corrected:** path segments used to be `snake_case` (`/line_items`), so that a collection's URL
-matched the JSON key it is embedded under. That consistency is between two things nobody confuses —
-an address and a data key — and it cost the URL the conventions every other website uses.
 
 ## The Envelope
 

@@ -1,6 +1,6 @@
 ---
 name: api-design
-description: HTTP/JSON API design conventions — request and response formats, snake_case keys and query parameters, kebab-case URL paths, arrays in query strings as repeated name[] parameters (never comma-separated strings), the data/error response envelope, resource URLs, /me/ endpoints for the current user's resources, nested related objects and include[], HTTP methods and status codes, list and index endpoints (q text search, filter[...] parameters, sort[], page and per_page pagination, the pagination object, cursor pagination), the error response format, 400 versus 422 and validation errors, IDs, timestamps, money, enums and nulls, PATCH semantics, idempotency keys, versioning by resource suffix (users-v2) and breaking changes, auth headers, rate limiting, caching and gzip compression. Use when designing, building, reviewing or documenting a REST or HTTP API, an endpoint, controller or route handler, an OpenAPI schema, a JSON request or response payload, or an API client, or when asked how an endpoint should paginate, filter, sort, search or report an error.
+description: HTTP/JSON API design conventions — request and response formats, snake_case keys and query parameters, kebab-case URL paths, arrays in query strings as repeated name[] parameters (never comma-separated strings), the data/error response envelope, resource URLs and path structure (/api and service prefixes, collections, resources, action verbs, auth/login-style scopes, nested routes), /me/ endpoints for the current user's resources, nested related objects and include[], HTTP methods and status codes, list and index endpoints (q text search, filter[...] parameters, sort[], page and per_page pagination, the pagination object, cursor pagination), the error response format, 400 versus 422 and validation errors, IDs, timestamps, money, enums and nulls, PATCH semantics, idempotency keys, versioning by resource suffix (users-v2) and breaking changes, auth headers, rate limiting, caching and gzip compression. Use when designing, building, reviewing or documenting a REST or HTTP API, an endpoint, controller or route handler, an OpenAPI schema, a JSON request or response payload, or an API client, or when asked how an endpoint should paginate, filter, sort, search or report an error.
 ---
 
 # API Design Conventions
@@ -69,8 +69,17 @@ These hold everywhere; the reference files give the detail and the reasoning.
 - **Every response body is an object with a top-level `data` or `error` key** — `data` for success
   (an object for one resource, an array for a list), `error` for failure. Never a bare array, never
   a bare resource. A bare array cannot grow a `pagination` key later without breaking every client
-- **Resources live at plural, `kebab-case` collection URLs** — `/orders`, `/orders/{order_id}`,
-  `/orders/{order_id}/line-items` — nested at most one level deep
+- **Paths are `/api`, then any project or service prefix, then `/me` if applicable, then
+  resources and verbs** — `/api/billing/me/invoices`. The prefixes are listed in the project's
+  `conventions/api.md`. There is no version prefix
+- **A route is a collection, a resource, or a verb.** Collections are plural and `kebab-case`
+  (`/api/posts`, `/api/posts/{post_id}`). Create, read, update and delete are HTTP methods, never
+  words in the path. Other operations are `POST` verbs, preferably scoped to a resource or
+  collection (`/api/orders/{order_id}/cancel`), or to a non-resource area of responsibility
+  (`/api/auth/login`); a top-level verb is acceptable where nothing scopes it
+- **Nest a resource only when it is only or primarily reached through its parent**
+  (`/api/posts/{post_id}/comments`) **or it is scoped to the current user** (`/api/me/posts`), and
+  one level deep at most. Everything else is top-level, with the relationship as a filter
 - **The current user's own resources live under `/me/`** — `/api/me/profile`, `/api/me/posts` —
   with the user taken from the credentials, never from a parameter. An endpoint without `/me/` is
   general purpose: it may check the caller's permissions, but is never quietly narrowed to "the
@@ -105,7 +114,8 @@ These hold everywhere; the reference files give the detail and the reasoning.
 ## Before Designing an Endpoint
 
 1. Read the project's `conventions/api.md` if it exists — it carries the project's chosen values
-   (ID format, which endpoints use cursor pagination and why) and any registered exceptions
+   (the service prefixes after `/api`, ID format, which endpoints use cursor pagination and why)
+   and any registered exceptions
 2. Find the nearest existing endpoint for a similar resource and match its names and shapes; a new
    endpoint that is consistent with a slightly imperfect neighbour beats a perfect one that is not
 3. Write the example request and response **first**, as a `curl` command and its JSON output, and
@@ -114,7 +124,8 @@ These hold everywhere; the reference files give the detail and the reasoning.
 
 ## References
 
-- **`reference/resources-and-fields.md`** — kebab-case URLs and nesting, `/me/` for the current
+- **`reference/resources-and-fields.md`** — URL anatomy and prefixes, what a route may name
+  (collections, resources, verbs and scopes), kebab-case naming, nesting, `/me/` for the current
   user's resources, the response envelope, field naming, data types (IDs, timestamps, money,
   enums, booleans, nulls), nested related resources and `include[]`, sparse `fields[]`
 - **`reference/methods-and-status-codes.md`** — what each method means, request bodies, `PATCH`

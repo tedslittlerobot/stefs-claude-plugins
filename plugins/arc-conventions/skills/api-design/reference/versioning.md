@@ -84,6 +84,8 @@ suffix**:
   is visible in every URL, log line, `curl` command and bug report — a person never has to ask which
   version a request was made against. A version in a header or a media type is invisible in all of
   those places
+- **The suffix goes on the resource, after `/api` and any service prefix** —
+  `/api/billing/invoices-v2`, never `/api/v2/billing/invoices` or `/api/billing-v2/invoices`
 - **Sub-resources move with their parent**: `/api/orders-v2/{order_id}/line-items`. A
   sub-resource that breaks on its own is suffixed on its own:
   `/api/orders/{order_id}/line-items-v2`

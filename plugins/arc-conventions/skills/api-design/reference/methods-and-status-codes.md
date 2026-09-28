@@ -63,15 +63,20 @@ know about. That makes **adding a field a breaking change**: an older client tha
 without the new field clears it. Use `PUT` only where a resource genuinely is a document replaced
 whole (a settings blob, a file), or for a create-at-a-known-URL; everything else uses `PATCH`.
 
-## Actions — `POST /<collection>/{id}/<verb>`
+## Actions — Verbs in the Path
 
-A state transition with its own rules, side effects or permissions is an **action endpoint**,
-named with a `kebab-case` verb, like every other path segment:
+Create, read, update and delete are the HTTP methods and never appear as words in a path. Anything
+else — a state transition, a side effect, a computation — is an **action endpoint**: a `POST` to a
+`kebab-case` verb. Where the verb sits is covered in `resources-and-fields.md`; in order of
+preference:
 
 ```
-POST /orders/{order_id}/cancel
-POST /invoices/{invoice_id}/send
-POST /users/{user_id}/reset-password
+POST /api/orders/{order_id}/cancel        # scoped to a resource
+POST /api/invoices/{invoice_id}/send
+POST /api/users/{user_id}/reset-password
+POST /api/orders/bulk-cancel              # scoped to a collection
+POST /api/auth/login                      # scoped to a non-resource area of responsibility
+POST /api/search                          # top level, where nothing scopes it
 ```
 
 - Prefer this over `PATCH { "status": "cancelled" }` whenever changing the field *does* something —
@@ -80,7 +85,9 @@ POST /users/{user_id}/reset-password
   separately, and cannot be triggered by accident as part of an unrelated update
 - The field it changes (`status`) is then **read-only** through `PATCH`, so there is exactly one way
   to cancel an order
-- Returns **`200 OK` with the updated resource**, or `202 Accepted` if it completes asynchronously
+- A verb on a resource returns **`200 OK` with the updated resource**, or `202 Accepted` if it
+  completes asynchronously. A verb elsewhere returns what it produces, in `data` as always — a
+  session from `/api/auth/login`, results from `/api/search`
 - An action that is invalid in the resource's current state (cancelling a shipped order) is a
   `409 Conflict` with a specific code — see `errors.md`
 
