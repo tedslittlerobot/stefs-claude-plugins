@@ -7,9 +7,9 @@ conventions.
 
 | Plugin | Covers | Changes a session on its own? |
 | --- | --- | --- |
-| [`prototype-conventions`](plugins/prototype-conventions) | Conventions and guidelines for building **prototypes and proof-of-concept projects — not for production use**. Six model-invoked skills: API design, frontends, infrastructure, Lambdas and product requirements | No — no hooks, no executable code |
+| [`prototype-conventions`](plugins/prototype-conventions) | Conventions and guidelines for building **prototypes and proof-of-concept projects — not for production use**. Five model-invoked skills: frontends, infrastructure, Lambdas and product requirements | No — no hooks, no executable code |
 | [`documentation-and-planning`](plugins/documentation-and-planning) | Four model-invoked skills carrying the **documentation and planning** conventions: how a project records its own conventions, the markdown rules every document follows, the three tenses of documentation, proposals, plans of action, and the glossary | No — no hooks, no executable code |
-| [`utils`](plugins/utils) | General-purpose commands, skills and agents, including the default-on `auto-summary-commit` workflow, and general conventions not specific to prototypes (`mysql`) | **Yes** — installing it turns commit-per-prompt on. See [The commit hooks](#the-commit-hooks) |
+| [`utils`](plugins/utils) | General-purpose commands, skills and agents, including the default-on `auto-summary-commit` workflow, and general conventions not specific to prototypes (`api-design`, `mysql`) | **Yes** — installing it turns commit-per-prompt on. See [The commit hooks](#the-commit-hooks) |
 
 ## Install
 
@@ -79,7 +79,6 @@ needs.
 
 | Skill | Covers |
 | --- | --- |
-| `api-design` | HTTP/JSON APIs, designed for the human calling them first: principles, `kebab-case` URLs and the `data`/`error` envelope, `snake_case` naming and data types, methods and status codes, list endpoints (`q` search, `filter[...]`, `sort[]`, page-based pagination), errors and `400` versus `422`, versioning by resource suffix, auth and rate limiting |
 | `frontend` | SPA frontends: AlpineJS + Tailwind v4 + Pinecone Router with no build step, layout, routing, runtime config, S3 deployment, design idiom, accessibility |
 | `infrastructure` | Terraform and AWS: tfvars and workspaces, recorded outputs, naming and tagging, S3/CloudFront hosting, Route 53/SES, Cognito, WAF |
 | `lambdas-go` | Go Lambdas: trigger-based naming, module layout, package naming, logging, shared libraries, testing |
@@ -101,11 +100,13 @@ needs.
 | ------- | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | Command | `/utils:hello`        | A smoke test — reports what the plugin currently provides                                                                                                        |
 | Skill   | `auto-summary-commit` | The default commit workflow: after any prompt that changed files, stage them and commit onto the current branch straight away — recording the prompt and the summary in the commit body |
+| Skill   | `api-design`          | HTTP/JSON APIs, designed for the human calling them first: principles, `kebab-case` URLs and the `data`/`error` envelope, `snake_case` naming and data types, methods and status codes, list endpoints (`q` search, `filter[...]`, `sort[]`, page-based pagination), errors and `400` versus `422`, versioning by resource suffix, auth and rate limiting |
 | Skill   | `mysql`               | General MySQL/Aurora schema and query conventions: snake_case naming, UUIDv7 keys, timestamps, adding columns, SQL formatting |
 
-`mysql` is the one conventions skill in `utils`. It follows the same two-layer model as the
-conventions plugins — a project's own values go in its `conventions/sql.md` — and it lives here
-rather than in `prototype-conventions` because nothing in it is specific to prototypes.
+`api-design` and `mysql` are the conventions skills in `utils`. They follow the same two-layer
+model as the conventions plugins — a project's own values go in its `conventions/api.md` or
+`conventions/sql.md` — and they live here rather than in `prototype-conventions` because nothing in
+them is specific to prototypes.
 
 ### The commit hooks
 
@@ -247,7 +248,8 @@ uninstalls it and installs the new one:
 
 At `prototype-conventions` 0.15.0 the plugin took its current scope — prototypes and proofs of
 concept, not production — and `mysql` moved to `utils` (0.4.0), since its rules hold for any
-project. A project that wants `mysql` needs `utils` installed.
+project. A project that wants `mysql` needs `utils` installed. `api-design` followed at
+`prototype-conventions` 0.16.0 (`utils` 0.5.0), for the same reason.
 
 ## License
 

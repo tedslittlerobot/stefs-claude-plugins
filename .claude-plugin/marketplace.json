@@ -15,7 +15,7 @@
       "name": "prototype-conventions",
       "source": "./plugins/prototype-conventions",
       "displayName": "Prototype Conventions",
-      "description": "Conventions and guidelines for building prototypes and proof-of-concept projects — not for production use. Six skills: HTTP/JSON API design (payloads, list endpoints, errors, versioning), SPA frontends, Terraform/AWS infrastructure, Go and Node Lambdas, and product requirements. How a project records its own conventions, and the documentation, proposal, plan-of-action and glossary rules, are in the sibling documentation-and-planning plugin; general MySQL conventions are in utils. Every skill is model-invoked on topic match; the plugin registers no hooks and adds no executable code.",
+      "description": "Conventions and guidelines for building prototypes and proof-of-concept projects — not for production use. Five skills: SPA frontends, Terraform/AWS infrastructure, Go and Node Lambdas, and product requirements. How a project records its own conventions, and the documentation, proposal, plan-of-action and glossary rules, are in the sibling documentation-and-planning plugin; general API design and MySQL conventions are in utils. Every skill is model-invoked on topic match; the plugin registers no hooks and adds no executable code.",
       "author": {
         "name": "Stefan Horner",
         "url": "https://github.com/tedslittlerobot"
@@ -57,7 +57,7 @@
       "name": "utils",
       "source": "./plugins/utils",
       "displayName": "Utils",
-      "description": "General-purpose utility commands, skills and agents for Claude Code, plus general conventions that are not specific to prototypes (the mysql skill: schema naming, UUIDv7 keys, timestamps, migrations and SQL formatting). Includes the default-on auto-summary-commit workflow: a pair of hooks commits the prompt and its summary at the end of every turn that changed files, scoped to the paths that turn actually changed.",
+      "description": "General-purpose utility commands, skills and agents for Claude Code, plus general conventions that are not specific to prototypes: api-design (HTTP/JSON URLs, payloads, list endpoints with filter[...], q and page-based pagination, 400 versus 422 errors, resource-suffix versioning) and mysql (schema naming, UUIDv7 keys, timestamps, migrations and SQL formatting). Includes the default-on auto-summary-commit workflow: a pair of hooks commits the prompt and its summary at the end of every turn that changed files, scoped to the paths that turn actually changed.",
       "author": {
         "name": "Stefan Horner",
         "url": "https://github.com/tedslittlerobot"
@@ -70,7 +70,8 @@
         "utilities",
         "productivity",
         "workflow",
-        "mysql"
+        "mysql",
+        "api"
       ]
     }
   ]

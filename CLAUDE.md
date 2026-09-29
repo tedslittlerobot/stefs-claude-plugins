@@ -15,16 +15,17 @@ It carries three independent plugins, and the split matters when deciding where 
 | --- | --- | --- |
 | `prototype-conventions` | Rules to follow on topic match — conventions and guidelines for building *prototypes and proof-of-concept projects*, not for production use | No, and must not |
 | `documentation-and-planning` | Rules to follow on topic match — the portable layer of *documentation and planning* conventions: markdown, the three tenses of documentation, proposals, plans of action, the glossary | No, and must not |
-| `utils` | General-purpose tooling — commands, agents, and skills that describe an *action* to take — plus general conventions that are not specific to prototypes (`mysql`) | Yes — the two auto-summary-commit hooks |
+| `utils` | General-purpose tooling — commands, agents, and skills that describe an *action* to take — plus general conventions that are not specific to prototypes (`api-design`, `mysql`) | Yes — the two auto-summary-commit hooks |
 
-A rule for how a prototype or proof of concept is built belongs in `prototype-conventions`; one
-that states how a document is written, where it belongs, or how work is proposed and planned
-belongs in `documentation-and-planning`. A convention that holds whatever the project — production
-included — and fits neither of those belongs in `utils`, as `mysql` does, alongside the skills that
-do something, such as the one that runs at the end of every turn. That distinction is why
-`auto-summary-commit` is not a conventions skill despite being about commits, and why `mysql` left
-`prototype-conventions`: nothing in it is specific to prototypes, and a production project should
-be able to use it without installing a plugin that says it is not for production.
+A rule for how a prototype or proof of concept is built belongs in `prototype-conventions`; one that
+states how a document is written, where it belongs, or how work is proposed and planned belongs in
+`documentation-and-planning`. A convention that holds whatever the project — production included —
+and fits neither of those belongs in `utils`, as `api-design` and `mysql` do, alongside the skills
+that do something, such as the one that runs at the end of every turn. That distinction is why
+`auto-summary-commit` is not a conventions skill despite being about commits, and why `api-design`
+and `mysql` left `prototype-conventions`: nothing in them is specific to prototypes, and a
+production project should be able to use them without installing a plugin that says it is not for
+production.
 
 ## Commands
 
@@ -105,8 +106,8 @@ a relative or absolute path — the plugin is copied to a versioned cache direct
 ### The two-layer model
 
 This is the organising idea behind every skill in `prototype-conventions` and
-`documentation-and-planning`, and the reason those plugins exist. `mysql`, the one conventions
-skill in `utils`, follows it too.
+`documentation-and-planning`, and the reason those plugins exist. `api-design` and `mysql`, the
+conventions skills in `utils`, follow it too.
 
 | Layer | Lives in | Contains |
 | --- | --- | --- |
@@ -119,11 +120,12 @@ or chosen values has broken the split — those lines belong in the consuming re
 what belongs in a project file versus in `architecture/`, `glossary/`, `instructions/`,
 `proposals/` or `requirements/`.
 
-The six `prototype-conventions` skills divide as: one stack-independent design skill
-(`api-design`), four per-stack (`frontend`, `infrastructure`, `lambdas-go`, `lambdas-node`) and one
-per-document-kind (`product-requirements`). The four `documentation-and-planning` skills are
-one meta-skill (`conventions`), `documentation` (which also carries the markdown rules every
-document follows, such as the table of contents), `plan-of-action` and `glossary`.
+The five `prototype-conventions` skills divide as: four per-stack (`frontend`, `infrastructure`,
+`lambdas-go`, `lambdas-node`) and one per-document-kind (`product-requirements`). The conventions
+skills in `utils` are `api-design` and `mysql`, neither tied to prototypes. The four
+`documentation-and-planning` skills are one meta-skill (`conventions`), `documentation` (which also
+carries the markdown rules every document follows, such as the table of contents), `plan-of-action`
+and `glossary`.
 
 `api-design` was briefly its own `api-conventions` plugin, on the reading that rules independent of
 any stack were a different scope. It was merged back before it shipped: API design is architecture,
@@ -134,19 +136,21 @@ want them without any of the stack skills. `conventions` followed at 0.13.0: rec
 rules is itself a document-writing subject, and the meta-skill serves both plugins equally.
 `product-requirements` stayed, as the per-document-kind skill closest to the software it specifies.
 When the plugin was renamed `prototype-conventions` at 0.14.0 and given its prototype-only scope at
-0.15.0, `mysql` moved to `utils`, since its rules are general rather than prototype-specific.
-`plan-of-action` is the one that also carries a procedure — implementing the plan, stage by stage —
-and it lives beside `documentation` rather than in `utils` because the document and its execution
-are the same subject, and both are meaningless without the `proposals/` layout the `documentation`
-skill defines.
+0.15.0, `mysql` moved to `utils`, since its rules are general rather than prototype-specific, and
+`api-design` followed at 0.16.0 for the same reason. `plan-of-action` is the one that also carries a
+procedure — implementing the plan, stage by stage — and it lives beside `documentation` rather than
+in `utils` because the document and its execution are the same subject, and both are meaningless
+without the `proposals/` layout the `documentation` skill defines.
 
-Skills cross-reference each other by name in a `## Related` section rather than duplicating rules
-— `lambdas-node` defers to `lambdas-go` for the shared trigger-naming rules, and both defer to
-`conventions` for precedence. Cross-plugin references work the same way, and the two conventions
-plugins reference each other freely: `api-design` names the `documentation` skill for the OpenAPI
-file, and every `prototype-conventions` skill defers to `conventions` for precedence.
-`auto-summary-commit` names the `conventions` skill for a project's commit-message style, and falls
-back to reading the style off `git log` when it is not installed.
+Skills cross-reference each other by name in a `## Related` section rather than duplicating rules —
+`lambdas-node` defers to `lambdas-go` for the shared trigger-naming rules, and both defer to
+`conventions` for precedence. Cross-plugin references work the same way, and are common:
+`api-design`, in `utils`, names the `documentation` skill for the OpenAPI file, and every
+conventions skill, whichever plugin it is in, defers to `conventions` for precedence. A skill that
+may be installed without the plugin it names says so — "where installed" — so a missing reference
+reads as optional rather than broken. `auto-summary-commit` names the `conventions` skill for a
+project's commit-message style, and falls back to reading the style off `git log` when it is not
+installed.
 
 ## The auto-summary-commit hooks
 

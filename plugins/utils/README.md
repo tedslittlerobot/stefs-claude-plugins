@@ -9,11 +9,21 @@ hold beyond prototypes.
 | ------- | --------------------- | -------------------------------------------------------------- |
 | Command | `/utils:hello`        | You run it — a smoke test that reports what the plugin provides |
 | Skill   | `auto-summary-commit` | Any prompt has just changed git-tracked files — it runs by default, last |
+| Skill   | `api-design`          | Designing, building or reviewing an HTTP/JSON API: an endpoint, a request or response payload, a list endpoint's filters, sort or pagination, an error response, a status code, or a breaking change |
 | Skill   | `mysql`               | Writing DDL, migrations, `ALTER TABLE`, or repository queries against MySQL or Aurora MySQL |
 
-`mysql` is a conventions skill rather than an action: general MySQL schema and query rules, with a
-project's own values in its `conventions/sql.md` on top, as the `conventions` skill describes. It is
-here rather than in `prototype-conventions` because nothing in it is specific to prototypes.
+`api-design` and `mysql` are conventions skills rather than actions: general rules, with a project's
+own values in its `conventions/api.md` or `conventions/sql.md` on top, as the `conventions` skill
+describes. They are here rather than in `prototype-conventions` because nothing in them is specific
+to prototypes.
+
+`api-design`'s rules hold whatever serves the API: paths of `/api`, service prefixes, then
+collections, resources and verbs, with CRUD left to the HTTP methods; `snake_case` keys and
+`kebab-case` paths; arrays as repeated `name[]` query parameters, never comma-separated strings;
+`filter[...]` and `q` on list endpoints, with page-based pagination by default; `/me/` for the
+current user's own resources; nested objects for related resources; `422` for validation failures;
+gzipped responses; and a `-v2` resource suffix instead of a version prefix. A project's chosen
+values and exceptions go in its `conventions/api.md`.
 
 ### The commit hooks
 

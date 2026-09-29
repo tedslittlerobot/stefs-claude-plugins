@@ -143,14 +143,16 @@ These hold everywhere; the reference files give the detail and the reasoning.
 
 ## Related
 
-- `documentation` skill — its API-docs reference covers the OpenAPI file that is the contract for
-  an API designed here, and the `api.md` overview beside it
-- `lambdas-go` / `lambdas-node` skills — an API route is served by an `api-<method>-<purpose>`
-  Lambda, one per route; this skill decides what that Lambda accepts and returns
-- `infrastructure` skill — its frontend-hosting reference explains why every route sits under an
-  `/api` path prefix
-- `mysql` skill — shares the `snake_case` naming, which lets a field keep one name from column to
-  JSON key; the rule above against leaking the storage model still decides *whether* a column is
-  exposed
-- `conventions` skill — how the project's own `conventions/api.md` sits on top of this skill, and
-  precedence when they disagree
+- `documentation` skill, in `documentation-and-planning` where installed — its API-docs reference
+  covers the OpenAPI file that is the contract for an API designed here, and the `api.md` overview
+  beside it
+- `lambdas-go` / `lambdas-node` skills, in `prototype-conventions` where installed — an API route is
+  served by an `api-<method>-<purpose>` Lambda, one per route; this skill decides what that Lambda
+  accepts and returns
+- `infrastructure` skill, in the same plugin — its frontend-hosting reference explains why every
+  route sits under an `/api` path prefix
+- `mysql` skill, beside this one in `utils` — shares the `snake_case` naming, which lets a field
+  keep one name from column to JSON key; the rule above against leaking the storage model still
+  decides *whether* a column is exposed
+- `conventions` skill, in `documentation-and-planning` — how the project's own `conventions/api.md`
+  sits on top of this skill, and precedence when they disagree
