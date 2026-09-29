@@ -12,9 +12,9 @@
   },
   "plugins": [
     {
-      "name": "arc-conventions",
-      "source": "./plugins/arc-conventions",
-      "displayName": "Arc Conventions",
+      "name": "prototype-conventions",
+      "source": "./plugins/prototype-conventions",
+      "displayName": "Prototype Conventions",
       "description": "Seven skills carrying the portable layer of a project's software and project architecture conventions: HTTP/JSON API design (payloads, list endpoints, errors, versioning), SPA frontends, Terraform/AWS infrastructure, Go and Node Lambdas, MySQL, and product requirements. How a project records its own conventions, and the documentation, proposal, plan-of-action and glossary rules, are in the sibling documentation-and-planning plugin. Every skill is model-invoked on topic match; the plugin registers no hooks and adds no executable code.",
       "author": {
         "name": "Stefan Horner",

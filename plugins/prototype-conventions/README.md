@@ -1,9 +1,9 @@
-# arc-conventions
+# prototype-conventions
 
 The portable layer of software and project **architecture** conventions, as seven model-invoked
 skills — API design, engineering and infrastructure rules that hold across projects.
 
-The `arc-` prefix is a scope, not decoration: these are the architecture conventions specifically.
+The name is a scope, not decoration. The plugin was called `arc-conventions` until 0.14.0.
 Conventions with a different focus get their own plugin rather than being folded in here, so a
 project can install one scope without the other. How a project records its own conventions (the
 `conventions` skill), and the rules for documents — markdown, the three tenses of documentation,

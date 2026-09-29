@@ -6,7 +6,7 @@ documentation and planning conventions, and a collection of general-purpose util
 
 | Plugin | Covers | Changes a session on its own? |
 | --- | --- | --- |
-| [`arc-conventions`](plugins/arc-conventions) | Seven model-invoked skills carrying the **architecture** conventions that apply across projects: API design, frontends, infrastructure, Lambdas, MySQL and product requirements | No — no hooks, no executable code |
+| [`prototype-conventions`](plugins/prototype-conventions) | Seven model-invoked skills carrying the **architecture** conventions that apply across projects: API design, frontends, infrastructure, Lambdas, MySQL and product requirements | No — no hooks, no executable code |
 | [`documentation-and-planning`](plugins/documentation-and-planning) | Four model-invoked skills carrying the **documentation and planning** conventions: how a project records its own conventions, the markdown rules every document follows, the three tenses of documentation, proposals, plans of action, and the glossary | No — no hooks, no executable code |
 | [`utils`](plugins/utils) | General-purpose commands, skills and agents, including the default-on `auto-summary-commit` workflow | **Yes** — installing it turns commit-per-prompt on. See [The commit hooks](#the-commit-hooks) |
 
@@ -14,7 +14,7 @@ documentation and planning conventions, and a collection of general-purpose util
 
 ```
 /plugin marketplace add tedslittlerobot/stefs-claude-plugins
-/plugin install arc-conventions@stefs-plugins
+/plugin install prototype-conventions@stefs-plugins
 /plugin install documentation-and-planning@stefs-plugins
 /plugin install utils@stefs-plugins
 ```
@@ -23,7 +23,7 @@ Or from the CLI:
 
 ```bash
 claude plugin marketplace add tedslittlerobot/stefs-claude-plugins
-claude plugin install arc-conventions@stefs-plugins
+claude plugin install prototype-conventions@stefs-plugins
 claude plugin install documentation-and-planning@stefs-plugins
 claude plugin install utils@stefs-plugins
 ```
@@ -50,8 +50,8 @@ claude plugin marketplace add ~/Developer/claude/stefs-claude-plugins
 
 ## The conventions plugins
 
-`arc-conventions` and `documentation-and-planning` share one model. Conventions come in two layers,
-and keeping them apart is what makes any of this reusable:
+`prototype-conventions` and `documentation-and-planning` share one model. Conventions come in two
+layers, and keeping them apart is what makes any of this reusable:
 
 | Layer | Lives in | Contains |
 | --- | --- | --- |
@@ -70,7 +70,7 @@ Every skill in both plugins is model-invoked — its `description` decides when 
 body stays out of context until the work actually calls for it. Nothing here fires on its own:
 neither plugin adds hooks, and neither changes anything about a session in which no skill matches.
 
-### `arc-conventions`
+### `prototype-conventions`
 
 | Skill | Covers |
 | --- | --- |
@@ -139,8 +139,8 @@ To switch it off:
 | Always       | Set `AUTO_SUMMARY_COMMIT=off` in the environment                                |
 | Entirely     | Don't install `utils`, or remove `plugins/utils/hooks/` from your fork |
 
-Installing `arc-conventions` or `documentation-and-planning` alone changes nothing about a session
-until a skill matches.
+Installing `prototype-conventions` or `documentation-and-planning` alone changes nothing about a
+session until a skill matches.
 
 ## Repository layout
 
@@ -149,7 +149,7 @@ until a skill matches.
 ├── .claude-plugin/
 │   └── marketplace.json            # marketplace "stefs-plugins" — lists the plugins below
 └── plugins/
-    ├── arc-conventions/            # the portable architecture-convention skills
+    ├── prototype-conventions/            # the portable architecture-convention skills
     │   ├── .claude-plugin/plugin.json
     │   └── skills/<skill-name>/
     │       ├── SKILL.md            # frontmatter + the core rules
@@ -181,7 +181,7 @@ file.
 - **`reference/*.md` holds the detail**, and `SKILL.md` must point at it explicitly by filename.
   Splitting one skill into per-topic reference files is cheaper than splitting it into several
   skills, since every skill's description competes for trigger match
-- **Keep conventions skills portable** — in `arc-conventions` and `documentation-and-planning`
+- **Keep conventions skills portable** — in `prototype-conventions` and `documentation-and-planning`
   alike. No service names, no repository paths, no project-specific values. Those belong in the
   consuming project's `conventions/` file. Where a concrete example genuinely teaches the rule
   better than an abstraction would, frame it as an example
@@ -194,7 +194,7 @@ file.
 ## Validate
 
 ```bash
-claude plugin validate plugins/arc-conventions --strict
+claude plugin validate plugins/prototype-conventions --strict
 claude plugin validate plugins/documentation-and-planning --strict
 claude plugin validate plugins/utils --strict
 ```
@@ -226,6 +226,15 @@ updating the marketplace alone drops them from the session.
 rules — a document-writing subject — and it serves both plugins equally, so it sits with the other
 rules about documents; as before, a project needs `documentation-and-planning` installed to keep
 it. `product-requirements` stays in `arc-conventions`.
+
+`arc-conventions` itself was then renamed `prototype-conventions`, at 0.14.0, with its skill names
+unchanged. The old name is no longer in the marketplace, so a project that had it installed
+uninstalls it and installs the new one:
+
+```
+/plugin uninstall arc-conventions@stefs-plugins
+/plugin install prototype-conventions@stefs-plugins
+```
 
 ## License
 

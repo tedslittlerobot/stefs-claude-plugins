@@ -13,25 +13,25 @@ It carries three independent plugins, and the split matters when deciding where 
 
 | Plugin | Holds | Registers hooks? |
 | --- | --- | --- |
-| `arc-conventions` | Rules to follow on topic match — the portable layer of software and project *architecture* conventions | No, and must not |
+| `prototype-conventions` | Rules to follow on topic match — the portable layer of software and project *architecture* conventions | No, and must not |
 | `documentation-and-planning` | Rules to follow on topic match — the portable layer of *documentation and planning* conventions: markdown, the three tenses of documentation, proposals, plans of action, the glossary | No, and must not |
 | `utils` | General-purpose tooling: commands, agents, and skills that describe an *action* to take | Yes — the two auto-summary-commit hooks |
 
-A skill that states an architecture rule belongs in `arc-conventions`; one that states how a
+A skill that states an architecture rule belongs in `prototype-conventions`; one that states how a
 document is written, where it belongs, or how work is proposed and planned belongs in
 `documentation-and-planning`. A skill that does something at the end of every turn belongs in
 `utils`. That distinction is why `auto-summary-commit` is not an
-`arc-conventions` skill despite being about commits.
+`prototype-conventions` skill despite being about commits.
 
 ## Commands
 
 ```
-claude plugin validate plugins/arc-conventions --strict
+claude plugin validate plugins/prototype-conventions --strict
 claude plugin validate plugins/documentation-and-planning --strict
 claude plugin validate plugins/utils --strict
 /plugin marketplace add tedslittlerobot/stefs-claude-plugins   # consumers; hosted on GitHub
 /plugin marketplace add ~/Developer/claude/stefs-claude-plugins # this clone, to work on the plugins
-/plugin install arc-conventions@stefs-plugins
+/plugin install prototype-conventions@stefs-plugins
 /plugin install documentation-and-planning@stefs-plugins
 /plugin install utils@stefs-plugins
 /plugin marketplace update stefs-plugins                        # pull the latest commit
@@ -69,8 +69,8 @@ Three nested levels, each with its own manifest:
 
 ```
 .claude-plugin/marketplace.json     # marketplace "stefs-plugins", pluginRoot ./plugins
-plugins/arc-conventions/
-  .claude-plugin/plugin.json        # plugin "arc-conventions"
+plugins/prototype-conventions/
+  .claude-plugin/plugin.json        # plugin "prototype-conventions"
   skills/<skill-name>/
     SKILL.md                        # YAML frontmatter (name, description) + the always-loaded rules
     reference/*.md                  # detail, loaded only when SKILL.md points at it by filename
@@ -88,12 +88,12 @@ plugins/utils/
 
 `metadata.pluginRoot` is `./plugins`, so another plugin means creating `plugins/<name>/` and
 appending an entry to `marketplace.json`. **Conventions plugins are scoped by subject.**
-`arc-conventions` carries the software and project *architecture* rules and nothing else, and
+`prototype-conventions` carries the software and project *architecture* rules and nothing else, and
 `documentation-and-planning` the rules for documents and planning; a set of conventions with a
 different subject — a different audience, a different reason to be followed — becomes its own plugin
 rather than more skills in an existing one. Folding them together would mean a project that wants
 one scope loads the other's descriptions into every session, competing for trigger match against
-skills it will never want. The name says the scope: `arc-conventions` kept its `-conventions`
+skills it will never want. The name says the scope: `prototype-conventions` uses a `-conventions`
 suffix, `documentation-and-planning` names its subject directly, and either form is fine for a new
 one so long as the scope is legible from the name. A new skill or command needs no registration
 beyond its file. Reference bundled files from hooks with `${CLAUDE_PLUGIN_ROOT}`, never a relative
@@ -101,7 +101,7 @@ or absolute path — the plugin is copied to a versioned cache directory on inst
 
 ### The two-layer model
 
-This is the organising idea behind every skill in `arc-conventions` and
+This is the organising idea behind every skill in `prototype-conventions` and
 `documentation-and-planning`, and the reason those plugins exist.
 
 | Layer | Lives in | Contains |
@@ -115,11 +115,11 @@ or chosen values has broken the split — those lines belong in the consuming re
 what belongs in a project file versus in `architecture/`, `glossary/`, `instructions/`,
 `proposals/` or `requirements/`.
 
-The seven `arc-conventions` skills divide as: one stack-independent design skill (`api-design`),
-five per-stack (`frontend`, `infrastructure`, `lambdas-go`, `lambdas-node`, `mysql`) and one
-per-document-kind (`product-requirements`). The four `documentation-and-planning` skills are one
-meta-skill (`conventions`), `documentation` (which also carries the markdown rules every document
-follows, such as the table of contents), `plan-of-action` and `glossary`.
+The seven `prototype-conventions` skills divide as: one stack-independent design skill
+(`api-design`), five per-stack (`frontend`, `infrastructure`, `lambdas-go`, `lambdas-node`, `mysql`)
+and one per-document-kind (`product-requirements`). The four `documentation-and-planning` skills are
+one meta-skill (`conventions`), `documentation` (which also carries the markdown rules every
+document follows, such as the table of contents), `plan-of-action` and `glossary`.
 
 `api-design` was briefly its own `api-conventions` plugin, on the reading that rules independent of
 any stack were a different scope. It was merged back before it shipped: API design is architecture,
@@ -138,7 +138,7 @@ Skills cross-reference each other by name in a `## Related` section rather than 
 — `lambdas-node` defers to `lambdas-go` for the shared trigger-naming rules, and both defer to
 `conventions` for precedence. Cross-plugin references work the same way, and the two conventions
 plugins reference each other freely: `api-design` names the `documentation` skill for the OpenAPI
-file, and every `arc-conventions` skill defers to `conventions` for precedence.
+file, and every `prototype-conventions` skill defers to `conventions` for precedence.
 `auto-summary-commit` names the `conventions` skill for a project's commit-message style, and falls
 back to reading the style off `git log` when it is not installed.
 
@@ -233,7 +233,7 @@ The rules in the README's "Adding to a skill" section are binding here:
   the old failure is usually why the new rule is shaped as it is
 - Prose wraps at 100 columns; tables and code blocks run long
 
-Every `arc-conventions` and `documentation-and-planning` `SKILL.md` closes with the same two
+Every `prototype-conventions` and `documentation-and-planning` `SKILL.md` closes with the same two
 sections, and a new skill should keep the shape: a `## References` section listing each
 `reference/*.md` with a one-line note on what it holds (skills with no `reference/` directory omit
 it), then `## Related` naming the sibling skills that carry adjacent rules. `lambdas-node` is the
@@ -254,8 +254,16 @@ later conventions plugin with a different focus has a name available to it. Skil
 alone in both renames — a project `conventions/` file names skills, not plugins, and renaming the
 `conventions` skill would have broken every one of those files for no gain.
 
+`arc-conventions` was renamed again, to `prototype-conventions`, at 0.14.0 — after
+`documentation`, `plan-of-action`, `glossary` and `conventions` had moved out to
+`documentation-and-planning` (at 0.12.0 and 0.13.0, the version numbers `arc-conventions` carried
+then). Skill names were again left alone. A plugin rename is a new plugin as far as an installation
+is concerned: the old name drops out of the marketplace, and a consumer uninstalls
+`arc-conventions` and installs `prototype-conventions@stefs-plugins`.
+
 Anything still referring to the old plugin names or command namespace is stale, with the exception
-of the two paragraphs above.
+of the paragraphs above and the version-cache example under "Bump the plugin version", which
+records the cache path as it was.
 
 ## Other Agent Configs
 
