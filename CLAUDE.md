@@ -9,25 +9,30 @@ no linter; the deliverable is markdown consumed by Claude Code's skill and comma
 the shell scripts `utils`' hooks run. Outside `plugins/utils/hooks/` and
 `plugins/utils/scripts/` there is no executable code at all.
 
-It carries two independent plugins, and the split matters when deciding where something goes:
+It carries three independent plugins, and the split matters when deciding where something goes:
 
 | Plugin | Holds | Registers hooks? |
 | --- | --- | --- |
 | `arc-conventions` | Rules to follow on topic match — the portable layer of software and project *architecture* conventions | No, and must not |
+| `documentation-and-planning` | Rules to follow on topic match — the portable layer of *documentation and planning* conventions: markdown, the three tenses of documentation, proposals, plans of action, the glossary | No, and must not |
 | `utils` | General-purpose tooling: commands, agents, and skills that describe an *action* to take | Yes — the two auto-summary-commit hooks |
 
-A skill that states an architecture rule belongs in `arc-conventions`. A skill that does something
-at the end of every turn belongs in `utils`. That distinction is why `auto-summary-commit` is not an
+A skill that states an architecture rule belongs in `arc-conventions`; one that states how a
+document is written, where it belongs, or how work is proposed and planned belongs in
+`documentation-and-planning`. A skill that does something at the end of every turn belongs in
+`utils`. That distinction is why `auto-summary-commit` is not an
 `arc-conventions` skill despite being about commits.
 
 ## Commands
 
 ```
 claude plugin validate plugins/arc-conventions --strict
+claude plugin validate plugins/documentation-and-planning --strict
 claude plugin validate plugins/utils --strict
 /plugin marketplace add tedslittlerobot/stefs-claude-plugins   # consumers; hosted on GitHub
 /plugin marketplace add ~/Developer/claude/stefs-claude-plugins # this clone, to work on the plugins
 /plugin install arc-conventions@stefs-plugins
+/plugin install documentation-and-planning@stefs-plugins
 /plugin install utils@stefs-plugins
 /plugin marketplace update stefs-plugins                        # pull the latest commit
 /reload-plugins                                                 # after changing anything but a SKILL.md
@@ -69,6 +74,9 @@ plugins/arc-conventions/
   skills/<skill-name>/
     SKILL.md                        # YAML frontmatter (name, description) + the always-loaded rules
     reference/*.md                  # detail, loaded only when SKILL.md points at it by filename
+plugins/documentation-and-planning/
+  .claude-plugin/plugin.json        # plugin "documentation-and-planning"
+  skills/<skill-name>/              # same shape: SKILL.md + reference/*.md
 plugins/utils/
   .claude-plugin/plugin.json        # plugin "utils"
   commands/<name>.md                # slash commands, /utils:<name>
@@ -78,19 +86,23 @@ plugins/utils/
   scripts/                          # helpers invoked by hooks and commands
 ```
 
-`metadata.pluginRoot` is `./plugins`, so a third plugin means creating `plugins/<name>/` and
-appending an entry to `marketplace.json`. **Conventions plugins are scoped by prefix.**
-`arc-conventions` carries the software and project *architecture* rules and nothing else; a set of
-conventions with a different focus — a different subject, a different audience, a different reason
-to be followed — becomes its own `<scope>-conventions` plugin rather than more skills in this one.
-Folding them together would mean a project that wants one scope loads the other's descriptions into
-every session, competing for trigger match against skills it will never want. A new skill or command needs no registration beyond its
-file. Reference bundled files from hooks with `${CLAUDE_PLUGIN_ROOT}`, never a relative or absolute
-path — the plugin is copied to a versioned cache directory on install.
+`metadata.pluginRoot` is `./plugins`, so another plugin means creating `plugins/<name>/` and
+appending an entry to `marketplace.json`. **Conventions plugins are scoped by subject.**
+`arc-conventions` carries the software and project *architecture* rules and nothing else, and
+`documentation-and-planning` the rules for documents and planning; a set of conventions with a
+different subject — a different audience, a different reason to be followed — becomes its own plugin
+rather than more skills in an existing one. Folding them together would mean a project that wants
+one scope loads the other's descriptions into every session, competing for trigger match against
+skills it will never want. The name says the scope: `arc-conventions` kept its `-conventions`
+suffix, `documentation-and-planning` names its subject directly, and either form is fine for a new
+one so long as the scope is legible from the name. A new skill or command needs no registration
+beyond its file. Reference bundled files from hooks with `${CLAUDE_PLUGIN_ROOT}`, never a relative
+or absolute path — the plugin is copied to a versioned cache directory on install.
 
 ### The two-layer model
 
-This is the organising idea behind every `arc-conventions` skill, and the reason that plugin exists.
+This is the organising idea behind every skill in `arc-conventions` and
+`documentation-and-planning`, and the reason those plugins exist.
 
 | Layer | Lives in | Contains |
 | --- | --- | --- |
@@ -103,21 +115,29 @@ or chosen values has broken the split — those lines belong in the consuming re
 what belongs in a project file versus in `architecture/`, `glossary/`, `instructions/`,
 `proposals/` or `requirements/`.
 
-The eleven `arc-conventions` skills divide as: one meta-skill (`conventions`), one
+The eight `arc-conventions` skills divide as: one meta-skill (`conventions`), one
 stack-independent design skill (`api-design`), five per-stack (`frontend`, `infrastructure`,
-`lambdas-go`, `lambdas-node`, `mysql`) and four per-document-kind (`documentation`, `glossary`,
-`plan-of-action`, `product-requirements`). `api-design` was briefly its own `api-conventions`
-plugin, on the reading that rules independent of any stack were a different scope. It was merged
-back before it shipped: API design is architecture, its documentation rules already lived in the
-`documentation` skill, and the `<scope>-conventions` split is for a different *reason to be
-followed*, not a different stack. `plan-of-action` is the
-one that also carries a procedure — implementing the plan, stage by stage — and it lives here
-rather than in `utils` because the document and its execution are the same subject, and both are
-meaningless without the `proposals/` layout the `documentation` skill defines. Skills cross-reference each other by name in
-a `## Related` section rather than duplicating rules — `lambdas-node` defers to `lambdas-go` for
-the shared trigger-naming rules, and both defer to `conventions` for precedence. Cross-plugin
-references work the same way: `auto-summary-commit` names the `conventions` skill for a project's
-commit-message style, and falls back to reading the style off `git log` when it is not installed.
+`lambdas-go`, `lambdas-node`, `mysql`) and one per-document-kind (`product-requirements`). The
+three `documentation-and-planning` skills are `documentation` (which also carries the markdown
+rules every document follows, such as the table of contents), `plan-of-action` and `glossary`.
+
+`api-design` was briefly its own `api-conventions` plugin, on the reading that rules independent of
+any stack were a different scope. It was merged back before it shipped: API design is architecture,
+and the split between conventions plugins is by subject, not by stack. `documentation`,
+`plan-of-action` and `glossary` went the other way at `arc-conventions` 0.12.0: rules about writing
+documents and planning work are a different subject from how software is built, and a project can
+want them without any of the stack skills. `plan-of-action` is the one that also carries a
+procedure — implementing the plan, stage by stage — and it lives beside `documentation` rather than
+in `utils` because the document and its execution are the same subject, and both are meaningless
+without the `proposals/` layout the `documentation` skill defines.
+
+Skills cross-reference each other by name in a `## Related` section rather than duplicating rules
+— `lambdas-node` defers to `lambdas-go` for the shared trigger-naming rules, and both defer to
+`conventions` for precedence. Cross-plugin references work the same way, and the two conventions
+plugins reference each other freely: `api-design` names the `documentation` skill for the OpenAPI
+file, and the `documentation-and-planning` skills name `conventions` for precedence.
+`auto-summary-commit` names the `conventions` skill for a project's commit-message style, and falls
+back to reading the style off `git log` when it is not installed.
 
 ## The auto-summary-commit hooks
 
@@ -210,11 +230,11 @@ The rules in the README's "Adding to a skill" section are binding here:
   the old failure is usually why the new rule is shaped as it is
 - Prose wraps at 100 columns; tables and code blocks run long
 
-Every `arc-conventions` `SKILL.md` closes with the same two sections, and a new skill should keep the
-shape: a `## References` section listing each `reference/*.md` with a one-line note on what it
-holds (skills with no `reference/` directory omit it), then `## Related` naming the sibling skills
-that carry adjacent rules. `lambdas-node` is the one skill with a reference file but no
-`## References` section — it names the file inline instead.
+Every `arc-conventions` and `documentation-and-planning` `SKILL.md` closes with the same two
+sections, and a new skill should keep the shape: a `## References` section listing each
+`reference/*.md` with a one-line note on what it holds (skills with no `reference/` directory omit
+it), then `## Related` naming the sibling skills that carry adjacent rules. `lambdas-node` is the
+one skill with a reference file but no `## References` section — it names the file inline instead.
 
 ## History
 
