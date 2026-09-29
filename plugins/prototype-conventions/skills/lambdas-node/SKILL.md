@@ -1,9 +1,32 @@
 ---
 name: lambdas-node
-description: Node.js AWS Lambda conventions — when Node is justified over Go, ESM/.mjs modules, the nodejs runtime and index.handler entry point, factory-function dependency injection, node --test with co-located .test.mjs files, the structured log line format, npm-install-on-package packaging, and the same trigger-based directory naming as Go Lambdas (api-<method>-, sqs-, bus-, s3-, ninja-). Use when writing, editing, reviewing or testing a Node.js Lambda, or deciding whether a Lambda may be written in Node at all.
+description: Node.js AWS Lambda conventions — when Node is justified over Go, ESM/.mjs modules, the nodejs runtime and index.handler entry point, factory-function dependency injection, node --test with co-located .test.mjs files, the structured log line format, npm-install-on-package packaging, and the same trigger-based directory naming as Go Lambdas (api-<method>-, sqs-, bus-, s3-, ninja-). Use when writing, editing, reviewing or testing a Node.js Lambda, or deciding whether a Lambda may be written in Node at all. Prototype and proof-of-concept projects only — not for production.
 ---
 
 # Node.js Lambda Conventions
+
+> **Prototypes and proofs of concept only — not for production.** This skill is part of the
+> `prototype-conventions` plugin, whose rules are chosen for building a prototype or
+> proof-of-concept project quickly, not for what a production system needs.
+>
+> Before applying it, check that this project is a prototype or proof of concept — its README,
+> `CLAUDE.md` or `conventions/` files will usually say. If they do, carry on without raising it
+> again. If nothing says either way, ask the user before applying any of these rules. If the project
+> is **not** a prototype, **do not apply these rules**: say so, and offer to disable the plugin for
+> this project by adding it to the project's `.claude/settings.json`, merged into whatever is
+> already there:
+>
+> ```json
+> {
+>   "enabledPlugins": {
+>     "prototype-conventions@stefs-plugins": false
+>   }
+> }
+> ```
+>
+> Make that change only once the user agrees. Project settings override user settings, so this
+> switches the plugin off for this repository alone, and committing the file does so for everyone
+> who works on it.
 
 Applies to every Node.js Lambda function in the repository.
 

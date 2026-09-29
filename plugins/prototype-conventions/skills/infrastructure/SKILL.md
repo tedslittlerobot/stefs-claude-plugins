@@ -1,9 +1,32 @@
 ---
 name: infrastructure
-description: Terraform and AWS conventions — never running apply, per-environment tfvars and workspaces, recorded outputs, file organisation, default_tags, project_prefix resource naming, terraform-aws-modules preferences, Lambda timeouts, and references for S3/CloudFront frontend hosting, Route 53/SES, Cognito and WAF. Use when writing or editing .tf files, running terraform plan or validate, naming AWS resources, adding infrastructure for a new feature, or debugging an apply-time AWS error.
+description: Terraform and AWS conventions — never running apply, per-environment tfvars and workspaces, recorded outputs, file organisation, default_tags, project_prefix resource naming, terraform-aws-modules preferences, Lambda timeouts, and references for S3/CloudFront frontend hosting, Route 53/SES, Cognito and WAF. Use when writing or editing .tf files, running terraform plan or validate, naming AWS resources, adding infrastructure for a new feature, or debugging an apply-time AWS error. Prototype and proof-of-concept projects only — not for production.
 ---
 
 # Terraform & AWS Conventions
+
+> **Prototypes and proofs of concept only — not for production.** This skill is part of the
+> `prototype-conventions` plugin, whose rules are chosen for building a prototype or
+> proof-of-concept project quickly, not for what a production system needs.
+>
+> Before applying it, check that this project is a prototype or proof of concept — its README,
+> `CLAUDE.md` or `conventions/` files will usually say. If they do, carry on without raising it
+> again. If nothing says either way, ask the user before applying any of these rules. If the project
+> is **not** a prototype, **do not apply these rules**: say so, and offer to disable the plugin for
+> this project by adding it to the project's `.claude/settings.json`, merged into whatever is
+> already there:
+>
+> ```json
+> {
+>   "enabledPlugins": {
+>     "prototype-conventions@stefs-plugins": false
+>   }
+> }
+> ```
+>
+> Make that change only once the user agrees. Project settings override user settings, so this
+> switches the plugin off for this repository alone, and committing the file does so for everyone
+> who works on it.
 
 Applies to every Terraform root in the repository. Each service has its own `terraform/` directory
 and is **applied independently** — there are no shared runtime resources between services, and

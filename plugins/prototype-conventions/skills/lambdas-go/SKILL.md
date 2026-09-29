@@ -1,9 +1,32 @@
 ---
 name: lambdas-go
-description: Go AWS Lambda conventions — directory naming by trigger (ninja-, api-<method>-, sqs-, bus-, s3-), one Go module per Lambda compiled to a bootstrap binary, the main.go/handler.go root package with everything else in sub-packages, Go package naming, the structured log line format, file organisation, build commands and testing. Use when writing, editing, reviewing or testing Go Lambda code, creating a new Lambda directory, or deciding which package something belongs in.
+description: Go AWS Lambda conventions — directory naming by trigger (ninja-, api-<method>-, sqs-, bus-, s3-), one Go module per Lambda compiled to a bootstrap binary, the main.go/handler.go root package with everything else in sub-packages, Go package naming, the structured log line format, file organisation, build commands and testing. Use when writing, editing, reviewing or testing Go Lambda code, creating a new Lambda directory, or deciding which package something belongs in. Prototype and proof-of-concept projects only — not for production.
 ---
 
 # Go Lambda Conventions
+
+> **Prototypes and proofs of concept only — not for production.** This skill is part of the
+> `prototype-conventions` plugin, whose rules are chosen for building a prototype or
+> proof-of-concept project quickly, not for what a production system needs.
+>
+> Before applying it, check that this project is a prototype or proof of concept — its README,
+> `CLAUDE.md` or `conventions/` files will usually say. If they do, carry on without raising it
+> again. If nothing says either way, ask the user before applying any of these rules. If the project
+> is **not** a prototype, **do not apply these rules**: say so, and offer to disable the plugin for
+> this project by adding it to the project's `.claude/settings.json`, merged into whatever is
+> already there:
+>
+> ```json
+> {
+>   "enabledPlugins": {
+>     "prototype-conventions@stefs-plugins": false
+>   }
+> }
+> ```
+>
+> Make that change only once the user agrees. Project settings override user settings, so this
+> switches the plugin off for this repository alone, and committing the file does so for everyone
+> who works on it.
 
 Applies to every Go Lambda function in the repository. A Lambda written in another language is a
 **registered exception** recorded in the project's own conventions — see the `lambdas-node` skill

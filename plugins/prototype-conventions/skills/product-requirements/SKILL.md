@@ -1,9 +1,32 @@
 ---
 name: product-requirements
-description: Writing user requirements — what counts as a user-level feature versus a system one, one requirement per file grouping related user stories, the required sections (Dependencies, Risk Assessment, User Stories with Gherkin stories and acceptance criteria, Test Coverage notes, Light Risk Assessment, Caveats). Use when writing or editing a requirement or user story, adding acceptance criteria, updating test-coverage notes after adding tests, or doing a risk assessment.
+description: Writing user requirements — what counts as a user-level feature versus a system one, one requirement per file grouping related user stories, the required sections (Dependencies, Risk Assessment, User Stories with Gherkin stories and acceptance criteria, Test Coverage notes, Light Risk Assessment, Caveats). Use when writing or editing a requirement or user story, adding acceptance criteria, updating test-coverage notes after adding tests, or doing a risk assessment. Prototype and proof-of-concept projects only — not for production.
 ---
 
 # User Requirements
+
+> **Prototypes and proofs of concept only — not for production.** This skill is part of the
+> `prototype-conventions` plugin, whose rules are chosen for building a prototype or
+> proof-of-concept project quickly, not for what a production system needs.
+>
+> Before applying it, check that this project is a prototype or proof of concept — its README,
+> `CLAUDE.md` or `conventions/` files will usually say. If they do, carry on without raising it
+> again. If nothing says either way, ask the user before applying any of these rules. If the project
+> is **not** a prototype, **do not apply these rules**: say so, and offer to disable the plugin for
+> this project by adding it to the project's `.claude/settings.json`, merged into whatever is
+> already there:
+>
+> ```json
+> {
+>   "enabledPlugins": {
+>     "prototype-conventions@stefs-plugins": false
+>   }
+> }
+> ```
+>
+> Make that change only once the user agrees. Project settings override user settings, so this
+> switches the plugin off for this repository alone, and committing the file does so for everyone
+> who works on it.
 
 Requirements live in a **`requirements/`** directory at the repository root, one markdown file per
 requirement.

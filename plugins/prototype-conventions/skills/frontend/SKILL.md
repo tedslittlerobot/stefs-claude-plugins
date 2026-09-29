@@ -1,9 +1,32 @@
 ---
 name: frontend
-description: SPA frontend development — AlpineJS + Tailwind CSS v4 + Pinecone Router loaded from CDN at pinned versions with no build step, the index.html/app.js/views layout, adding a route, Terraform-rendered runtime config, S3 deployment, design-idiom rules and the settled accessibility patterns. Use when writing or editing any frontend HTML/CSS/JS, adding a page or route, working with Alpine components or Tailwind utilities, or reviewing frontend markup.
+description: SPA frontend development — AlpineJS + Tailwind CSS v4 + Pinecone Router loaded from CDN at pinned versions with no build step, the index.html/app.js/views layout, adding a route, Terraform-rendered runtime config, S3 deployment, design-idiom rules and the settled accessibility patterns. Use when writing or editing any frontend HTML/CSS/JS, adding a page or route, working with Alpine components or Tailwind utilities, or reviewing frontend markup. Prototype and proof-of-concept projects only — not for production.
 ---
 
 # Frontend Conventions
+
+> **Prototypes and proofs of concept only — not for production.** This skill is part of the
+> `prototype-conventions` plugin, whose rules are chosen for building a prototype or
+> proof-of-concept project quickly, not for what a production system needs.
+>
+> Before applying it, check that this project is a prototype or proof of concept — its README,
+> `CLAUDE.md` or `conventions/` files will usually say. If they do, carry on without raising it
+> again. If nothing says either way, ask the user before applying any of these rules. If the project
+> is **not** a prototype, **do not apply these rules**: say so, and offer to disable the plugin for
+> this project by adding it to the project's `.claude/settings.json`, merged into whatever is
+> already there:
+>
+> ```json
+> {
+>   "enabledPlugins": {
+>     "prototype-conventions@stefs-plugins": false
+>   }
+> }
+> ```
+>
+> Make that change only once the user agrees. Project settings override user settings, so this
+> switches the plugin off for this repository alone, and committing the file does so for everyone
+> who works on it.
 
 Every frontend is built the same way, from the same libraries, in the same directory shape. This is
 binding on any **new** frontend too — a new frontend does not get to pick a different framework.

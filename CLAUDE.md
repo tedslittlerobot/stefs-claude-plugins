@@ -243,6 +243,14 @@ The rules in the README's "Adding to a skill" section are binding here:
   the old failure is usually why the new rule is shaped as it is
 - Prose wraps at 100 columns; tables and code blocks run long
 
+Every `prototype-conventions` `SKILL.md` also **opens**, straight after its `#` title, with the same
+prototype-only note: check the project is a prototype or proof of concept, ask when nothing says,
+and for a project that is not one, offer to add `"prototype-conventions@stefs-plugins": false` under
+`enabledPlugins` in its `.claude/settings.json`. The note is identical in all five, so a change to
+it is made to all five at once; a new skill in that plugin copies it verbatim, and its frontmatter
+`description` ends "Prototype and proof-of-concept projects only — not for production." The plugin
+description is not in context when a skill fires, so the warning cannot live only there.
+
 Every `prototype-conventions` and `documentation-and-planning` `SKILL.md` closes with the same two
 sections, and a new skill should keep the shape: a `## References` section listing each
 `reference/*.md` with a one-line note on what it holds (skills with no `reference/` directory omit
