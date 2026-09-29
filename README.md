@@ -101,7 +101,7 @@ needs.
 | Command | `/utils:hello`        | A smoke test — reports what the plugin currently provides                                                                                                        |
 | Skill   | `auto-summary-commit` | The default commit workflow: after any prompt that changed files, stage them and commit onto the current branch straight away — recording the prompt and the summary in the commit body |
 | Skill   | `api-design`          | HTTP/JSON APIs, designed for the human calling them first: principles, `kebab-case` URLs and the `data`/`error` envelope, `snake_case` naming and data types, methods and status codes, list endpoints (`q` search, `filter[...]`, `sort[]`, page-based pagination), errors and `400` versus `422`, versioning by resource suffix, auth and rate limiting |
-| Skill   | `mysql`               | General MySQL/Aurora schema and query conventions: snake_case naming, UUIDv7 keys, timestamps, adding columns, SQL formatting |
+| Skill   | `mysql`               | General MySQL/Aurora schema and query conventions: snake_case naming, UUIDv7 keys, timestamps, adding columns, SQL formatting, JSON operators, efficient index use |
 
 `api-design` and `mysql` are the conventions skills in `utils`. They follow the same two-layer
 model as the conventions plugins — a project's own values go in its `conventions/api.md` or

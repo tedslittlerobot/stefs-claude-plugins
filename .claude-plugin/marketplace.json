@@ -57,7 +57,7 @@
       "name": "utils",
       "source": "./plugins/utils",
       "displayName": "Utils",
-      "description": "General-purpose utility commands, skills and agents for Claude Code, plus general conventions that are not specific to prototypes: api-design (HTTP/JSON URLs, payloads, list endpoints with filter[...], q and page-based pagination, 400 versus 422 errors, resource-suffix versioning) and mysql (schema naming, UUIDv7 keys, timestamps, migrations and SQL formatting). Includes the default-on auto-summary-commit workflow: a pair of hooks commits the prompt and its summary at the end of every turn that changed files, scoped to the paths that turn actually changed.",
+      "description": "General-purpose utility commands, skills and agents for Claude Code, plus general conventions that are not specific to prototypes: api-design (HTTP/JSON URLs, payloads, list endpoints with filter[...], q and page-based pagination, 400 versus 422 errors, resource-suffix versioning) and mysql (schema naming, UUIDv7 keys, timestamps, migrations, SQL formatting, JSON operators and efficient index use). Includes the default-on auto-summary-commit workflow: a pair of hooks commits the prompt and its summary at the end of every turn that changed files, scoped to the paths that turn actually changed.",
       "author": {
         "name": "Stefan Horner",
         "url": "https://github.com/tedslittlerobot"
