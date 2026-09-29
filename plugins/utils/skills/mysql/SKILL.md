@@ -54,9 +54,13 @@ this skill disagree, the project file wins.
 
 ## Related
 
-- Testing repository code against a schema: see the `lambdas-go` skill's testing reference
-  (`go-sqlmock`, and how to assert a query *doesn't* select a column)
-- Documenting a schema: see the `documentation` skill — data designs live in
+- Testing repository code against a schema: see the `lambdas-go` skill's testing reference, in
+  `prototype-conventions` where installed (`go-sqlmock`, and how to assert a query *doesn't* select
+  a column)
+- Documenting a schema: see the `documentation` skill, in `documentation-and-planning` where
+  installed — data designs live in
   `architecture/<service>/data-design-mysql.md`, and ER diagrams are MermaidJS `erDiagram` blocks
   rendered to a PNG
-- Naming the *concepts* the tables represent: see the `glossary` skill
+- Naming the *concepts* the tables represent: see the `glossary` skill, in the same plugin
+- Precedence between this skill and a project's `conventions/sql.md`: see the `conventions` skill,
+  in the same plugin

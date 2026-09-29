@@ -1,14 +1,15 @@
 # Stef's Claude Plugins
 
-A [Claude Code](https://code.claude.com/docs) plugin marketplace hosting three plugins: the
-**portable layer** of our software and project architecture conventions, the portable layer of our
-documentation and planning conventions, and a collection of general-purpose utilities.
+A [Claude Code](https://code.claude.com/docs) plugin marketplace hosting three plugins:
+conventions for building **prototypes and proof-of-concept projects**, the portable layer of our
+documentation and planning conventions, and a collection of general-purpose utilities and
+conventions.
 
 | Plugin | Covers | Changes a session on its own? |
 | --- | --- | --- |
-| [`prototype-conventions`](plugins/prototype-conventions) | Seven model-invoked skills carrying the **architecture** conventions that apply across projects: API design, frontends, infrastructure, Lambdas, MySQL and product requirements | No — no hooks, no executable code |
+| [`prototype-conventions`](plugins/prototype-conventions) | Conventions and guidelines for building **prototypes and proof-of-concept projects — not for production use**. Six model-invoked skills: API design, frontends, infrastructure, Lambdas and product requirements | No — no hooks, no executable code |
 | [`documentation-and-planning`](plugins/documentation-and-planning) | Four model-invoked skills carrying the **documentation and planning** conventions: how a project records its own conventions, the markdown rules every document follows, the three tenses of documentation, proposals, plans of action, and the glossary | No — no hooks, no executable code |
-| [`utils`](plugins/utils) | General-purpose commands, skills and agents, including the default-on `auto-summary-commit` workflow | **Yes** — installing it turns commit-per-prompt on. See [The commit hooks](#the-commit-hooks) |
+| [`utils`](plugins/utils) | General-purpose commands, skills and agents, including the default-on `auto-summary-commit` workflow, and general conventions not specific to prototypes (`mysql`) | **Yes** — installing it turns commit-per-prompt on. See [The commit hooks](#the-commit-hooks) |
 
 ## Install
 
@@ -72,6 +73,10 @@ neither plugin adds hooks, and neither changes anything about a session in which
 
 ### `prototype-conventions`
 
+For prototypes and proof-of-concept projects only — **not for production use**. The rules are
+chosen for how quickly a prototype can be built and understood, not for what a production system
+needs.
+
 | Skill | Covers |
 | --- | --- |
 | `api-design` | HTTP/JSON APIs, designed for the human calling them first: principles, `kebab-case` URLs and the `data`/`error` envelope, `snake_case` naming and data types, methods and status codes, list endpoints (`q` search, `filter[...]`, `sort[]`, page-based pagination), errors and `400` versus `422`, versioning by resource suffix, auth and rate limiting |
@@ -79,7 +84,6 @@ neither plugin adds hooks, and neither changes anything about a session in which
 | `infrastructure` | Terraform and AWS: tfvars and workspaces, recorded outputs, naming and tagging, S3/CloudFront hosting, Route 53/SES, Cognito, WAF |
 | `lambdas-go` | Go Lambdas: trigger-based naming, module layout, package naming, logging, shared libraries, testing |
 | `lambdas-node` | Node.js Lambdas: when Node is justified at all, ESM, factory-function DI, `node --test`, packaging |
-| `mysql` | MySQL/Aurora schema and query conventions |
 | `product-requirements` | Requirements and user stories: sections, Gherkin, acceptance criteria, test-coverage notes, risk assessment |
 
 ### `documentation-and-planning`
@@ -97,6 +101,11 @@ neither plugin adds hooks, and neither changes anything about a session in which
 | ------- | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | Command | `/utils:hello`        | A smoke test — reports what the plugin currently provides                                                                                                        |
 | Skill   | `auto-summary-commit` | The default commit workflow: after any prompt that changed files, stage them and commit onto the current branch straight away — recording the prompt and the summary in the commit body |
+| Skill   | `mysql`               | General MySQL/Aurora schema and query conventions: snake_case naming, UUIDv7 keys, timestamps, adding columns, SQL formatting |
+
+`mysql` is the one conventions skill in `utils`. It follows the same two-layer model as the
+conventions plugins — a project's own values go in its `conventions/sql.md` — and it lives here
+rather than in `prototype-conventions` because nothing in it is specific to prototypes.
 
 ### The commit hooks
 
@@ -149,7 +158,7 @@ session until a skill matches.
 ├── .claude-plugin/
 │   └── marketplace.json            # marketplace "stefs-plugins" — lists the plugins below
 └── plugins/
-    ├── prototype-conventions/            # the portable architecture-convention skills
+    ├── prototype-conventions/      # conventions for prototypes and proofs of concept
     │   ├── .claude-plugin/plugin.json
     │   └── skills/<skill-name>/
     │       ├── SKILL.md            # frontmatter + the core rules
@@ -235,6 +244,10 @@ uninstalls it and installs the new one:
 /plugin uninstall arc-conventions@stefs-plugins
 /plugin install prototype-conventions@stefs-plugins
 ```
+
+At `prototype-conventions` 0.15.0 the plugin took its current scope — prototypes and proofs of
+concept, not production — and `mysql` moved to `utils` (0.4.0), since its rules hold for any
+project. A project that wants `mysql` needs `utils` installed.
 
 ## License
 

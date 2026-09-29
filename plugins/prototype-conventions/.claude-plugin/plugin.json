@@ -1,8 +1,8 @@
 {
   "name": "prototype-conventions",
   "displayName": "Prototype Conventions",
-  "version": "0.14.0",
-  "description": "The portable layer of software and project *architecture* conventions: HTTP/JSON API design, frontend, infrastructure, lambdas (Go and Node), MySQL and product requirements. The meta-skill for how a project records its own conventions is in the sibling documentation-and-planning plugin.",
+  "version": "0.15.0",
+  "description": "Conventions and guidelines for building prototypes and proof-of-concept projects — not for production use. HTTP/JSON API design, SPA frontends, Terraform/AWS infrastructure, Go and Node Lambdas, and product requirements.",
   "author": {
     "name": "Stefan Horner",
     "url": "https://github.com/tedslittlerobot"
@@ -12,8 +12,8 @@
   "license": "MIT",
   "keywords": [
     "conventions",
-    "architecture",
-    "standards",
-    "api"
+    "prototypes",
+    "proof-of-concept",
+    "standards"
   ]
 }

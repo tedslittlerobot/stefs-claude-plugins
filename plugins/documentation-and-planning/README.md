@@ -5,11 +5,11 @@ how a project records its own conventions, how its markdown documents are writte
 belongs, how a design is proposed and then planned and built in stages, and how the terms it all
 relies on are defined.
 
-It sits beside [`prototype-conventions`](../prototype-conventions), which carries the architecture
-rules, and follows the same two-layer model: the skills carry the portable rules, and a consuming
-repository records its own values and exceptions in `conventions/<topic>.md`, which wins where the
-two differ. The `conventions` skill documents that model, for both plugins. See the [repository
-README](../../README.md) for installation.
+It sits beside [`prototype-conventions`](../prototype-conventions), which carries the conventions
+for prototypes and proofs of concept, and follows the same two-layer model: the skills carry the
+portable rules, and a consuming repository records its own values and exceptions in
+`conventions/<topic>.md`, which wins where the two differ. The `conventions` skill documents that
+model, for both plugins. See the [repository README](../../README.md) for installation.
 
 ## Skills
 

@@ -13,15 +13,18 @@ It carries three independent plugins, and the split matters when deciding where 
 
 | Plugin | Holds | Registers hooks? |
 | --- | --- | --- |
-| `prototype-conventions` | Rules to follow on topic match — the portable layer of software and project *architecture* conventions | No, and must not |
+| `prototype-conventions` | Rules to follow on topic match — conventions and guidelines for building *prototypes and proof-of-concept projects*, not for production use | No, and must not |
 | `documentation-and-planning` | Rules to follow on topic match — the portable layer of *documentation and planning* conventions: markdown, the three tenses of documentation, proposals, plans of action, the glossary | No, and must not |
-| `utils` | General-purpose tooling: commands, agents, and skills that describe an *action* to take | Yes — the two auto-summary-commit hooks |
+| `utils` | General-purpose tooling — commands, agents, and skills that describe an *action* to take — plus general conventions that are not specific to prototypes (`mysql`) | Yes — the two auto-summary-commit hooks |
 
-A skill that states an architecture rule belongs in `prototype-conventions`; one that states how a
-document is written, where it belongs, or how work is proposed and planned belongs in
-`documentation-and-planning`. A skill that does something at the end of every turn belongs in
-`utils`. That distinction is why `auto-summary-commit` is not an
-`prototype-conventions` skill despite being about commits.
+A rule for how a prototype or proof of concept is built belongs in `prototype-conventions`; one
+that states how a document is written, where it belongs, or how work is proposed and planned
+belongs in `documentation-and-planning`. A convention that holds whatever the project — production
+included — and fits neither of those belongs in `utils`, as `mysql` does, alongside the skills that
+do something, such as the one that runs at the end of every turn. That distinction is why
+`auto-summary-commit` is not a conventions skill despite being about commits, and why `mysql` left
+`prototype-conventions`: nothing in it is specific to prototypes, and a production project should
+be able to use it without installing a plugin that says it is not for production.
 
 ## Commands
 
@@ -88,21 +91,22 @@ plugins/utils/
 
 `metadata.pluginRoot` is `./plugins`, so another plugin means creating `plugins/<name>/` and
 appending an entry to `marketplace.json`. **Conventions plugins are scoped by subject.**
-`prototype-conventions` carries the software and project *architecture* rules and nothing else, and
-`documentation-and-planning` the rules for documents and planning; a set of conventions with a
-different subject — a different audience, a different reason to be followed — becomes its own plugin
-rather than more skills in an existing one. Folding them together would mean a project that wants
-one scope loads the other's descriptions into every session, competing for trigger match against
-skills it will never want. The name says the scope: `prototype-conventions` uses a `-conventions`
-suffix, `documentation-and-planning` names its subject directly, and either form is fine for a new
-one so long as the scope is legible from the name. A new skill or command needs no registration
-beyond its file. Reference bundled files from hooks with `${CLAUDE_PLUGIN_ROOT}`, never a relative
-or absolute path — the plugin is copied to a versioned cache directory on install.
+`prototype-conventions` carries the rules for building prototypes and proofs of concept and nothing
+else, and `documentation-and-planning` the rules for documents and planning; a set of conventions
+with a different subject — a different audience, a different reason to be followed — becomes its own
+plugin rather than more skills in an existing one. Folding them together would mean a project that
+wants one scope loads the other's descriptions into every session, competing for trigger match
+against skills it will never want. The name says the scope: `prototype-conventions` uses a
+`-conventions` suffix, `documentation-and-planning` names its subject directly, and either form is
+fine for a new one so long as the scope is legible from the name. A new skill or command needs no
+registration beyond its file. Reference bundled files from hooks with `${CLAUDE_PLUGIN_ROOT}`, never
+a relative or absolute path — the plugin is copied to a versioned cache directory on install.
 
 ### The two-layer model
 
 This is the organising idea behind every skill in `prototype-conventions` and
-`documentation-and-planning`, and the reason those plugins exist.
+`documentation-and-planning`, and the reason those plugins exist. `mysql`, the one conventions
+skill in `utils`, follows it too.
 
 | Layer | Lives in | Contains |
 | --- | --- | --- |
@@ -115,9 +119,9 @@ or chosen values has broken the split — those lines belong in the consuming re
 what belongs in a project file versus in `architecture/`, `glossary/`, `instructions/`,
 `proposals/` or `requirements/`.
 
-The seven `prototype-conventions` skills divide as: one stack-independent design skill
-(`api-design`), five per-stack (`frontend`, `infrastructure`, `lambdas-go`, `lambdas-node`, `mysql`)
-and one per-document-kind (`product-requirements`). The four `documentation-and-planning` skills are
+The six `prototype-conventions` skills divide as: one stack-independent design skill
+(`api-design`), four per-stack (`frontend`, `infrastructure`, `lambdas-go`, `lambdas-node`) and one
+per-document-kind (`product-requirements`). The four `documentation-and-planning` skills are
 one meta-skill (`conventions`), `documentation` (which also carries the markdown rules every
 document follows, such as the table of contents), `plan-of-action` and `glossary`.
 
@@ -129,6 +133,8 @@ documents and planning work are a different subject from how software is built, 
 want them without any of the stack skills. `conventions` followed at 0.13.0: recording a project's
 rules is itself a document-writing subject, and the meta-skill serves both plugins equally.
 `product-requirements` stayed, as the per-document-kind skill closest to the software it specifies.
+When the plugin was renamed `prototype-conventions` at 0.14.0 and given its prototype-only scope at
+0.15.0, `mysql` moved to `utils`, since its rules are general rather than prototype-specific.
 `plan-of-action` is the one that also carries a procedure — implementing the plan, stage by stage —
 and it lives beside `documentation` rather than in `utils` because the document and its execution
 are the same subject, and both are meaningless without the `proposals/` layout the `documentation`

@@ -1,6 +1,7 @@
 # Utils
 
-General-purpose utility commands, skills and agents for Claude Code.
+General-purpose utility commands, skills and agents for Claude Code, and general conventions that
+hold beyond prototypes.
 
 ## What's in it
 
@@ -8,6 +9,11 @@ General-purpose utility commands, skills and agents for Claude Code.
 | ------- | --------------------- | -------------------------------------------------------------- |
 | Command | `/utils:hello`        | You run it — a smoke test that reports what the plugin provides |
 | Skill   | `auto-summary-commit` | Any prompt has just changed git-tracked files — it runs by default, last |
+| Skill   | `mysql`               | Writing DDL, migrations, `ALTER TABLE`, or repository queries against MySQL or Aurora MySQL |
+
+`mysql` is a conventions skill rather than an action: general MySQL schema and query rules, with a
+project's own values in its `conventions/sql.md` on top, as the `conventions` skill describes. It is
+here rather than in `prototype-conventions` because nothing in it is specific to prototypes.
 
 ### The commit hooks
 
