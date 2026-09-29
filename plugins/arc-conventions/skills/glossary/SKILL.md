@@ -40,6 +40,12 @@ glossary/
 Every entry follows this template:
 
 ```markdown
+**Contents**
+
+- [<Term> (<Abbreviation>)](#<term-slug>)
+  - [<each ## section>](#<section-slug>)
+  - [Related](#related)
+
 # <Term> (<Abbreviation>)
 
 > One-sentence definition, written so it can be lifted verbatim into `index.md`.
@@ -54,6 +60,9 @@ its format, and what it is explicitly *not*.>
 - [<Other Term>](./<other-term>.md) — one line on how it relates
 ```
 
+- The **contents** above the title list the `#` heading and every `##` section, as every markdown
+  document's do — see the `documentation` skill's "Table of Contents" rule. Drop the Related line
+  when the entry has no Related section
 - The `>` blockquote immediately under the `#` heading is the **canonical one-sentence definition**.
   It must stand alone without the rest of the entry, because it is the line copied into `index.md`
 - Write entries in the **third person, present tense**, defining the thing itself ("A User ANCHOR

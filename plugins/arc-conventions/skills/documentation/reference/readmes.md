@@ -3,6 +3,9 @@
 Two kinds of directory carry a mandatory `README.md` with a fixed section list: a Lambda, and a
 shared library. Both formats are exact — the sections, and their order, are the convention.
 
+Every README keeps a table of contents above its first section, like every other document — see
+the documentation skill's "Table of Contents" rule. The sections below are what it lists.
+
 ## Lambda READMEs
 
 Every Lambda directory must contain a `README.md`, **in addition to** the `schema.md` required by

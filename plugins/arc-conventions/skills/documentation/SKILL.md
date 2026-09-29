@@ -1,6 +1,6 @@
 ---
 name: documentation
-description: How to write the project's markdown documents and which context each belongs in — architecture/ for what IS built, instructions/ for what a human does, proposals/ for what could be built, plus API overview documents, Lambda and shared-library READMEs, and the Mingrammer/MermaidJS diagram conventions. Use when writing or editing any markdown document, deciding where a document belongs, adding a README or api.md, writing a proposal or recording a decision in one, evaluating a suggested design, or creating an architecture or ER diagram.
+description: How to write the project's markdown documents and which context each belongs in — architecture/ for what IS built, instructions/ for what a human does, proposals/ for what could be built, the table of contents every markdown file must keep up to date, plus API overview documents, Lambda and shared-library READMEs, and the Mingrammer/MermaidJS diagram conventions. Use when writing or editing any markdown document, adding, renaming or removing a heading, adding or updating a table of contents, deciding where a document belongs, adding a README or api.md, writing a proposal or recording a decision in one, evaluating a suggested design, or creating an architecture or ER diagram.
 ---
 
 # Documentation Conventions
@@ -87,6 +87,71 @@ glossary/                                  # governed by the `glossary` skill, n
 - **Say what a thing deliberately is not.** Boundaries are what readers get wrong
 - **Correct in place, and say it was corrected.** When a document is superseded by new
   understanding, say what it used to claim and why that was wrong, rather than silently rewriting
+
+## Table of Contents
+
+**Every markdown document keeps an up-to-date table of contents** listing its headings, each
+linked to the heading it names. That is every document, not just the long ones: architecture
+documentation, `api.md` overviews, Lambda `schema.md` files, READMEs, instructions, proposals and
+Plan of Action stage files — and the files whose format another skill defines (conventions files,
+glossary entries, requirements), which follow this rule as well as their own template.
+
+Documents are read out of order: someone arrives from a link wanting one section, and an agent
+opening a file reads its top first. The contents tell both what the document covers and where,
+without reading it. A hosting platform's generated outline does not help in an editor, a terminal
+or a raw-file read, which is where most of these documents are read.
+
+### Where it goes
+
+**Before the document's first heading.** The only things that may come above it are:
+
+- a **pre-amble or introduction** — a paragraph or two of opening content that is not under a
+  heading
+- in a **proposal or Plan of Action stage file**, the **status box** — the status line or status
+  header blockquote that must open those files — with the contents straight after it
+
+So a document reads status box (where it has one), then any introduction, then the contents, then
+its first heading. Because the contents sit above the first heading, they have **no heading of
+their own** — a `## Contents` heading would itself be the first heading. Mark them with a bold
+`**Contents**` line instead.
+
+### What it lists
+
+- **Every H1, always.** A document's title is in its own contents
+- **Every major section.** Below H1, which levels are listed is a decision for each document: a
+  short document lists every heading, a long one may leave out small subsections that would bury the
+  sections a reader is looking for. The test is whether a reader scanning the contents would find
+  the part they came for
+- **If in doubt, list all H1 and H2 headings**
+- Nest the list to match the heading levels, and give each entry the heading's text exactly
+
+```markdown
+> **Status: Proposal** — not yet built. Supersedes nothing.
+
+**Contents**
+
+- [Study Invitations](#study-invitations)
+  - [Problem](#problem)
+  - [Design](#design)
+  - [Rejected Options](#rejected-options)
+  - [Outstanding Questions](#outstanding-questions)
+
+# Study Invitations
+
+## Problem
+```
+
+### Keeping it up to date
+
+- **Update the contents in the same change that adds, renames, moves or removes a heading.** A
+  renamed heading changes its anchor, so the old link silently stops working — it still looks
+  right, and only fails when someone clicks it
+- **Links use the GitHub heading-anchor slug**: the heading lowercased, punctuation other than
+  hyphens removed, spaces turned into hyphens — `## Rejected Options` is `#rejected-options`,
+  `### GET /api/me/profile` is `#get-apimeprofile`. A heading repeated in one document gets `-1`,
+  `-2` and so on after the first
+- Before finishing an edit, check both directions: every link in the contents points at a heading
+  that exists, and every heading the document chose to list is in the contents
 
 ## References
 

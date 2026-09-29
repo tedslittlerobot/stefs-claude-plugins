@@ -73,7 +73,7 @@ plugin adds no hooks and changes nothing about a session in which no skill match
 | `lambdas-go` | Go Lambdas: trigger-based naming, module layout, package naming, logging, shared libraries, testing |
 | `lambdas-node` | Node.js Lambdas: when Node is justified at all, ESM, factory-function DI, `node --test`, packaging |
 | `mysql` | MySQL/Aurora schema and query conventions |
-| `documentation` | The three tenses of documentation, API docs, READMEs, proposals, diagrams |
+| `documentation` | The three tenses of documentation, the table of contents every markdown file keeps, API docs, READMEs, proposals, diagrams |
 | `plan-of-action` | The staged implementation plan a settled proposal becomes: stage naming, where the boundaries and checkpoints go, and implementing it one stage at a time |
 | `glossary` | The project-level glossary: one file per term, the entry template, the index, and linking rather than restating |
 | `product-requirements` | Requirements and user stories: sections, Gherkin, acceptance criteria, test-coverage notes, risk assessment |

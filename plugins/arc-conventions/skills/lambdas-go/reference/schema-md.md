@@ -23,9 +23,18 @@ Three required sections:
    - cover the happy path, optional fields, and any meaningful variation (different enum values,
      with and without optional fields)
 
+It keeps a table of contents before its title, like every document — see the `documentation`
+skill's "Table of Contents" rule.
+
 ## Template
 
 ````markdown
+**Contents**
+
+- [Lambda Name](#lambda-name)
+  - [Schema](#schema)
+  - [Examples](#examples)
+
 # Lambda Name
 
 Brief summary of what this Lambda does and how it is invoked.

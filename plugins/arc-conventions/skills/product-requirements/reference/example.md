@@ -13,11 +13,22 @@ Note in particular:
   are easy to fudge into "covered"
 - Every risk category appears for the story, and the ones with nothing to say state exactly
   `No risk identified`
+- The **contents** come before the title and list the H1, the H2 sections and each User Story —
+  the major sections — but not the risk categories and ACs beneath them, which would bury the
+  stories. See the `documentation` skill's "Table of Contents" rule
 
 ---
 
 
 ```markdown
+**Contents**
+
+- [User resets a forgotten password](#user-resets-a-forgotten-password)
+  - [Dependencies](#dependencies)
+  - [Risk Assessment](#risk-assessment)
+  - [User Stories](#user-stories)
+    - [1. Reset a forgotten password via emailed code](#1-reset-a-forgotten-password-via-emailed-code)
+
 # User resets a forgotten password
 
 ## Dependencies

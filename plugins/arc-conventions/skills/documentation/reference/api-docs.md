@@ -32,6 +32,11 @@ to correct.**
 
 ### Structure
 
+The overview keeps a table of contents like every other document — see the documentation skill's
+"Table of Contents" rule. It can sit after the intro, since that has no heading of its own. The
+Endpoints list below is not a replacement for it: the contents list the document's sections, and
+need not repeat every endpoint that the Endpoints list already links.
+
 1. **Intro** — one or two paragraphs: where the API is served from (CDN, gateway, base URL/path
    prefix), what protects it (WAF, authorizers), which clients consume it, and anything notable that
    is *not* part of this API (e.g. calls the client makes straight to the identity provider). That

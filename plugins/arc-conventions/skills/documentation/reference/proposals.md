@@ -42,6 +42,10 @@ A proposal must open with a **status line** saying plainly that it is a proposal
 anything) it supersedes. A reader who has landed on it out of context needs to know within one
 sentence that they are not reading a description of the system.
 
+**The table of contents comes straight after the status line**, before the first heading — see the
+documentation skill's "Table of Contents" rule. It is kept current as the proposal is revised,
+which for a proposal under discussion means most edits.
+
 Beyond that, a proposal is expected to record its own reasoning, because that is the part which
 cannot be recovered later from the code:
 

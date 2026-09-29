@@ -91,7 +91,11 @@ a part-built plan reads first, and it carries what `git log` cannot — that the
 but the apply is not, that a human step at the foot of the file is still outstanding, that a check
 was made from a diff because the credentials to run it were not there.
 
-Six parts, in this order:
+**The stage file's table of contents comes straight after the status header**, before the first
+heading, and is kept current as steps are added or corrected — see the `documentation` skill's
+"Table of Contents" rule.
+
+The header has six parts, in this order:
 
 | Part | Holds |
 | --- | --- |

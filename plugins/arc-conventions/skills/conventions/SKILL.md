@@ -72,6 +72,9 @@ Where a project file is silent, the skill applies in full. Silence is not permis
 
 ## Writing a Convention
 
+- **Keep a table of contents** above the file's first heading, like every markdown document — see
+  the `documentation` skill's "Table of Contents" rule. A conventions file is consulted for one
+  rule at a time, which is exactly the read a contents list serves
 - **State the rule as a rule.** Imperative, unambiguous, and testable against a diff: "every named
   resource is prefixed with `${var.project_prefix}-`", not "resources should generally be prefixed"
 - **Record the reasoning immediately after it.** This is the part that cannot be recovered later. A

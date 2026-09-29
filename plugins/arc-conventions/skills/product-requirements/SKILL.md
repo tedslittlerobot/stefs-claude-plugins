@@ -37,6 +37,10 @@ Every requirement file contains, in order:
 4. **User Stories** — at least one, each with its own Title, Story, Acceptance Criteria, Light Risk
    Assessment and Caveats
 
+Above the title sits a **table of contents**, as in every markdown document — see the
+`documentation` skill's "Table of Contents" rule. The worked example shows which levels a
+requirement lists.
+
 The exact format of each is in **`reference/format.md`**. A complete worked example is in
 **`reference/example.md`** — read it before writing a first requirement, since the nesting of
 sections is easier to copy than to describe.
