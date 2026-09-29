@@ -1,12 +1,13 @@
 # arc-conventions
 
-The portable layer of software and project **architecture** conventions, as eight model-invoked
+The portable layer of software and project **architecture** conventions, as seven model-invoked
 skills — API design, engineering and infrastructure rules that hold across projects.
 
 The `arc-` prefix is a scope, not decoration: these are the architecture conventions specifically.
 Conventions with a different focus get their own plugin rather than being folded in here, so a
-project can install one scope without the other. The rules for documents — markdown, the three
-tenses of documentation, proposals, plans of action and the glossary — are in the sibling
+project can install one scope without the other. How a project records its own conventions (the
+`conventions` skill), and the rules for documents — markdown, the three tenses of documentation,
+proposals, plans of action and the glossary — are in the sibling
 [`documentation-and-planning`](../documentation-and-planning) plugin.
 
 See the [repository README](../../README.md) for the two-layer model this sits in, installation, the
@@ -16,7 +17,6 @@ full skill list, and how to add to a skill.
 
 | Skill | Load it when |
 | --- | --- |
-| `conventions` | Adding or editing a project conventions file, or project and general rules appear to conflict |
 | `api-design` | Designing, building or reviewing an HTTP/JSON API: an endpoint, a request or response payload, a list endpoint's filters, sort or pagination, an error response, a status code, or a breaking change |
 | `frontend` | Writing frontend HTML/CSS/JS, adding a route, working with Alpine or Tailwind |
 | `infrastructure` | Writing `.tf` files, naming AWS resources, debugging an apply-time AWS error |

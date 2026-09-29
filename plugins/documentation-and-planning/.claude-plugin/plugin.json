@@ -1,8 +1,8 @@
 {
   "name": "documentation-and-planning",
   "displayName": "Documentation and Planning",
-  "version": "0.1.0",
-  "description": "The portable layer of documentation and planning conventions: the markdown rules every document follows (the table of contents, root-relative paths, recording the reasoning), the three tenses of documentation (architecture/, instructions/, proposals/), API docs, READMEs and diagrams, writing proposals, the staged Plan of Action a proposal becomes and how it is implemented, and the project glossary.",
+  "version": "0.2.0",
+  "description": "The portable layer of documentation and planning conventions: how a project records its own conventions (the conventions/ directory, the two-layer model and precedence), the markdown rules every document follows (the table of contents, root-relative paths, recording the reasoning), the three tenses of documentation (architecture/, instructions/, proposals/), API docs, READMEs and diagrams, writing proposals, the staged Plan of Action a proposal becomes and how it is implemented, and the project glossary.",
   "author": {
     "name": "Stefan Horner",
     "url": "https://github.com/tedslittlerobot"

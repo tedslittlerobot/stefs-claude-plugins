@@ -115,27 +115,30 @@ or chosen values has broken the split — those lines belong in the consuming re
 what belongs in a project file versus in `architecture/`, `glossary/`, `instructions/`,
 `proposals/` or `requirements/`.
 
-The eight `arc-conventions` skills divide as: one meta-skill (`conventions`), one
-stack-independent design skill (`api-design`), five per-stack (`frontend`, `infrastructure`,
-`lambdas-go`, `lambdas-node`, `mysql`) and one per-document-kind (`product-requirements`). The
-three `documentation-and-planning` skills are `documentation` (which also carries the markdown
-rules every document follows, such as the table of contents), `plan-of-action` and `glossary`.
+The seven `arc-conventions` skills divide as: one stack-independent design skill (`api-design`),
+five per-stack (`frontend`, `infrastructure`, `lambdas-go`, `lambdas-node`, `mysql`) and one
+per-document-kind (`product-requirements`). The four `documentation-and-planning` skills are one
+meta-skill (`conventions`), `documentation` (which also carries the markdown rules every document
+follows, such as the table of contents), `plan-of-action` and `glossary`.
 
 `api-design` was briefly its own `api-conventions` plugin, on the reading that rules independent of
 any stack were a different scope. It was merged back before it shipped: API design is architecture,
 and the split between conventions plugins is by subject, not by stack. `documentation`,
 `plan-of-action` and `glossary` went the other way at `arc-conventions` 0.12.0: rules about writing
 documents and planning work are a different subject from how software is built, and a project can
-want them without any of the stack skills. `plan-of-action` is the one that also carries a
-procedure — implementing the plan, stage by stage — and it lives beside `documentation` rather than
-in `utils` because the document and its execution are the same subject, and both are meaningless
-without the `proposals/` layout the `documentation` skill defines.
+want them without any of the stack skills. `conventions` followed at 0.13.0: recording a project's
+rules is itself a document-writing subject, and the meta-skill serves both plugins equally.
+`product-requirements` stayed, as the per-document-kind skill closest to the software it specifies.
+`plan-of-action` is the one that also carries a procedure — implementing the plan, stage by stage —
+and it lives beside `documentation` rather than in `utils` because the document and its execution
+are the same subject, and both are meaningless without the `proposals/` layout the `documentation`
+skill defines.
 
 Skills cross-reference each other by name in a `## Related` section rather than duplicating rules
 — `lambdas-node` defers to `lambdas-go` for the shared trigger-naming rules, and both defer to
 `conventions` for precedence. Cross-plugin references work the same way, and the two conventions
 plugins reference each other freely: `api-design` names the `documentation` skill for the OpenAPI
-file, and the `documentation-and-planning` skills name `conventions` for precedence.
+file, and every `arc-conventions` skill defers to `conventions` for precedence.
 `auto-summary-commit` names the `conventions` skill for a project's commit-message style, and falls
 back to reading the style off `git log` when it is not installed.
 

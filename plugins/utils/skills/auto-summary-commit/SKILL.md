@@ -406,10 +406,10 @@ deliberately left uncommitted.
 
 ## Related
 
-- `conventions` skill, in the sibling [`arc-conventions`
-  plugin](../../../arc-conventions) — where a project records its own commit-message style, and why the
-  project file wins over the default in step 4. It is not required: step 4 falls back to reading the
-  style off `git log` when the skill is not installed
-- `plan-of-action` skill, in the sibling [`documentation-and-planning`
-  plugin](../../../documentation-and-planning) — the `<Proposal Name> Proposal <stage>.<section>: `
-  prefix step 4 applies while a Plan of Action is being implemented, and what each part of it means
+- `conventions` skill, in the sibling [`documentation-and-planning`
+  plugin](../../../documentation-and-planning) — where a project records its own commit-message
+  style, and why the project file wins over the default in step 4. It is not required: step 4 falls
+  back to reading the style off `git log` when the skill is not installed
+- `plan-of-action` skill, in that same sibling plugin — the
+  `<Proposal Name> Proposal <stage>.<section>: ` prefix step 4 applies while a Plan of Action is
+  being implemented, and what each part of it means

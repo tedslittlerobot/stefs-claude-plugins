@@ -15,7 +15,7 @@
       "name": "arc-conventions",
       "source": "./plugins/arc-conventions",
       "displayName": "Arc Conventions",
-      "description": "Eight skills carrying the portable layer of a project's software and project architecture conventions: how conventions themselves are recorded, plus HTTP/JSON API design (payloads, list endpoints, errors, versioning), SPA frontends, Terraform/AWS infrastructure, Go and Node Lambdas, MySQL, and product requirements. Documentation, proposals, plans of action and the glossary are in the sibling documentation-and-planning plugin. Every skill is model-invoked on topic match; the plugin registers no hooks and adds no executable code.",
+      "description": "Seven skills carrying the portable layer of a project's software and project architecture conventions: HTTP/JSON API design (payloads, list endpoints, errors, versioning), SPA frontends, Terraform/AWS infrastructure, Go and Node Lambdas, MySQL, and product requirements. How a project records its own conventions, and the documentation, proposal, plan-of-action and glossary rules, are in the sibling documentation-and-planning plugin. Every skill is model-invoked on topic match; the plugin registers no hooks and adds no executable code.",
       "author": {
         "name": "Stefan Horner",
         "url": "https://github.com/tedslittlerobot"
@@ -35,7 +35,7 @@
       "name": "documentation-and-planning",
       "source": "./plugins/documentation-and-planning",
       "displayName": "Documentation and Planning",
-      "description": "Three skills carrying the portable layer of documentation and planning conventions: documentation (the markdown rules every document follows, including an up-to-date table of contents; the three tenses of architecture/, instructions/ and proposals/; API docs, READMEs, diagrams and writing proposals), plan-of-action (the staged implementation plan a settled proposal becomes, and carrying it out stage by stage), and glossary (one file per term, linked rather than restated). Model-invoked on topic match; the plugin registers no hooks and adds no executable code.",
+      "description": "Four skills carrying the portable layer of documentation and planning conventions: conventions (how a project records its own rules in conventions/, the two-layer model, and precedence), documentation (the markdown rules every document follows, including an up-to-date table of contents; the three tenses of architecture/, instructions/ and proposals/; API docs, READMEs, diagrams and writing proposals), plan-of-action (the staged implementation plan a settled proposal becomes, and carrying it out stage by stage), and glossary (one file per term, linked rather than restated). Model-invoked on topic match; the plugin registers no hooks and adds no executable code.",
       "author": {
         "name": "Stefan Horner",
         "url": "https://github.com/tedslittlerobot"

@@ -6,8 +6,8 @@ documentation and planning conventions, and a collection of general-purpose util
 
 | Plugin | Covers | Changes a session on its own? |
 | --- | --- | --- |
-| [`arc-conventions`](plugins/arc-conventions) | Eight model-invoked skills carrying the **architecture** conventions that apply across projects: API design, frontends, infrastructure, Lambdas, MySQL, product requirements, and how a project records its own conventions | No — no hooks, no executable code |
-| [`documentation-and-planning`](plugins/documentation-and-planning) | Three model-invoked skills carrying the **documentation and planning** conventions: the markdown rules every document follows, the three tenses of documentation, proposals, plans of action, and the glossary | No — no hooks, no executable code |
+| [`arc-conventions`](plugins/arc-conventions) | Seven model-invoked skills carrying the **architecture** conventions that apply across projects: API design, frontends, infrastructure, Lambdas, MySQL and product requirements | No — no hooks, no executable code |
+| [`documentation-and-planning`](plugins/documentation-and-planning) | Four model-invoked skills carrying the **documentation and planning** conventions: how a project records its own conventions, the markdown rules every document follows, the three tenses of documentation, proposals, plans of action, and the glossary | No — no hooks, no executable code |
 | [`utils`](plugins/utils) | General-purpose commands, skills and agents, including the default-on `auto-summary-commit` workflow | **Yes** — installing it turns commit-per-prompt on. See [The commit hooks](#the-commit-hooks) |
 
 ## Install
@@ -62,8 +62,9 @@ and keeping them apart is what makes any of this reusable:
 project conventions file opens by naming the skill that carries its general layer, then records only
 what is genuinely specific to that repository.
 
-The `conventions` skill documents this arrangement in full, including what belongs in a project file
-versus in architecture documentation, a glossary entry, an instruction or a proposal.
+The `conventions` skill, in `documentation-and-planning`, documents this arrangement in full,
+including what belongs in a project file versus in architecture documentation, a glossary entry, an
+instruction or a proposal.
 
 Every skill in both plugins is model-invoked — its `description` decides when it loads, so the
 body stays out of context until the work actually calls for it. Nothing here fires on its own:
@@ -73,7 +74,6 @@ neither plugin adds hooks, and neither changes anything about a session in which
 
 | Skill | Covers |
 | --- | --- |
-| `conventions` | How a project records its own conventions: the `conventions/` directory, what belongs there versus elsewhere, precedence, and how to write a rule so the reasoning survives |
 | `api-design` | HTTP/JSON APIs, designed for the human calling them first: principles, `kebab-case` URLs and the `data`/`error` envelope, `snake_case` naming and data types, methods and status codes, list endpoints (`q` search, `filter[...]`, `sort[]`, page-based pagination), errors and `400` versus `422`, versioning by resource suffix, auth and rate limiting |
 | `frontend` | SPA frontends: AlpineJS + Tailwind v4 + Pinecone Router with no build step, layout, routing, runtime config, S3 deployment, design idiom, accessibility |
 | `infrastructure` | Terraform and AWS: tfvars and workspaces, recorded outputs, naming and tagging, S3/CloudFront hosting, Route 53/SES, Cognito, WAF |
@@ -86,6 +86,7 @@ neither plugin adds hooks, and neither changes anything about a session in which
 
 | Skill | Covers |
 | --- | --- |
+| `conventions` | How a project records its own conventions: the `conventions/` directory, what belongs there versus elsewhere, precedence, and how to write a rule so the reasoning survives |
 | `documentation` | The markdown rules every document follows (an up-to-date table of contents, root-relative paths, recording the reasoning), the three tenses of documentation, API docs, READMEs, proposals, diagrams |
 | `plan-of-action` | The staged implementation plan a settled proposal becomes: stage naming, where the boundaries and checkpoints go, and implementing it one stage at a time |
 | `glossary` | The project-level glossary: one file per term, the entry template, the index, and linking rather than restating |
@@ -220,6 +221,11 @@ planning work rather than about how software is built, and a project can want th
 the stack-specific skills. Their skill names are unchanged, but **a project that had
 `arc-conventions` installed must also install `documentation-and-planning`** to keep them —
 updating the marketplace alone drops them from the session.
+
+`conventions` followed at `arc-conventions` 0.13.0. It is the meta-skill for recording a project's
+rules — a document-writing subject — and it serves both plugins equally, so it sits with the other
+rules about documents; as before, a project needs `documentation-and-planning` installed to keep
+it. `product-requirements` stays in `arc-conventions`.
 
 ## License
 
