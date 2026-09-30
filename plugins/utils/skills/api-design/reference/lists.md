@@ -64,7 +64,9 @@ a control parameter.
 | `include[]` | Embed related resources — see `resources-and-fields.md` |
 | `fields[]` | Sparse fields — see `resources-and-fields.md` |
 
-Anything else at the top level is an unknown parameter, and an error.
+Anything else at the top level is an unknown parameter, and an error — unless the endpoint
+documents it as a control parameter of its own, the rare case described under "Not everything is a
+filter" below.
 
 ## Array Query Parameters
 
@@ -100,7 +102,8 @@ A query parameter that takes several values is written **once per value, with a 
 ## Filtering
 
 Filters are nested under **`filter`**, keyed by the field they filter on: `filter[<field>]`, or
-`filter[<field>][<operator>]` for anything other than plain equality.
+`filter[<field>][<operator>]` for anything other than plain equality. A condition no single field
+describes is a **named filter** in the same namespace — see "Named filters".
 
 ### Operators
 
@@ -171,7 +174,67 @@ result.
   `?filter[status][in][]=paid&filter[status][in][]=refunded&filter[customer_id]=cus_3k9d2` is paid
   or refunded orders *belonging to* that customer
 - There is no OR across different fields. A query that needs one is a sign the endpoint needs a
-  documented filter of its own, or a search
+  named filter of its own, or a search
+
+### Named filters
+
+Most filters are a field and an operator, but an endpoint sometimes needs one that no single field
+describes: a condition over several fields (`overdue`, from `due_at` and `status`), a computation
+(`within_radius`), or a rule with an algorithm of its own. **A bespoke filter is a named filter
+under `filter[...]`, beside the field filters** — never a second namespace such as
+`custom_filter[...]` or `advanced_filter[...]`.
+
+- **To a client, a filter is anything that narrows the list.** Whether it maps to a column, a join
+  or an algorithm is how the server happens to implement it, and a separate namespace would write
+  that detail into the contract
+- **The implementation changes; the name should not.** A computed `overdue` may later become a
+  stored column, and a field filter may grow bespoke logic. If the namespace followed the
+  implementation, either change would move the filter to a new parameter name — a breaking change
+  for something no client can see
+
+The rules:
+
+- **Filter names are one namespace per endpoint, and a name once taken is taken.** A named filter
+  is named for what it means, usually as a predicate — `overdue`, `within_radius`,
+  `overlaps_period`, `has_unread_messages` — which keeps it clear of field names. If a field added
+  later would clash with a named filter, the field's filter takes a different name, never the other
+  way round
+- **A named filter's sub-keys are its inputs**, documented with it:
+
+  ```
+  ?filter[within_radius][lat]=55.9533&filter[within_radius][lng]=-3.1883&filter[within_radius][km]=5
+  ```
+
+  An input is never named after an operator (`in`, `gt`, `gte`, `lt`, `lte`, `exists`) unless it
+  means that operator, so a reader who knows the operator table is never misled by one. A named
+  filter with a single value takes it directly (`filter[overdue]=true`), and may support the
+  standard operators on it (`filter[days_overdue][gte]=30`)
+- **Every named filter documents its behaviour, not only its inputs**: units, which bounds are
+  inclusive, and the edge cases a reader would otherwise guess at — whether "within 5 km" is
+  measured to a centroid or to any point, which timezone decides that an invoice is overdue. A field
+  filter's meaning is the field's; a named filter's meaning exists only in its documentation
+- **Validation is the same as for any filter.** An unknown filter name, or an unknown input to a
+  named filter, is a `400` (`unknown_parameter`). A missing input is a `422` (`required`) and an
+  invalid one a `422` with the input's path, such as `["filter", "within_radius", "km"]`. Inputs
+  that only make sense together (`lat` sent without `lng`) are reported at the missing one's path
+- **A named filter combines with AND**, like every other filter. Two conditions that need an OR
+  between them become one named filter covering both, or a search
+
+### Not everything is a filter
+
+A filter only removes items from the result. Something that does more than that is not a filter,
+named or otherwise, and does not go under `filter[...]`:
+
+- **A parameter that changes what every filter means** — a point-in-time view (`as_of`), a scope
+  switch such as including soft-deleted records — is a top-level control parameter, documented on
+  the endpoint that takes it. It is the one thing an endpoint may add to the top-level table, and
+  it is added deliberately: every one is something a reader must learn before any filter on that
+  endpoint means what it says
+- **Anything that ranks or scores results** is `q` or `sort[]`
+- **Input that does not fit a query string** — a polygon, a list of objects — moves to a
+  `POST /api/orders/search` action documented as safe (see `methods-and-status-codes.md`). Its JSON
+  body carries a `filter` object of the same shape as the query string's, so the filter vocabulary
+  is the same in both forms and a client can move between them without relearning it
 
 ### Other rules
 
@@ -179,9 +242,10 @@ result.
   `yes`) is accepted
 - **`null` matching**, where needed, is its own documented filter (`filter[has_shipped]=false`,
   `filter[cancelled_at][exists]=false`) rather than a magic string like `filter[status]=null`
-- **Only documented fields are filterable, and an unknown filter is an error.** This is the rule
-  from `SKILL.md` that matters most here: an ignored filter returns an unfiltered list, and an
-  unfiltered list fed to a bulk operation is how an entire table gets updated
+- **Only documented filters are accepted — fields and named filters alike — and an unknown filter
+  is an error.** This is the rule from `SKILL.md` that matters most here: an ignored filter returns
+  an unfiltered list, and an unfiltered list fed to a bulk operation is how an entire table gets
+  updated
 - **Invalid values are errors too**: `filter[status]=payed` is a `422` naming the allowed values,
   not an empty result — an empty result reads as "none match", which is a wrong answer rather than
   a failed request. See `errors.md` for which failures are `400` and which `422`

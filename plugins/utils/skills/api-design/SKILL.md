@@ -1,6 +1,6 @@
 ---
 name: api-design
-description: HTTP/JSON API design conventions — request and response formats, snake_case keys and query parameters, kebab-case URL paths, arrays in query strings as repeated name[] parameters (never comma-separated strings), the data/error response envelope, resource URLs and path structure (/api and service prefixes, collections, resources, action verbs, auth/login-style scopes, nested routes), /me/ endpoints for the current user's resources, nested related objects and include[], HTTP methods and status codes, list and index endpoints (q text search, filter[...] parameters, sort[], page and per_page pagination, the pagination object, cursor pagination), the error response format, 400 versus 422 and validation errors, IDs, timestamps, money, enums and nulls, PATCH semantics, idempotency keys, versioning by resource suffix (users-v2) and breaking changes, auth headers, rate limiting, caching and gzip compression. Use when designing, building, reviewing or documenting a REST or HTTP API, an endpoint, controller or route handler, an OpenAPI schema, a JSON request or response payload, or an API client, or when asked how an endpoint should paginate, filter, sort, search or report an error.
+description: HTTP/JSON API design conventions — request and response formats, snake_case keys and query parameters, kebab-case URL paths, arrays in query strings as repeated name[] parameters (never comma-separated strings), the data/error response envelope, resource URLs and path structure (/api and service prefixes, collections, resources, action verbs, auth/login-style scopes, nested routes), /me/ endpoints for the current user's resources, nested related objects and include[], HTTP methods and status codes, list and index endpoints (q text search, filter[...] parameters, named or bespoke filters, sort[], page and per_page pagination, the pagination object, cursor pagination), the error response format, 400 versus 422 and validation errors, IDs, timestamps, money, enums and nulls, PATCH semantics, idempotency keys, versioning by resource suffix (users-v2) and breaking changes, auth headers, rate limiting, caching and gzip compression. Use when designing, building, reviewing or documenting a REST or HTTP API, an endpoint, controller or route handler, an OpenAPI schema, a JSON request or response payload, or an API client, or when asked how an endpoint should paginate, filter, sort, search or report an error, or where an endpoint-specific or custom filter should go.
 ---
 
 # API Design Conventions
@@ -88,10 +88,12 @@ These hold everywhere; the reference files give the detail and the reasoning.
   alongside `customer_id` — not flattened into copied fields, and not sideloaded into a separate
   top-level list
 - **Lists keep a tidy top level**: filters nest under `filter[...]` — plain equality, `[in][]` for
-  any of several values, and `[gt]`/`[gte]`/`[lt]`/`[lte]` for ranges — text search is `q`, and
-  pagination is **page-based by default** with `page` and `per_page` (default 25, maximum 150) and
-  a `pagination` object of `current_page`, `per_page`, `total_pages` and `total_items`. Cursor
-  pagination is for data that is very large, of unknown size, or volatile. See `reference/lists.md`
+  any of several values, and `[gt]`/`[gte]`/`[lt]`/`[lte]` for ranges, with a condition bespoke to
+  one endpoint a named filter in the same namespace (`filter[overdue]`), never a second one — text
+  search is `q`, and pagination is **page-based by default** with `page` and `per_page` (default
+  25, maximum 150) and a `pagination` object of `current_page`, `per_page`, `total_pages` and
+  `total_items`. Cursor pagination is for data that is very large, of unknown size, or volatile.
+  See `reference/lists.md`
 - **IDs are strings in JSON, always** — even when they are numbers underneath
 - **Timestamps are RFC 3339 strings in UTC with a `Z`**, named `<event>_at`
   (`"created_at": "2026-09-26T14:03:12Z"`); calendar dates are `YYYY-MM-DD`, named `<event>_on`
@@ -132,8 +134,9 @@ These hold everywhere; the reference files give the detail and the reasoning.
   semantics, action endpoints, success status codes, idempotency keys, optimistic concurrency,
   long-running and bulk operations
 - **`reference/lists.md`** — list and index endpoints: the list response, the top-level
-  parameters, array query parameters, `filter[...]` and range operators, `q` search, sorting,
-  page-based pagination and when to use cursors instead
+  parameters, array query parameters, `filter[...]` and range operators, named filters for
+  endpoint-specific conditions, `q` search, sorting, page-based pagination and when to use cursors
+  instead
 - **`reference/errors.md`** — the error body, error codes, `400` versus `422`, detail codes and
   field paths, the status code table, and what an error must never contain
 - **`reference/versioning.md`** — what is and is not a breaking change, what clients must

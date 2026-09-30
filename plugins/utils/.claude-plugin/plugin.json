@@ -1,7 +1,7 @@
 {
   "name": "utils",
   "displayName": "Utils",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "description": "General-purpose utility commands, skills and agents for Claude Code, and general conventions that hold beyond prototypes — HTTP/JSON API design and MySQL schema and query conventions. Includes the default-on auto-summary-commit workflow: a pair of hooks commits the prompt and its summary at the end of every turn that changed files, scoped to the paths that turn actually changed.",
   "author": {
     "name": "Stefan Horner",
