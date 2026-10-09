@@ -1,6 +1,6 @@
 ---
 name: lambdas-go
-description: Go AWS Lambda conventions — directory naming by trigger (ninja-, api-<method>-, sqs-, bus-, s3-), one Go module per Lambda compiled to a bootstrap binary, the main.go/handler.go root package with everything else in sub-packages, Go package naming, the structured log line format, file organisation, build commands and testing. Use when writing, editing, reviewing or testing Go Lambda code, creating a new Lambda directory, or deciding which package something belongs in. Prototype and proof-of-concept projects only — not for production.
+description: Go AWS Lambda conventions — directory naming by trigger (ninja-, api-<method>-, sqs-, bus-, s3-, cognito-), one Go module per Lambda compiled to a bootstrap binary, the main.go/handler.go root package with everything else in sub-packages, Go package naming, the structured log line format, file organisation, build commands and testing. Use when writing, editing, reviewing or testing Go Lambda code, creating a new Lambda directory, or deciding which package something belongs in. Prototype and proof-of-concept projects only — not for production.
 ---
 
 # Go Lambda Conventions
@@ -54,6 +54,7 @@ is visible from the directory name alone**:
 | SQS queue | `sqs-<sqs-queue-name>` | `sqs-new-users` for the `new-users` queue |
 | S3 lifecycle event | `s3-<what-it-handles>` | `s3-upload-scan` for `ObjectCreated:*` on the uploads bucket |
 | EventBridge bus event | `bus-<what-the-lambda-does>` | `bus-send-welcome-email`, subscribed to `user.registered` |
+| Cognito User Pool trigger (a lifecycle hook or event) | `cognito-<what-it-handles>` | `cognito-custom-email-sender`, `cognito-pre-sign-up` |
 | Manual invocation only (`aws lambda invoke`, no route or event source) | `ninja-<purpose>` | `ninja-add-user` |
 | Anything else | the function's purpose | `register-user`, `validate-token` |
 
@@ -78,6 +79,19 @@ is visible from the directory name alone**:
 - The bucket, the event pattern and any key prefix filter belong in the Lambda's `schema.md` and
   README invocation section, where they can be written out in full — the directory name carries the
   trigger kind and the behaviour, the same split as `bus-`
+- **Every Lambda attached to a Cognito User Pool trigger takes the `cognito-` prefix** — pre
+  sign-up, post confirmation, pre token generation, custom message, custom email or SMS sender, the
+  custom auth challenge triggers, and any other hook in the pool's `LambdaConfig`. Cognito invokes
+  these synchronously, inside a user's sign-up or sign-in, so a failure in one blocks that user
+  rather than landing on a retry queue; that is worth knowing from the directory listing alone.
+  After the prefix, name the trigger it handles (`cognito-custom-email-sender`) — a pool accepts
+  one Lambda per trigger, so the trigger name is unambiguous — or a terse summary of the work when
+  one Lambda is wired to several triggers
+- **Corrected:** Cognito triggers used to fall under "anything else" and be named for their
+  purpose alone (`custom-email-sender`), which left the one trigger kind whose failures reach users
+  directly as the only kind not visible from its name. Existing unprefixed directories are not
+  wrong, and renaming one is a separate decision with Terraform and log-prefix consequences; new
+  ones take the `cognito-` prefix
 - The `ninja-` prefix exists so an operational/admin utility is identifiable at a glance and never
   mistaken for a user-facing endpoint
 - **Corrected:** this rule used to read `sqs-handler-<sqs-queue-name>`. The `handler-` was
