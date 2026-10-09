@@ -1,6 +1,6 @@
 ---
 name: lambdas-node
-description: Node.js AWS Lambda conventions — when Node is justified over Go, ESM/.mjs modules, the nodejs runtime and index.handler entry point, factory-function dependency injection, node --test with co-located .test.mjs files, the structured log line format, npm-install-on-package packaging, and the same trigger-based directory naming as Go Lambdas (api-<method>-, sqs-, bus-, s3-, cognito-, ninja-). Use when writing, editing, reviewing or testing a Node.js Lambda, or deciding whether a Lambda may be written in Node at all. Prototype and proof-of-concept projects only — not for production.
+description: Node.js AWS Lambda conventions — when Node is justified over Go, ESM/.mjs modules, the nodejs runtime and index.handler entry point, factory-function dependency injection, node --test with co-located .test.mjs files, the structured log line format, npm-install-on-package packaging, and the same trigger-based directory naming as Go Lambdas (api-, api-socket-, alb-, url-, sqs-, sns-, dynamo-, kinesis-, kafka-, s3-, bus-, pipe-, schedule-, cognito-, secrets-, ninja- and the rest). Use when writing, editing, reviewing or testing a Node.js Lambda, or deciding whether a Lambda may be written in Node at all. Prototype and proof-of-concept projects only — not for production.
 ---
 
 # Node.js Lambda Conventions
@@ -84,11 +84,20 @@ Note this differs from a Go Lambda's `source_path`, which is a list with explici
 
 | Trigger | Name |
 | --- | --- |
-| API Gateway route | `api-<http-method>-<purpose>` (route under an `/api` prefix) |
+| API Gateway HTTP route | `api-<http-method>-<purpose>` (route under an `/api` prefix) |
+| API Gateway WebSocket route | `api-socket-<route>`, dropping the `$` — `api-socket-connect` |
+| Application Load Balancer target | `alb-<http-method>-<purpose>` |
+| Lambda function URL | `url-<purpose>` — no method |
 | SQS queue | `sqs-<sqs-queue-name>` (drop a `.fifo` suffix) |
+| SNS, Amazon MQ, DynamoDB stream, Kinesis, MSK/Kafka, DocumentDB change stream | `sns-`, `mq-`, `dynamo-`, `kinesis-`, `kafka-`, `docdb-`, then what the Lambda does |
 | S3 lifecycle event | `s3-<what-it-handles>` — the event, or a terse summary of the work; see `lambdas-go` |
 | EventBridge bus event | `bus-<what-the-lambda-does>`, not the event name — see `lambdas-go` |
+| EventBridge Pipe | `pipe-<what-the-lambda-does>` |
+| Schedule (scheduled rule or EventBridge Scheduler) | `schedule-<frequency>-<purpose>` — `schedule-nightly-clear-caches` |
 | Cognito User Pool trigger | `cognito-<what-it-handles>` — `cognito-custom-email-sender`; see `lambdas-go` |
+| CloudWatch Logs subscription, CloudWatch alarm, SES receipt rule, IoT Core rule | `logs-`, `alarm-`, `email-`, `iot-`, then what the Lambda does |
+| Aurora MySQL from SQL, Lambda destination | `aurora-`, `lambda-`, then what the Lambda does |
+| Secrets Manager rotation | `secrets-<what-it-rotates>` — `secrets-aurora-credentials` |
 | Manual invocation only | `ninja-<purpose>` |
 | Anything else | the function's purpose |
 

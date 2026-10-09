@@ -1,6 +1,6 @@
 ---
 name: lambdas-go
-description: Go AWS Lambda conventions — directory naming by trigger (ninja-, api-<method>-, sqs-, bus-, s3-, cognito-), one Go module per Lambda compiled to a bootstrap binary, the main.go/handler.go root package with everything else in sub-packages, Go package naming, the structured log line format, file organisation, build commands and testing. Use when writing, editing, reviewing or testing Go Lambda code, creating a new Lambda directory, or deciding which package something belongs in. Prototype and proof-of-concept projects only — not for production.
+description: Go AWS Lambda conventions — directory naming by trigger (api-<method>-, api-socket-, alb-<method>-, url-, sqs-, sns-, mq-, dynamo-, kinesis-, kafka-, docdb-, s3-, bus-, pipe-, schedule-, cognito-, logs-, alarm-, email-, iot-, aurora-, lambda-, secrets-, ninja-) for API Gateway, WebSocket, ALB, function URL, queue, topic, stream, schedule/cron and other event-source triggers, one Go module per Lambda compiled to a bootstrap binary, the main.go/handler.go root package with everything else in sub-packages, Go package naming, the structured log line format, file organisation, build commands and testing. Use when writing, editing, reviewing or testing Go Lambda code, creating a new Lambda directory, or deciding which package something belongs in. Prototype and proof-of-concept projects only — not for production.
 ---
 
 # Go Lambda Conventions
@@ -50,16 +50,51 @@ is visible from the directory name alone**:
 
 | Trigger | Name | Example |
 | --- | --- | --- |
-| API Gateway route | `api-<http-method>-<purpose>` | `api-get-profile` for `GET /api/me/profile` |
+| API Gateway HTTP route | `api-<http-method>-<purpose>` | `api-get-profile` for `GET /api/me/profile` |
+| API Gateway WebSocket route | `api-socket-<route>` | `api-socket-connect` for `$connect`, `api-socket-send-message` |
+| Application Load Balancer target | `alb-<http-method>-<purpose>` | `alb-post-webhook` |
+| Lambda function URL | `url-<purpose>` | `url-stripe-webhook` |
 | SQS queue | `sqs-<sqs-queue-name>` | `sqs-new-users` for the `new-users` queue |
+| SNS topic | `sns-<what-the-lambda-does>` | `sns-notify-admins` |
+| Amazon MQ broker (ActiveMQ / RabbitMQ) | `mq-<what-the-lambda-does>` | `mq-import-orders` |
+| DynamoDB stream | `dynamo-<what-the-lambda-does>` | `dynamo-index-search` |
+| Kinesis data stream | `kinesis-<what-the-lambda-does>` | `kinesis-aggregate-clicks` |
+| Amazon MSK or self-managed Kafka | `kafka-<what-the-lambda-does>` | `kafka-sync-inventory` |
+| DocumentDB change stream | `docdb-<what-the-lambda-does>` | `docdb-audit-changes` |
 | S3 lifecycle event | `s3-<what-it-handles>` | `s3-upload-scan` for `ObjectCreated:*` on the uploads bucket |
 | EventBridge bus event | `bus-<what-the-lambda-does>` | `bus-send-welcome-email`, subscribed to `user.registered` |
+| EventBridge Pipe (enrichment or target) | `pipe-<what-the-lambda-does>` | `pipe-enrich-orders` |
+| Schedule (EventBridge scheduled rule or EventBridge Scheduler) | `schedule-<frequency>-<purpose>` | `schedule-nightly-clear-caches` |
 | Cognito User Pool trigger (a lifecycle hook or event) | `cognito-<what-it-handles>` | `cognito-custom-email-sender`, `cognito-pre-sign-up` |
+| CloudWatch Logs subscription filter | `logs-<what-the-lambda-does>` | `logs-forward-errors` |
+| CloudWatch alarm action | `alarm-<what-the-lambda-does>` | `alarm-page-on-call` |
+| SES receipt rule (inbound email) | `email-<what-the-lambda-does>` | `email-parse-replies` |
+| IoT Core rule | `iot-<what-the-lambda-does>` | `iot-store-telemetry` |
+| Aurora MySQL, from SQL (`lambda_sync` / `lambda_async`) | `aurora-<what-the-lambda-does>` | `aurora-notify-on-signup` |
+| Lambda destination (on success or failure of another function) | `lambda-<what-the-lambda-does>` | `lambda-report-failed-import` |
+| Secrets Manager rotation | `secrets-<what-it-rotates>` | `secrets-aurora-credentials` |
 | Manual invocation only (`aws lambda invoke`, no route or event source) | `ninja-<purpose>` | `ninja-add-user` |
 | Anything else | the function's purpose | `register-user`, `validate-token` |
 
 - An API route **must** live under an `/api` prefix — see the `infrastructure` skill's
   frontend-hosting reference for why (one CloudFront path pattern forward-matches every route)
+- An **API Gateway WebSocket route has no HTTP method, so `socket` takes the method's place** —
+  `api-socket-<route>`, with the route key's leading `$` dropped (`$connect` → `api-socket-connect`,
+  `$default` → `api-socket-default`). The Lambdas behind one API then sort together whichever
+  protocol they speak, and a WebSocket handler is still never mistaken for a request/response one
+- An **`alb-` Lambda follows the `api-` shape**, method then purpose, because it is the other HTTP
+  front door. The prefix says which door it is: an ALB hands the handler a different event and
+  expects a different response from API Gateway's, so the two are not interchangeable
+- A **`url-` Lambda has no method in its name.** A function URL is a single endpoint that answers
+  every method, so there is nothing to put there; any routing on method happens inside the handler
+- **A `schedule-` Lambda's name says how often it runs, then what it does** —
+  `schedule-nightly-clear-caches`, `schedule-hourly-sync-users`, `schedule-weekly-send-digest`. The
+  question asked of a scheduled job is *when does it run?*, which neither its purpose alone nor
+  `bus-` answers — so a scheduled rule takes `schedule-` even though it technically lives on the
+  default event bus. Write the frequency as a word at the granularity least likely to change
+  (`nightly`, `hourly`), not as an exact interval: the cron or rate expression, with its timezone,
+  belongs in `schema.md` and the README invocation section, and a changed interval should not mean a
+  renamed Lambda
 - For a **FIFO** queue, drop the `.fifo`/`fifo` suffix when forming the Lambda name: a
   `new-users.fifo` queue still yields `sqs-new-users`
 - A **`bus-` Lambda is named after what it does, not after the event it subscribes to.** The two
@@ -79,6 +114,21 @@ is visible from the directory name alone**:
 - The bucket, the event pattern and any key prefix filter belong in the Lambda's `schema.md` and
   README invocation section, where they can be written out in full — the directory name carries the
   trigger kind and the behaviour, the same split as `bus-`
+- **Every other event source is named the way `bus-` is: the prefix for the trigger kind, then what
+  the Lambda does** — `sns-`, `mq-`, `dynamo-`, `kinesis-`, `kafka-`, `docdb-`, `pipe-`, `logs-`,
+  `alarm-`, `email-`, `iot-`, `aurora-` and `lambda-`. Topics, streams and change feeds are fan-out
+  as much as a bus is, so a name taken from the topic, table, stream or log group leaves the second
+  consumer with no name. The specific source — the topic, table, stream, broker, log group, alarm,
+  receipt rule, IoT rule, the stored procedure or trigger that calls out, or the function and
+  condition for a destination — goes in `schema.md` and the README invocation section. `sqs-` is the
+  exception, and names the queue, because a queue's messages each go to one consumer: the queue
+  identifies the Lambda
+- An **`aurora-` Lambda called with `lambda_sync` runs inside the SQL statement that invokes it**,
+  so a failure or a slow response surfaces as a failed or slow query — the same reason
+  `cognito-` is worth seeing at a glance
+- A **`secrets-` Lambda is named for the secret it rotates**, without a `rotate-`: rotation is the
+  only thing Secrets Manager invokes a Lambda for, so the word would distinguish nothing — the same
+  reasoning that removed `handler-` from `sqs-` names below
 - **Every Lambda attached to a Cognito User Pool trigger takes the `cognito-` prefix** — pre
   sign-up, post confirmation, pre token generation, custom message, custom email or SMS sender, the
   custom auth challenge triggers, and any other hook in the pool's `LambdaConfig`. Cognito invokes
@@ -94,6 +144,15 @@ is visible from the directory name alone**:
   ones take the `cognito-` prefix
 - The `ninja-` prefix exists so an operational/admin utility is identifiable at a glance and never
   mistaken for a user-facing endpoint
+- **Sources with no prefix yet take the "anything else" row** — Step Functions tasks, AppSync
+  resolvers, CloudFormation custom resources, Lambda@Edge, Firehose transformation, S3 Object
+  Lambda, Config rules, CodePipeline actions and the like. Do not invent a prefix for one in a
+  project; add it here, so every project names the same trigger the same way
+- **Corrected:** this table used to cover only API Gateway HTTP routes, SQS, S3, the event bus,
+  Cognito and manual invocation, with every other source falling under "anything else". That left
+  most event sources — schedules above all — invisible from the directory listing, which is the
+  thing the table exists to prevent. Existing directories named under the old table are not wrong;
+  new ones take the prefixes above
 - **Corrected:** this rule used to read `sqs-handler-<sqs-queue-name>`. The `handler-` was
   superfluous — every Lambda in the table is a handler, so the word distinguished nothing and only
   pushed the part that *does* carry information, the queue name, further from the front of the
