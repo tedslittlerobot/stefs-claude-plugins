@@ -14,10 +14,14 @@ before the dependencies. Copy them as they are:
 ```markdown
 > This is an **execution plan written to be carried out by an AI agent**, one step at a time, in
 > order. It is not a description of the system — for the design it serves, read
-> [`proposal.md`](./proposal.md).
+> [`proposal.md`](../proposal.md).
 >
 > **Where a step diverges from this plan, correct it in place and say so.**
 ```
+
+The link is `../proposal.md` because stage files live in `plan-of-action/`. It was `./proposal.md`
+when they sat beside it as `plan-<n>-<description>.md`, and a stage file of that era keeps the old
+link until its proposal is migrated.
 
 ## Not started
 
@@ -29,18 +33,18 @@ divergences. The preamble, the dependency and the stage index are all written wh
 >
 > This is an **execution plan written to be carried out by an AI agent**, one step at a time, in
 > order. It is not a description of the system — for the design it serves, read
-> [`proposal.md`](./proposal.md).
+> [`proposal.md`](../proposal.md).
 >
 > **Where a step diverges from this plan, correct it in place and say so.**
 >
-> **Depends on [Stage 1](./plan-1-the-study-slug-rule.md)** — `studies.slug`'s `CHECK` and the
+> **Depends on [Stage 1](./1-the-study-slug-rule.md)** — `studies.slug`'s `CHECK` and the
 > nuke's discovery pattern are both transcriptions of the rule that stage settles.
 >
-> Stages: [1](./plan-1-the-study-slug-rule.md) · **2 (this)** ·
-> [3](./plan-3-the-tmi-context-envelope.md) · [4](./plan-4-every-lambda-learns-its-study.md) ·
-> [5](./plan-5-every-service-every-bundle.md) · [6](./plan-6-ugic-one-identifier-one-version.md) ·
-> [7](./plan-7-announcing-a-study.md) · [8](./plan-8-terraform-forgets-the-study.md) ·
-> [9](./plan-9-documentation.md)
+> Stages: [1](./1-the-study-slug-rule.md) · **2 (this)** ·
+> [3](./3-the-tmi-context-envelope.md) · [4](./4-every-lambda-learns-its-study.md) ·
+> [5](./5-every-service-every-bundle.md) · [6](./6-ugic-one-identifier-one-version.md) ·
+> [7](./7-announcing-a-study.md) · [8](./8-terraform-forgets-the-study.md) ·
+> [9](./9-documentation.md)
 ```
 
 A stage that has to run last depends on the lot, and says why that is rather than listing eight
@@ -71,18 +75,18 @@ step it happened in:
 >
 > This is an **execution plan written to be carried out by an AI agent**, one step at a time, in
 > order. It is not a description of the system — for the design it serves, read
-> [`proposal.md`](./proposal.md).
+> [`proposal.md`](../proposal.md).
 >
 > **Where a step diverges from this plan, correct it in place and say so.**
 >
-> **Depends on [Stage 1](./plan-1-the-study-slug-rule.md)** — `studies.slug`'s `CHECK` and the
+> **Depends on [Stage 1](./1-the-study-slug-rule.md)** — `studies.slug`'s `CHECK` and the
 > nuke's discovery pattern are both transcriptions of the rule that stage settles.
 >
-> Stages: [1](./plan-1-the-study-slug-rule.md) · **2 (this)** ·
-> [3](./plan-3-the-tmi-context-envelope.md) · [4](./plan-4-every-lambda-learns-its-study.md) ·
-> [5](./plan-5-every-service-every-bundle.md) · [6](./plan-6-ugic-one-identifier-one-version.md) ·
-> [7](./plan-7-announcing-a-study.md) · [8](./plan-8-terraform-forgets-the-study.md) ·
-> [9](./plan-9-documentation.md)
+> Stages: [1](./1-the-study-slug-rule.md) · **2 (this)** ·
+> [3](./3-the-tmi-context-envelope.md) · [4](./4-every-lambda-learns-its-study.md) ·
+> [5](./5-every-service-every-bundle.md) · [6](./6-ugic-one-identifier-one-version.md) ·
+> [7](./7-announcing-a-study.md) · [8](./8-terraform-forgets-the-study.md) ·
+> [9](./9-documentation.md)
 ```
 
 ## Built, not deployed
@@ -118,18 +122,18 @@ the one who assumes a merged stage is a done stage:
 >
 > This is an **execution plan written to be carried out by an AI agent**, one step at a time, in
 > order. It is not a description of the system — for the design it serves, read
-> [`proposal.md`](./proposal.md).
+> [`proposal.md`](../proposal.md).
 >
 > **Where a step diverges from this plan, correct it in place and say so.**
 >
-> **Depends on [Stage 1](./plan-1-the-study-slug-rule.md)** — `studies.slug`'s `CHECK` and the
+> **Depends on [Stage 1](./1-the-study-slug-rule.md)** — `studies.slug`'s `CHECK` and the
 > nuke's discovery pattern are both transcriptions of the rule that stage settles.
 >
-> Stages: [1](./plan-1-the-study-slug-rule.md) · **2 (this)** ·
-> [3](./plan-3-the-tmi-context-envelope.md) · [4](./plan-4-every-lambda-learns-its-study.md) ·
-> [5](./plan-5-every-service-every-bundle.md) · [6](./plan-6-ugic-one-identifier-one-version.md) ·
-> [7](./plan-7-announcing-a-study.md) · [8](./plan-8-terraform-forgets-the-study.md) ·
-> [9](./plan-9-documentation.md)
+> Stages: [1](./1-the-study-slug-rule.md) · **2 (this)** ·
+> [3](./3-the-tmi-context-envelope.md) · [4](./4-every-lambda-learns-its-study.md) ·
+> [5](./5-every-service-every-bundle.md) · [6](./6-ugic-one-identifier-one-version.md) ·
+> [7](./7-announcing-a-study.md) · [8](./8-terraform-forgets-the-study.md) ·
+> [9](./9-documentation.md)
 ```
 
 Note what divergence 2 records: **the cost, not only the correction.** "Needed `moved` blocks" would
@@ -160,22 +164,22 @@ the header can point at them rather than carrying them all:
 >
 > This is an **execution plan written to be carried out by an AI agent**, one step at a time, in
 > order. It is not a description of the system — for the design it serves, read
-> [`proposal.md`](./proposal.md).
+> [`proposal.md`](../proposal.md).
 >
 > **Where a step diverges from this plan, correct it in place and say so.**
 >
-> **Depends on [Stage 1](./plan-1-the-study-slug-rule.md)** for the slug rule already applied to the
+> **Depends on [Stage 1](./1-the-study-slug-rule.md)** for the slug rule already applied to the
 > same migration file. It is otherwise independent of Stages 2 to 5 and could run beside them.
 >
 > **It carries one decision the proposal did not make**, since answered — see
 > *[The third and fourth columns called `study_id`](#the-third-and-fourth-columns-called-study_id)*.
 > **The scope is two tables, not one**, which is more than the question originally asked about.
 >
-> Stages: [1](./plan-1-the-study-slug-rule.md) · **2 (this)** ·
-> [3](./plan-3-the-tmi-context-envelope.md) · [4](./plan-4-every-lambda-learns-its-study.md) ·
-> [5](./plan-5-every-service-every-bundle.md) · [6](./plan-6-ugic-one-identifier-one-version.md) ·
-> [7](./plan-7-announcing-a-study.md) · [8](./plan-8-terraform-forgets-the-study.md) ·
-> [9](./plan-9-documentation.md)
+> Stages: [1](./1-the-study-slug-rule.md) · **2 (this)** ·
+> [3](./3-the-tmi-context-envelope.md) · [4](./4-every-lambda-learns-its-study.md) ·
+> [5](./5-every-service-every-bundle.md) · [6](./6-ugic-one-identifier-one-version.md) ·
+> [7](./7-announcing-a-study.md) · [8](./8-terraform-forgets-the-study.md) ·
+> [9](./9-documentation.md)
 ```
 
 The last dependency paragraph carries two things that are not dependencies and belong nowhere else:

@@ -35,7 +35,7 @@
       "name": "documentation-and-planning",
       "source": "./plugins/documentation-and-planning",
       "displayName": "Documentation and Planning",
-      "description": "Four skills carrying the portable layer of documentation and planning conventions: conventions (how a project records its own rules in conventions/, the two-layer model, and precedence), documentation (the markdown rules every document follows, including an up-to-date table of contents; the three tenses of architecture/, instructions/ and proposals/; API docs, READMEs, diagrams and writing proposals), plan-of-action (the staged implementation plan a settled proposal becomes, and carrying it out stage by stage), and glossary (one file per term, linked rather than restated). Model-invoked on topic match; the plugin registers no hooks and adds no executable code.",
+      "description": "Four skills carrying the portable layer of documentation and planning conventions: conventions (how a project records its own rules in conventions/, the two-layer model, and precedence), documentation (the markdown rules every document follows, including an up-to-date table of contents; the three tenses of architecture/, instructions/ and proposals/; API docs, READMEs, diagrams and writing proposals, with their decisions and assumption tests in files of their own), plan-of-action (the staged implementation plan a settled proposal becomes, and carrying it out stage by stage), and glossary (one file per term, linked rather than restated). Model-invoked on topic match; the plugin registers no hooks and adds no executable code.",
       "author": {
         "name": "Stefan Horner",
         "url": "https://github.com/tedslittlerobot"

@@ -90,8 +90,8 @@ needs.
 | Skill | Covers |
 | --- | --- |
 | `conventions` | How a project records its own conventions: the `conventions/` directory, what belongs there versus elsewhere, precedence, and how to write a rule so the reasoning survives |
-| `documentation` | The markdown rules every document follows (an up-to-date table of contents, root-relative paths, recording the reasoning), the three tenses of documentation, API docs, READMEs, proposals, diagrams |
-| `plan-of-action` | The staged implementation plan a settled proposal becomes: stage naming, where the boundaries and checkpoints go, and implementing it one stage at a time |
+| `documentation` | The markdown rules every document follows (an up-to-date table of contents, root-relative paths, recording the reasoning), the three tenses of documentation, API docs, READMEs, proposals — with their decisions and assumption tests in files of their own — and diagrams |
+| `plan-of-action` | The staged implementation plan a settled proposal becomes, in its `plan-of-action/` directory: stage naming, where the boundaries and checkpoints go, and implementing it one stage at a time |
 | `glossary` | The project-level glossary: one file per term, the entry template, the index, and linking rather than restating |
 
 ## The `utils` plugin

@@ -16,7 +16,7 @@ model, for both plugins. See the [repository README](../../README.md) for instal
 | Skill | Load it when |
 | --- | --- |
 | `conventions` | Adding or editing a project conventions file, recording a decision as a rule, or project and general rules appear to conflict |
-| `documentation` | Writing or editing any markdown document — including keeping its table of contents current — deciding where a document belongs, writing an `api.md`, README or diagram, or writing a proposal |
+| `documentation` | Writing or editing any markdown document — including keeping its table of contents current — deciding where a document belongs, writing an `api.md`, README or diagram, or writing a proposal — including its `D<n>` decision files and `T<n>` assumption tests |
 | `plan-of-action` | Turning a settled proposal into staged work, or implementing a plan one stage at a time |
 | `glossary` | Defining a term, or a document is about to explain what a term means |
 

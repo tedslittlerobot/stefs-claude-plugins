@@ -1,6 +1,6 @@
 ---
 name: documentation
-description: How to write the project's markdown documents and which context each belongs in — architecture/ for what IS built, instructions/ for what a human does, proposals/ for what could be built, the table of contents every markdown file must keep up to date, plus API overview documents, Lambda and shared-library READMEs, and the Mingrammer/MermaidJS diagram conventions. Use when writing or editing any markdown document, adding, renaming or removing a heading, adding or updating a table of contents, deciding where a document belongs, adding a README or api.md, writing a proposal or recording a decision in one, evaluating a suggested design, or creating an architecture or ER diagram.
+description: How to write the project's markdown documents and which context each belongs in — architecture/ for what IS built, instructions/ for what a human does, proposals/ for what could be built, the table of contents every markdown file must keep up to date, plus API overview documents, Lambda and shared-library READMEs, and the Mingrammer/MermaidJS diagram conventions. Use when writing or editing any markdown document, adding, renaming or removing a heading, adding or updating a table of contents, deciding where a document belongs, adding a README or api.md, writing a proposal or recording a decision in one, laying out a proposal's directory (plan-of-action/, decisions/outstanding|resolved|rejected/, tests/), adding a D1/D2 decision file or moving one between outstanding, resolved and rejected, writing a T1/T2 assumption test to check something a proposal assumes, evaluating a suggested design, or creating an architecture or ER diagram.
 ---
 
 # Documentation Conventions
@@ -38,6 +38,10 @@ three questions the document answers, and put it in the matching directory.
   directory is shared ground. A change the proposal implies elsewhere is recorded in it and raised
   with the user, not made
 
+**A proposal keeps its decisions and assumption tests in files of their own**, `decisions/` and
+`tests/`, and summarises each in one line in `proposal.md`, so the entry point stays short enough to
+read — see `reference/proposals.md` and `reference/decisions-and-tests.md`.
+
 ## Structure
 
 ```
@@ -54,8 +58,11 @@ instructions/
   <topic>.md                               # a process a human follows
   setup/<topic>.md                         # first-time setup tasks specifically
 proposals/
-  <proposal-slug>/proposal.md              # a design not yet built
-  <proposal-slug>/plan-<n>-<desc>.md       # its Plan of Action — `plan-of-action` skill
+  <proposal-slug>/
+    proposal.md                            # a design not yet built
+    plan-of-action/<n>-<desc>.md           # its Plan of Action — `plan-of-action` skill
+    decisions/<state>/D<n>-<desc>.md       # its decisions: outstanding, resolved or rejected
+    tests/T<n>-<desc>.md                   # its assumption tests
 glossary/                                  # governed by the `glossary` skill, not this one
 ```
 
@@ -163,6 +170,9 @@ Load the reference file for the specific document type being written:
   shared-library `README.md`
 - **`reference/proposals.md`** — the layout, required content and lifecycle of a proposal, and the
   rules for writing one: evaluating inputs, and staying inside its directory
+- **`reference/decisions-and-tests.md`** — a proposal's `D<n>` decision files and how they move
+  between `outstanding/`, `resolved/` and `rejected/`, its `T<n>` assumption tests, and the
+  one-line summaries of both in `proposal.md`
 - **`reference/diagrams.md`** — Mingrammer Diagrams for architecture/infrastructure/flow diagrams,
   MermaidJS `erDiagram` for data models, and the shared PNG naming pattern
 

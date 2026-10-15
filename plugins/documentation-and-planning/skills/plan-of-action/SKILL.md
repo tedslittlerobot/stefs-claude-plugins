@@ -1,6 +1,6 @@
 ---
 name: plan-of-action
-description: Turning a settled proposal into a Plan of Action — a staged implementation plan written for an AI agent to carry out, one plan-<n>-<description>.md file per stage in the proposal's own directory, each opening with a status header, with a checkpoint between stages and human steps called out explicitly. Use when a proposal's design is settled and it is time to plan the build, when writing a plan of action or splitting one into stages, and when implementing one — executing a proposal, working through the next stage, prefixing the commits a plan run makes, or asking what to build next from proposals/.
+description: Turning a settled proposal into a Plan of Action — a staged implementation plan written for an AI agent to carry out, one <n>-<description>.md file per stage in the proposal's plan-of-action/ directory, each opening with a status header, with a checkpoint between stages and human steps called out explicitly. Use when a proposal's design is settled and it is time to plan the build, when writing a plan of action or splitting one into stages, and when implementing one — executing a proposal, working through the next stage, prefixing the commits a plan run makes, or asking what to build next from proposals/.
 ---
 
 # Plan of Action
@@ -22,37 +22,51 @@ the point: the proposal is where the design is argued out, and once that argumen
 plan can be written without relitigating it.
 
 **The proposal's blocking questions are answered first.** A proposal marks which of its outstanding
-questions block work; a plan written over an unanswered one encodes a guess as an instruction, and
-an agent implementing it has no way to tell the guess from the decisions. A non-blocking question
-can be carried into the stage that needs it, said plainly as a question rather than dressed up as a
-step.
+decisions block work; a plan written over an unanswered one encodes a guess as an instruction, and
+an agent implementing it has no way to tell the guess from the decisions. **Check
+`decisions/outstanding/` before writing anything**: no file there may have a status line saying it
+blocks work, and no assumption test that a blocking decision waits on may still be `Planned`. A
+non-blocking decision can be carried into the stage that needs it, linked by its `D<n>` and said
+plainly as a question rather than dressed up as a step. The decision and test files are described
+in the `documentation` skill's `reference/decisions-and-tests.md`.
 
 **Writing the plan stays inside the proposal's directory**, as writing the proposal does: the
-stage files are the only thing written, and nothing outside `proposals/<proposal-slug>/` is touched
-until implementation begins or the user confirms the change. Other agents may be writing other
-proposals in the same tree at the same time. The rule and its reasoning are in the
-`documentation` skill's `reference/proposals.md`.
+stage files under `plan-of-action/` are the only thing written, and nothing outside
+`proposals/<proposal-slug>/` is touched until implementation begins or the user confirms the
+change. Other agents may be writing other proposals in the same tree at the same time. The rule and
+its reasoning are in the `documentation` skill's `reference/proposals.md`.
 
 ## Stages
 
-A Plan of Action may be split into **stages**, one file per stage, alongside `proposal.md`:
+A Plan of Action may be split into **stages**, one file per stage, in a `plan-of-action/`
+directory beside `proposal.md`:
 
 ```
 proposals/<proposal-slug>/
   proposal.md
-  plan-1-update-database.md          # a plan of nine stages or fewer: no padding
-  plan-2-backfill-existing-rows.md
-  plan-01-update-database.md         # a plan of ten to ninety-nine stages: pad to two digits
-  plan-10-cut-over-the-reader.md
+  plan-of-action/
+    1-update-database.md             # a plan of nine stages or fewer: no padding
+    2-backfill-existing-rows.md
+    01-update-database.md            # a plan of ten to ninety-nine stages: pad to two digits
+    10-cut-over-the-reader.md
 ```
 
-- **`plan-<iteration>-<description>.md`.** The iteration is the stage's position in the sequence;
-  the description is a few words at most saying what that stage does
+- **`plan-of-action/<iteration>-<description>.md`.** The iteration is the stage's position in the
+  sequence; the description is a few words at most saying what that stage does. The directory
+  says what the files are, so they carry no `plan-` prefix of their own
 - **Zero-pad only as far as the current plan needs.** Nine stages or fewer take no padding at all,
   ten to ninety-nine pad the single digits to two, and so on. Padding is there so a directory
   listing shows the stages in execution order; padding wider than the plan needs implies stages
   that do not exist
-- **Link the stages from `proposal.md`**, in order, so the entry point remains a complete index
+- **Link the stages from `proposal.md`**, in order, so the entry point remains a complete index.
+  A stage file links back up the same way — `../proposal.md`, and `../decisions/resolved/D3-...md`
+  for a decision it carries out
+
+**Corrected:** stage files used to sit beside `proposal.md` as `plan-<iteration>-<description>.md`.
+Every stage added another file to a listing shared with `proposal.md`, its diagrams and its
+supporting documents; the directory groups the stages, and the prefix it made redundant was
+dropped. A proposal planned under the old naming need not be moved — see
+*Migrating an old-layout proposal* in the `documentation` skill's `reference/proposals.md`.
 
 **Splitting a plan into stages reduces the risk and the context of implementing it.** A stage is a
 unit small enough for the implementing agent to hold at once, and small enough for a mistake to be
@@ -220,8 +234,9 @@ User Invitations Proposal 13.15: Final Testing of Invitations
 - **`<Proposal Name>`** is the proposal's own name, as its `proposal.md` title gives it —
   `proposals/user-invitations/` implementing *User Invitations* gives `User Invitations Proposal`
 - **`<stage>`** is the number in the stage file's name, **exactly as written there, padding
-  included**. `plan-02-update-database.md` gives `02` and `plan-2-update-database.md` gives `2`;
-  normalising it either way breaks the match between a commit and the file it names
+  included**. `plan-of-action/02-update-database.md` gives `02` and
+  `plan-of-action/2-update-database.md` gives `2`; normalising it either way breaks the match
+  between a commit and the file it names
 - **`<section>`** is the number of the section *within that stage file* that the commit's work
   belongs to, not a running count of commits
 - **The subject after the colon** is written the way any other commit subject on the project is
