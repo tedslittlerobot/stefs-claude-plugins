@@ -49,8 +49,8 @@ the bug — delete it, because two copies of a rule drift and then contradict ea
 | The meaning of a term the system relies on | `glossary/<term-slug>.md` |
 | Steps a human performs at a keyboard | `instructions/<topic>.md` |
 | A design not yet built | `proposals/<slug>/proposal.md` |
-| A staged plan for building one | `proposals/<slug>/plan-of-action/<n>-<description>.md` |
-| A decision a proposal has to make, or an assumption it tests | `proposals/<slug>/decisions/<state>/D<n>-<description>.md`, `proposals/<slug>/tests/T<n>-<description>.md` |
+| A staged plan for building one | `proposals/<slug>/plan-of-action/<n>-<description>.md`, summarised in `plan-of-action/plan.md` |
+| A decision a proposal has to make, or an assumption it tests | `proposals/<slug>/decisions/D<n>-<description>.md` or `proposals/<slug>/tests/T<n>-<description>.md`, summarised in `decisions.md` or `tests.md` |
 | A user-level feature and its acceptance criteria | `requirements/` |
 
 The commonest mistake is the second row: architecture record smuggled into a conventions file. "Our

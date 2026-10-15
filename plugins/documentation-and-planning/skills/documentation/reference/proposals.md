@@ -21,13 +21,15 @@ several proposals may address the same service without colliding:
 proposals/<proposal-slug>/
   proposal.md                         # the proposal itself — always this filename
   plan-of-action/
+    plan.md                           # the plan summarised, and every stage with its status
     <iteration>-<description>.md      # Plan of Action stages — see the `plan-of-action` skill
   decisions/
-    outstanding/D<n>-<description>.md # a decision not yet made
-    resolved/D<n>-<description>.md    # a decision made, with the argument that settled it
-    rejected/D<n>-<description>.md    # a decision that will not be made as framed, and why
+    decisions.md                      # every decision, with its status
+    D<n>-<description>.md             # one decision, opening with its status box
   tests/
-    T<n>-<description>.md             # an assumption test, and whatever it needs to run
+    tests.md                          # every assumption test, with its status
+    T<n>-<description>.md             # one assumption test, opening with its status box
+    T<n>-<anything>.<ext>             # whatever that test needs to run
   proposal--<section-slug>.py         # diagram scripts (see reference/diagrams.md)
   proposal--<section-slug>.png        # their rendered output, embedded in proposal.md
   <supplementary>.md                  # any number of supporting documents
@@ -38,8 +40,11 @@ proposals/<proposal-slug>/
 - **Each kind of supporting file has a directory of its own** — `plan-of-action/`, `decisions/`
   and `tests/`. Create one when the proposal first needs it, not before; a proposal with no tests
   has no `tests/` directory
-- **Decisions and assumption tests live in their own files, and `proposal.md` summarises them.**
-  The ID prefix, the lifecycle and what each file contains are in `reference/decisions-and-tests.md`
+- **Each of those directories has a summary file** — `plan-of-action/plan.md`,
+  `decisions/decisions.md` and `tests/tests.md` — listing every file in it with its status, in a
+  table. **`proposal.md` links the summary file and gives counts; it does not repeat the list.**
+  The IDs, status boxes and summary files for decisions and tests are in
+  `reference/decisions-and-tests.md`, and `plan.md` is in the `plan-of-action` skill
 - **Diagrams follow the same conventions as everywhere else** — Mingrammer Diagrams for
   architecture/infrastructure and flow, MermaidJS `erDiagram` for data models, rendered to a PNG and
   embedded. The `<source-filename-without-ext>--<section-slug>` pattern makes them
@@ -54,13 +59,17 @@ of experiments; laid flat beside `proposal.md` they bury it in its own listing, 
 into it they turn the entry point into a document too long to read in one go and too expensive for
 an agent to load just to find out where the design stands. A decision argued out at length is
 worth keeping — it is the part of the record that cannot be recovered later — but it does not need
-to be in the file every reader opens first.
+to be in the file every reader opens first. The summary files carry the at-a-glance view, so
+`proposal.md` needs only a line per directory.
 
 **Corrected:** this layout previously put the Plan of Action stages beside `proposal.md` as
 `plan-<iteration>-<description>.md`, and kept outstanding questions and decisions as sections of
 `proposal.md` itself. Both scale badly: the directory listing grows with every stage, and the
 entry point with every question and every argument settling one. A proposal written under the old
-layout is not wrong for it; see *Migrating an old-layout proposal* below.
+layout is not wrong for it; see *Migrating an old-layout proposal* below. The next version (0.3.0)
+put decisions in `outstanding/`, `resolved/` and `rejected/` subdirectories and listed every
+decision and test in `proposal.md`; both were replaced by the summary files, for the reasons
+recorded in `reference/decisions-and-tests.md`.
 
 ## Content
 
@@ -77,28 +86,29 @@ cannot be recovered later from the code:
 
 - **Rejected options, and why.** The most valuable content in a proposal is usually why the obvious
   approach was *not* taken. What was built is legible from the code; what was ruled out is legible
-  from nowhere else. An option that was argued out as a decision of its own lives in
-  `decisions/rejected/` and is summarised and linked here; one dismissed in a sentence can stay in
+  from nowhere else. An option that was argued out as a decision of its own is a rejected `D<n>`
+  file, linked by ID from the design section it bears on; one dismissed in a sentence can stay in
   `proposal.md` as that sentence
 - **Decisions, with the argument that settled them** — including ones later reversed, which is far
-  cheaper to record than to re-derive. **Each is a `D<n>` file under `decisions/`**, and
-  `proposal.md` carries a one-line summary of each, linked, grouped by state
+  cheaper to record than to re-derive. **Each is a `D<n>` file under `decisions/`**, listed in
+  `decisions/decisions.md`
 - **Outstanding questions, grouped by what each needs** rather than by topic: a decision before
   building, a confirmation of an assumption the proposal already makes, or nothing yet because it is
   knowingly deferred. **Say explicitly which of them block work and which do not** — an
   undifferentiated question list stalls the whole proposal on its least important item. A question
-  needing a decision is a `D<n>` file in `decisions/outstanding/`; one needing an assumption
-  confirmed is usually best answered by a `T<n>` test
-- **Assumption tests, with what each found** — a `T<n>` file under `tests/` for each, summarised
-  and linked from `proposal.md`, with the sections of the design that rest on it
+  needing a decision is an outstanding `D<n>` file whose status box says whether it blocks work;
+  one needing an assumption confirmed is usually best answered by a `T<n>` test
+- **Assumption tests, with what each found** — a `T<n>` file under `tests/` for each, listed in
+  `tests/tests.md`
 - **Impact on what exists today**, naming the files and resources the proposal would change or
   remove
 
-**`proposal.md` summarises; the `D<n>` and `T<n>` files argue.** A summary line says what the
-decision or test is and where it stands, in one line — enough for a reader of the proposal to
-follow the design without opening anything. The options, the evidence and the argument go in the
-file. A design section that rests on a decision or a test names its ID inline, linked, so the
-dependency is visible where it matters.
+**`proposal.md` points; the summary files list; the `D<n>` and `T<n>` files argue.** `proposal.md`
+gives each of `decisions/`, `tests/` and `plan-of-action/` a line with counts and a link to its
+summary file, naming by ID only the decisions that block work, as in the example in
+`reference/decisions-and-tests.md`. A design section that rests on a decision or a test names its
+ID inline, linked, so the dependency is visible where it matters. The options, the evidence and
+the argument stay in the individual files.
 
 ## Writing a Proposal
 
@@ -160,7 +170,8 @@ alone built.
 
 Once a proposal's design is settled, it is turned into a **Plan of Action** before any of it is
 built: a staged implementation plan written for an AI agent to carry out, one
-`plan-of-action/<iteration>-<description>.md` file per stage, linked in order from `proposal.md`.
+`plan-of-action/<iteration>-<description>.md` file per stage, listed in order in
+`plan-of-action/plan.md`.
 
 **The `plan-of-action` skill governs it** — the stage naming, where the boundaries go, what a stage
 file contains and how one is implemented. This skill covers only the proposal.
@@ -168,9 +179,9 @@ file contains and how one is implemented. This skill covers only the proposal.
 ## Lifecycle
 
 A proposal is a **living document while its design is under discussion**, and is edited in place as
-decisions land — an outstanding decision moves from `decisions/outstanding/` to `resolved/` or
-`rejected/` rather than being deleted, and an assumption test keeps its file whatever it found. The
-record of how the design moved is part of the value.
+decisions land — an outstanding decision is marked resolved or rejected in its status box rather
+than being deleted, and an assumption test keeps its file whatever it found. The record of how the
+design moved is part of the value.
 
 Once a proposal is built:
 
@@ -188,8 +199,9 @@ mistaken for a description of production.
 
 ### Migrating an old-layout proposal
 
-A proposal with `plan-<n>-<description>.md` files beside `proposal.md`, or with its decisions and
-questions written inline, predates the current layout. **It does not have to be migrated**, and one
+A proposal with `plan-<n>-<description>.md` files beside `proposal.md`, with its decisions and
+questions written inline, or with decisions under `outstanding/`, `resolved/` and `rejected/`
+subdirectories, predates the current layout. **It does not have to be migrated**, and one
 whose plan is part-implemented is usually better left as it is until the run finishes. Where it is
 migrated:
 
@@ -198,7 +210,13 @@ migrated:
   the edit inside a diff nobody reads closely
 - **Drop the `plan-` prefix and keep the number exactly as it was**, padding included — the commit
   subjects of a run cite it, and they must still match
-- **Fix every link in the same commit** — the stage index and `proposal.md` link in each stage
-  header, and the stage links in `proposal.md`
-- **Extract decisions and questions into `D<n>` files** in the order they appear, leaving a summary
-  line in `proposal.md` where each was
+- **Fix every link in the same commit**, including the stage index and `proposal.md` link in each
+  stage header
+- **Write `plan-of-action/plan.md`** from the stage list in `proposal.md`, and replace that list
+  with a line linking it
+- **Extract decisions and questions into `D<n>` files** in the order they appear, each with a
+  status box and a row in `decisions/decisions.md`. `proposal.md` keeps the counts line and the
+  inline references from its design sections, not the list
+- **Move decisions out of status subdirectories** with `git mv` into `decisions/` itself, give each
+  a status box saying what its directory used to, and write `decisions/decisions.md`
+- **Give every test a status box and a row in `tests/tests.md`**

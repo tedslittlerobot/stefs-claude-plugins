@@ -40,7 +40,7 @@ divergences. The preamble, the dependency and the stage index are all written wh
 > **Depends on [Stage 1](./1-the-study-slug-rule.md)** — `studies.slug`'s `CHECK` and the
 > nuke's discovery pattern are both transcriptions of the rule that stage settles.
 >
-> Stages: [1](./1-the-study-slug-rule.md) · **2 (this)** ·
+> [Plan](./plan.md) · Stages: [1](./1-the-study-slug-rule.md) · **2 (this)** ·
 > [3](./3-the-tmi-context-envelope.md) · [4](./4-every-lambda-learns-its-study.md) ·
 > [5](./5-every-service-every-bundle.md) · [6](./6-ugic-one-identifier-one-version.md) ·
 > [7](./7-announcing-a-study.md) · [8](./8-terraform-forgets-the-study.md) ·
@@ -82,7 +82,7 @@ step it happened in:
 > **Depends on [Stage 1](./1-the-study-slug-rule.md)** — `studies.slug`'s `CHECK` and the
 > nuke's discovery pattern are both transcriptions of the rule that stage settles.
 >
-> Stages: [1](./1-the-study-slug-rule.md) · **2 (this)** ·
+> [Plan](./plan.md) · Stages: [1](./1-the-study-slug-rule.md) · **2 (this)** ·
 > [3](./3-the-tmi-context-envelope.md) · [4](./4-every-lambda-learns-its-study.md) ·
 > [5](./5-every-service-every-bundle.md) · [6](./6-ugic-one-identifier-one-version.md) ·
 > [7](./7-announcing-a-study.md) · [8](./8-terraform-forgets-the-study.md) ·
@@ -129,7 +129,7 @@ the one who assumes a merged stage is a done stage:
 > **Depends on [Stage 1](./1-the-study-slug-rule.md)** — `studies.slug`'s `CHECK` and the
 > nuke's discovery pattern are both transcriptions of the rule that stage settles.
 >
-> Stages: [1](./1-the-study-slug-rule.md) · **2 (this)** ·
+> [Plan](./plan.md) · Stages: [1](./1-the-study-slug-rule.md) · **2 (this)** ·
 > [3](./3-the-tmi-context-envelope.md) · [4](./4-every-lambda-learns-its-study.md) ·
 > [5](./5-every-service-every-bundle.md) · [6](./6-ugic-one-identifier-one-version.md) ·
 > [7](./7-announcing-a-study.md) · [8](./8-terraform-forgets-the-study.md) ·
@@ -175,7 +175,7 @@ the header can point at them rather than carrying them all:
 > *[The third and fourth columns called `study_id`](#the-third-and-fourth-columns-called-study_id)*.
 > **The scope is two tables, not one**, which is more than the question originally asked about.
 >
-> Stages: [1](./1-the-study-slug-rule.md) · **2 (this)** ·
+> [Plan](./plan.md) · Stages: [1](./1-the-study-slug-rule.md) · **2 (this)** ·
 > [3](./3-the-tmi-context-envelope.md) · [4](./4-every-lambda-learns-its-study.md) ·
 > [5](./5-every-service-every-bundle.md) · [6](./6-ugic-one-identifier-one-version.md) ·
 > [7](./7-announcing-a-study.md) · [8](./8-terraform-forgets-the-study.md) ·

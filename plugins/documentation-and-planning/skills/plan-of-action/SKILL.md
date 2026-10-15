@@ -1,6 +1,6 @@
 ---
 name: plan-of-action
-description: Turning a settled proposal into a Plan of Action — a staged implementation plan written for an AI agent to carry out, one <n>-<description>.md file per stage in the proposal's plan-of-action/ directory, each opening with a status header, with a checkpoint between stages and human steps called out explicitly. Use when a proposal's design is settled and it is time to plan the build, when writing a plan of action or splitting one into stages, and when implementing one — executing a proposal, working through the next stage, prefixing the commits a plan run makes, or asking what to build next from proposals/.
+description: Turning a settled proposal into a Plan of Action — a staged implementation plan written for an AI agent to carry out, one <n>-<description>.md file per stage in the proposal's plan-of-action/ directory, summarised with every stage's status in plan-of-action/plan.md, each stage opening with a status header, with a checkpoint between stages and human steps called out explicitly. Use when a proposal's design is settled and it is time to plan the build, when writing a plan of action or splitting one into stages, and when implementing one — executing a proposal, working through the next stage, prefixing the commits a plan run makes, or asking what to build next from proposals/.
 ---
 
 # Plan of Action
@@ -24,17 +24,17 @@ plan can be written without relitigating it.
 **The proposal's blocking questions are answered first.** A proposal marks which of its outstanding
 decisions block work; a plan written over an unanswered one encodes a guess as an instruction, and
 an agent implementing it has no way to tell the guess from the decisions. **Check
-`decisions/outstanding/` before writing anything**: no file there may have a status line saying it
-blocks work, and no assumption test that a blocking decision waits on may still be `Planned`. A
+`decisions/decisions.md` before writing anything**: no row may be outstanding and blocking work, and
+no assumption test that a blocking decision waits on may still be `Planned` in `tests/tests.md`. A
 non-blocking decision can be carried into the stage that needs it, linked by its `D<n>` and said
 plainly as a question rather than dressed up as a step. The decision and test files are described
 in the `documentation` skill's `reference/decisions-and-tests.md`.
 
-**Writing the plan stays inside the proposal's directory**, as writing the proposal does: the
-stage files under `plan-of-action/` are the only thing written, and nothing outside
-`proposals/<proposal-slug>/` is touched until implementation begins or the user confirms the
-change. Other agents may be writing other proposals in the same tree at the same time. The rule and
-its reasoning are in the `documentation` skill's `reference/proposals.md`.
+**Writing the plan stays inside the proposal's directory**, as writing the proposal does:
+`plan-of-action/plan.md` and the stage files beside it are the only thing written, and nothing
+outside `proposals/<proposal-slug>/` is touched until implementation begins or the user confirms
+the change. Other agents may be writing other proposals in the same tree at the same time. The rule
+and its reasoning are in the `documentation` skill's `reference/proposals.md`.
 
 ## Stages
 
@@ -45,6 +45,7 @@ directory beside `proposal.md`:
 proposals/<proposal-slug>/
   proposal.md
   plan-of-action/
+    plan.md                          # the plan summarised, every stage with its status
     1-update-database.md             # a plan of nine stages or fewer: no padding
     2-backfill-existing-rows.md
     01-update-database.md            # a plan of ten to ninety-nine stages: pad to two digits
@@ -58,15 +59,58 @@ proposals/<proposal-slug>/
   ten to ninety-nine pad the single digits to two, and so on. Padding is there so a directory
   listing shows the stages in execution order; padding wider than the plan needs implies stages
   that do not exist
-- **Link the stages from `proposal.md`**, in order, so the entry point remains a complete index.
-  A stage file links back up the same way — `../proposal.md`, and `../decisions/resolved/D3-...md`
-  for a decision it carries out
+- **List the stages in `plan-of-action/plan.md`**, in order — see *The plan summary* below. A
+  stage file links back up with `../proposal.md`, and `../decisions/D3-...md` for a decision it
+  carries out
 
 **Corrected:** stage files used to sit beside `proposal.md` as `plan-<iteration>-<description>.md`.
 Every stage added another file to a listing shared with `proposal.md`, its diagrams and its
 supporting documents; the directory groups the stages, and the prefix it made redundant was
 dropped. A proposal planned under the old naming need not be moved — see
 *Migrating an old-layout proposal* in the `documentation` skill's `reference/proposals.md`.
+
+### The plan summary
+
+**`plan-of-action/plan.md` summarises the plan and lists every stage with its status.** It is
+written with the stages and kept current as they run, and it is where a reader goes to see how
+far through the plan the work has got:
+
+- **The table of contents, then a title** — `# Plan of Action: <Proposal Name>`
+- **A short summary of the plan**: what it builds, the shape of the sequence and why it runs in
+  that order, and anything that cuts across stages, such as a human step several stages wait on
+- **A counts line**: how many stages there are and how they split by status
+- **One table with one row per stage, in order.** The columns are the stage (linked), what it does
+  in one line, and its status in short form
+
+```markdown
+**Contents**
+
+- [Plan of Action: User Invitations](#plan-of-action-user-invitations)
+
+# Plan of Action: User Invitations
+
+Adds the invitations table, then the endpoints that write it, then the email that announces it.
+The table and its backfill come first because both endpoints are transcriptions of its columns.
+Stage 3 waits on SES production access, which is a human step in stage 1.
+
+Four stages: one complete and deployed, one built and not yet deployed, two not started.
+
+| Stage | Does | Status |
+| --- | --- | --- |
+| [1](./1-update-database.md) | Adds the `invitations` table and its expiry index | COMPLETE and DEPLOYED |
+| [2](./2-backfill-existing-rows.md) | Backfills an invitation for every existing member | BUILT, NOT YET DEPLOYED |
+| [3](./3-the-invite-endpoints.md) | Adds `POST /invitations` and `POST /invitations/{id}/accept` | Not Started |
+| [4](./4-documentation.md) | Moves what was built into `architecture/` and `instructions/` | Not Started |
+```
+
+**The stage header is the source of truth, and `plan.md` is a copy of it.** A stage's row, and the
+counts, are updated in the same commit as its header. **`proposal.md` does not repeat the stage
+list**: it gives a line with the counts and a link to `plan.md`, the same way it treats decisions
+and tests.
+
+**Corrected:** stages used to be linked in order from `proposal.md` itself. That put a second list,
+growing with the plan, in the file that is meant to stay short, and it held no status, so finding
+where a run had got to meant opening every stage file's header in turn.
 
 **Splitting a plan into stages reduces the risk and the context of implementing it.** A stage is a
 unit small enough for the implementing agent to hold at once, and small enough for a mistake to be
@@ -118,7 +162,7 @@ The header has six parts, in this order:
 | **Divergences** | What the plan assumed that turned out not to hold, numbered, each saying what was done instead — or one line pointing at the steps, once they carry the detail |
 | **Standing preamble** | Two fixed paragraphs, identical in every stage file of every proposal: that this is an execution plan for an agent rather than a description of the system, and that a divergence is corrected in place and said |
 | **Dependencies** | Which earlier stages this one needs, linked, and **why** it needs them — plus anything else that changes how the file should be read |
-| **Stage index** | Every stage of the plan, linked, in order, with this one bold, unlinked and marked `(this)` |
+| **Stage index** | A link to `plan.md`, then every stage of the plan, linked, in order, with this one bold, unlinked and marked `(this)` |
 
 **The last three are written when the file is; the first three appear as they become true.** A
 stage that has not started carries a status and nothing else above the preamble.
@@ -147,9 +191,10 @@ stage that has not started carries a status and nothing else above the preamble.
 - **Dependencies say why.** "Depends on Stage 1" gives the reader nothing to act on; naming what of
   Stage 1's this stage is a transcription of tells them what breaks if they run it early, and lets
   them judge whether the part they need is already there
-- **The stage index makes every file an entry point.** `proposal.md` indexes the stages, but a
-  reader arriving at stage 6 from a commit message should not have to go back up to find out what
-  else exists or where they are in it
+- **The stage index makes every file an entry point.** `plan.md` indexes the stages, but a reader
+  arriving at stage 6 from a commit message should not have to go back up to find out what else
+  exists or where they are in it. The index links `plan.md` first, for the statuses it does not
+  carry
 
 ## Human steps
 
@@ -189,9 +234,10 @@ is a human step precisely because it is the part the agent cannot do and cannot 
 
 ## Implementing the plan
 
-**One stage at a time, in order.** Read the stage you are on, plus `proposal.md` for context; do
-not read ahead into later stages. Reading ahead spends the context the split exists to save, and
-pulls decisions forward into a stage that was deliberately not making them yet.
+**One stage at a time, in order.** Read `plan-of-action/plan.md` to find the stage you are on,
+then that stage, plus `proposal.md` for context; do not read ahead into later stages. Reading ahead
+spends the context the split exists to save, and pulls decisions forward into a stage that was
+deliberately not making them yet.
 
 - **Stop and prompt the human at a human step**, then wait — handing them the commands the plan
   gives, with anything only knowable now filled in: the id that was just generated, the ARN of the
@@ -201,9 +247,10 @@ pulls decisions forward into a stage that was deliberately not making them yet.
 - **Clear the stage's checkpoint before starting the next stage.** A failing checkpoint is the end
   of the run, not a note to carry forward; the next stage is written on the assumption that this
   one landed
-- **Bring the header up to date in the same commit as the work it describes.** The status, the new
-  commit in the build record, a divergence just corrected: all of it is part of the step, not
-  tidying to be done afterwards. A header updated later is a header that is wrong in between
+- **Bring the header up to date in the same commit as the work it describes**, and the stage's row
+  in `plan.md` with it when the status changes. The status, the new commit in the build record, a
+  divergence just corrected: all of it is part of the step, not tidying to be done afterwards. A
+  header updated later is a header that is wrong in between
 - **Commit as the work lands, with a prefixed subject** — see *Commit subjects* below — so where
   the run got to is legible from `git log` rather than from memory. A session that resumes a
   part-built plan finds out where it got to that way
@@ -214,8 +261,8 @@ pulls decisions forward into a stage that was deliberately not making them yet.
 
 **When the last stage is done, the proposal's lifecycle takes over**: what now exists is described
 in `architecture/`, the operational side in `instructions/`, and the proposal's status line is
-updated to say it has been implemented and to point at both. The plan stages stay where they are,
-with the proposal. See the `documentation` skill.
+updated to say it has been implemented and to point at both. `plan.md` and the plan stages stay
+where they are, with the proposal. See the `documentation` skill.
 
 ## Commit subjects
 
