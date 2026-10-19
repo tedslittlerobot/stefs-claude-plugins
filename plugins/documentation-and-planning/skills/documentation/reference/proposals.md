@@ -35,6 +35,13 @@ proposals/<proposal-slug>/
   <supplementary>.md                  # any number of supporting documents
 ```
 
+- **The slug opens with the date the proposal was started, as `YYMMDD`** —
+  `proposals/261019-user-invitations/`, not `proposals/user-invitations/`. The date is the day the
+  directory is created, and it never changes afterwards: not when the proposal is revised, not when
+  it is implemented. A plain listing of `proposals/` then reads oldest to newest without any tool
+  sorting by date. It also shows each proposal's age at a glance, which matters when one has sat
+  untouched long enough that the system it was written against has moved on. Two proposals started
+  on the same day stay distinct by the name after the date
 - **`proposal.md` is always the entry point**, whatever the proposal is called. The directory name
   carries the identity; the filename stays predictable so a reader never has to guess
 - **Each kind of supporting file has a directory of its own** — `plan-of-action/`, `decisions/`
@@ -200,10 +207,10 @@ mistaken for a description of production.
 ### Migrating an old-layout proposal
 
 A proposal with `plan-<n>-<description>.md` files beside `proposal.md`, with its decisions and
-questions written inline, or with decisions under `outstanding/`, `resolved/` and `rejected/`
-subdirectories, predates the current layout. **It does not have to be migrated**, and one
-whose plan is part-implemented is usually better left as it is until the run finishes. Where it is
-migrated:
+questions written inline, with decisions under `outstanding/`, `resolved/` and `rejected/`
+subdirectories, or with no datestamp on its slug, predates the current layout. **It does not have
+to be migrated**, and one whose plan is part-implemented is usually better left as it is until the
+run finishes. Where it is migrated:
 
 - **Do it in a commit of its own**, moving files with `git mv` so each one's history follows it,
   and changing nothing in the design along the way — a migration that also edits a decision hides
@@ -220,3 +227,9 @@ migrated:
 - **Move decisions out of status subdirectories** with `git mv` into `decisions/` itself, give each
   a status box saying what its directory used to, and write `decisions/decisions.md`
 - **Give every test a status box and a row in `tests/tests.md`**
+- **Date an undated slug from the commit that added `proposal.md`**, not from today, so the
+  listing still puts the proposal where it belongs:
+  `git log --diff-filter=A --format=%ad --date=format:%y%m%d -- proposals/<slug>/proposal.md`.
+  Renaming the directory breaks links to it from outside, such as an `architecture/` document
+  pointing at the proposal that produced it. Fixing those is writing outside the proposal's
+  directory, so ask before doing it

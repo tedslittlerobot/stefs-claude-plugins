@@ -1,6 +1,6 @@
 ---
 name: documentation
-description: How to write the project's markdown documents and which context each belongs in — architecture/ for what IS built, instructions/ for what a human does, proposals/ for what could be built, the table of contents every markdown file must keep up to date, plus API overview documents, Lambda and shared-library READMEs, and the Mingrammer/MermaidJS diagram conventions. Use when writing or editing any markdown document, adding, renaming or removing a heading, adding or updating a table of contents, deciding where a document belongs, adding a README or api.md, writing a proposal or recording a decision in one, laying out a proposal's directory (plan-of-action/, decisions/, tests/), adding a D1/D2 decision file or marking one outstanding, resolved or rejected, writing a T1/T2 assumption test to check something a proposal assumes, updating a status box or the decisions/decisions.md or tests/tests.md summary table, evaluating a suggested design, or creating an architecture or ER diagram.
+description: How to write the project's markdown documents and which context each belongs in — architecture/ for what IS built, instructions/ for what a human does, proposals/ for what could be built, the table of contents every markdown file must keep up to date, plus API overview documents, Lambda and shared-library READMEs, and the Mingrammer/MermaidJS diagram conventions. Use when writing or editing any markdown document, adding, renaming or removing a heading, adding or updating a table of contents, deciding where a document belongs, adding a README or api.md, writing a proposal or recording a decision in one, naming a proposal directory (a YYMMDD datestamp prefix, as in 261019-user-invitations), laying out a proposal's directory (plan-of-action/, decisions/, tests/), adding a D1/D2 decision file or marking one outstanding, resolved or rejected, writing a T1/T2 assumption test to check something a proposal assumes, updating a status box or the decisions/decisions.md or tests/tests.md summary table, evaluating a suggested design, or creating an architecture or ER diagram.
 ---
 
 # Documentation Conventions
@@ -60,7 +60,7 @@ instructions/
   <topic>.md                               # a process a human follows
   setup/<topic>.md                         # first-time setup tasks specifically
 proposals/
-  <proposal-slug>/
+  <proposal-slug>/                         # dated YYMMDD first: 261019-user-invitations/
     proposal.md                            # a design not yet built
     plan-of-action/plan.md                 # its Plan of Action, summarised — `plan-of-action` skill
     plan-of-action/<n>-<desc>.md           # one stage of it

@@ -279,7 +279,8 @@ User Invitations Proposal 13.15: Final Testing of Invitations
 ```
 
 - **`<Proposal Name>`** is the proposal's own name, as its `proposal.md` title gives it —
-  `proposals/user-invitations/` implementing *User Invitations* gives `User Invitations Proposal`
+  `proposals/261019-user-invitations/` implementing *User Invitations* gives
+  `User Invitations Proposal`. The slug's datestamp is not part of the name
 - **`<stage>`** is the number in the stage file's name, **exactly as written there, padding
   included**. `plan-of-action/02-update-database.md` gives `02` and
   `plan-of-action/2-update-database.md` gives `2`; normalising it either way breaks the match
