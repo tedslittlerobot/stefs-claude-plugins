@@ -1,6 +1,6 @@
 ---
 name: lambdas-go
-description: Go AWS Lambda conventions for production — directory naming by trigger (api-<method>-, api-socket-, alb-<method>-, url-, sqs-, sns-, mq-, dynamo-, kinesis-, kafka-, docdb-, s3-, bus-, pipe-, schedule-, cognito-, logs-, alarm-, email-, iot-, aurora-, lambda-, secrets-, invoke-) for API Gateway, WebSocket, ALB, function URL, queue, topic, stream, schedule/cron, manually invoked admin and other event-source triggers, one Go module per Lambda compiled to an arm64 bootstrap binary, go.work, the main.go/handler.go root package with everything else in sub-packages, context.Context and deadlines, Go package naming, structured JSON logging with log/slog and log levels, idempotency, partial batch failures (ReportBatchItemFailures), dead-letter queues and on-failure destinations, metrics (EMF), tracing (OpenTelemetry/X-Ray) and alarms, CI-built reproducible artifacts, govulncheck and dependency updates, file organisation, unit and integration testing (go-sqlmock, testcontainers). Use when writing, editing, reviewing or testing Go Lambda code, creating a new Lambda directory, building or deploying a Lambda, adding logging, retries or error handling to one, or deciding which package something belongs in.
+description: Go AWS Lambda conventions for production — directory naming by trigger (api-<method>-, api-socket-, alb-<method>-, url-, sqs-, sns-, mq-, dynamo-, kinesis-, kafka-, docdb-, s3-, bus-, pipe-, schedule-, cognito-, logs-, alarm-, email-, iot-, aurora-, lambda-, secrets-, invoke-) for API Gateway, WebSocket, ALB, function URL, queue, topic, stream, schedule/cron, manually invoked admin and other event-source triggers, one Go module per Lambda compiled to an arm64 bootstrap binary, go.work, the main.go/handler.go root package with everything else in sub-packages, context.Context and deadlines, Go package naming, structured JSON logging with log/slog and log levels, idempotency, partial batch failures (ReportBatchItemFailures), dead-letter queues and on-failure destinations, OpenTelemetry (OTel) metrics over OTLP to CloudWatch and CloudWatch Omni (SigV4, PromQL, flushing per invocation, temporality), tracing (OpenTelemetry/X-Ray) and alarms, CI-built reproducible artifacts, govulncheck and dependency updates, file organisation, unit and integration testing (go-sqlmock, testcontainers). Use when writing, editing, reviewing or testing Go Lambda code, creating a new Lambda directory, building or deploying a Lambda, adding logging, retries or error handling to one, or deciding which package something belongs in.
 ---
 
 # Go Lambda Conventions
@@ -246,9 +246,14 @@ partial batch responses, and timeouts.
 
 ## Observability
 
-A Lambda is not done until it has, beyond its logs, **metrics** for what it does (Embedded Metric
-Format), **tracing** across the services it calls, and **alarms** on its errors, throttles and
-failure destinations. Read **`reference/observability.md`** before shipping a new Lambda.
+A Lambda is not done until it has, beyond its logs, **metrics** for what it does, **tracing**
+across the services it calls, and **alarms** on its errors, throttles and failure destinations.
+Read **`reference/observability.md`** before shipping a new Lambda.
+
+**Metrics are OpenTelemetry metrics**, exported over OTLP — SigV4-signed, from inside the Lambda —
+to CloudWatch's OpenTelemetry metrics, where CloudWatch Omni reads them and PromQL queries and
+alarms on them. The handler flushes them before it returns, on every invocation, because a frozen
+execution environment exports nothing. Read **`reference/metrics.md`** before adding a metric.
 
 ## File Organisation
 
@@ -269,6 +274,8 @@ sub-package.**
   interface, `lambdacontext`
 - [`github.com/aws/aws-sdk-go-v2`](https://github.com/aws/aws-sdk-go-v2) — AWS SDK v2
 - `log/slog` — the standard library's structured logger
+- [`go.opentelemetry.io/otel`](https://github.com/open-telemetry/opentelemetry-go) — the metrics
+  API and SDK, and `otlpmetrichttp` for the OTLP exporter
 - [`github.com/DATA-DOG/go-sqlmock`](https://github.com/DATA-DOG/go-sqlmock) — repository unit tests
 - [`github.com/testcontainers/testcontainers-go`](https://github.com/testcontainers/testcontainers-go)
   `modules/mysql` — repository integration tests against a real MySQL
@@ -303,7 +310,8 @@ go mod tidy
 
 The build line is **exactly the one CI runs**, and run locally it produces the same bytes — that
 reproducibility is what lets CI rebuild every Lambda on every change.
-`reference/build-and-deploy.md` explains each flag, how the artifact is zipped and deployed, and the `go.work` workspace.
+`reference/build-and-deploy.md` explains each flag, how the artifact is zipped and deployed, and
+the `go.work` workspace.
 
 All build output goes into a **`build/` directory** within the Lambda's directory.
 
@@ -317,8 +325,11 @@ to it.
   naming, the sub-package table
 - **`reference/failure-handling.md`** — `context.Context` and deadlines, how each trigger retries,
   idempotency, partial batch responses, dead-letter queues and on-failure destinations, timeouts
-- **`reference/observability.md`** — the `logging` package, metrics as EMF, tracing, and the
-  alarms every Lambda needs
+- **`reference/observability.md`** — the `logging` package, tracing, and the alarms every Lambda
+  needs
+- **`reference/metrics.md`** — OpenTelemetry metrics for CloudWatch Omni: the OTLP endpoint and
+  SigV4, resource attributes, instruments and naming, flushing per invocation, temporality, and
+  the `telemetry` package
 - **`reference/build-and-deploy.md`** — the CI build, reproducible artifacts, arm64, deployment by
   content-addressed artifact, `go.work`, `govulncheck` and dependency updates
 - **`reference/shared-libraries.md`** — when shared source is allowed at all, the register, layout,

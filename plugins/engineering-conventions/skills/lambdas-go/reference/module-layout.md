@@ -24,6 +24,9 @@ lambdas/<function-name>/
   logging/                    # the slog setup — unless a registered shared library provides it
     logging.go
     logging_test.go
+  telemetry/                  # the OpenTelemetry meter provider — likewise
+    telemetry.go
+    telemetry_test.go
   <thing>/                    # a larger collection of helpers focused on one subject
   <feature>/                  # the actual business logic, one package per piece of functionality
 ```
@@ -45,7 +48,8 @@ Deliberately thin — **wiring, and nothing else.** Its whole job is to:
   even a wiring failure is logged in the standard format (see `observability.md`)
 - resolve the environment variables the Lambda needs. A missing required one is logged at `ERROR`
   and exits non-zero (`os.Exit(1)`): an init failure, surfaced before any event is accepted
-- construct dependencies (MySQL clients, AWS SDK clients, SQS senders, …)
+- construct dependencies (MySQL clients, AWS SDK clients, SQS senders, …), including the meter
+  provider and the Lambda's metric instruments (see `metrics.md`)
 - instantiate the `Handler` with them
 - call `lambda.Start` (or the equivalent for the event source) with the handler's `handle` method
 
@@ -77,7 +81,8 @@ them, and the Lambda's own tests live in the same package.
 | `input` | Every struct the Lambda's event is parsed into, and all input validation. **No I/O** — parsing and validation only |
 | `models` | All database logic: the structs mirroring table rows, the repository types that read and write them, and the repository interfaces the handler depends on |
 | `helpers` | Small, self-contained helper functions too generic to belong to any one piece of logic (env lookups, JSON response wrapping, …) |
-| `logging` | The `slog` handler and its setup, and the EMF metric writer — see `observability.md`. Absent when a registered shared library provides them |
+| `logging` | The `slog` handler and its setup — see `observability.md`. Absent when a registered shared library provides it |
+| `telemetry` | The OpenTelemetry meter provider and its SigV4-signing OTLP exporter — see `metrics.md`. Absent when a registered shared library provides it |
 | `<thing>` | A larger collection of helpers all focused on one subject, **named for that subject alone** — `cognito`, `anchor`, `password`, `names`, `queue`. Never a `_helpers` suffix |
 | `<feature>` | The business logic itself — one sensibly named package per piece of functionality, which is where all real work happens |
 

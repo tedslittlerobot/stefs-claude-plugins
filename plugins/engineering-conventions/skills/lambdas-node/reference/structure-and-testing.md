@@ -73,6 +73,7 @@ surfaces as an init failure rather than a per-request error.
 | --- | --- |
 | `index.mjs` | The factories, the handler orchestration, and the wiring |
 | `logger.mjs` | The Powertools `Logger`, constructed once with the Lambda's `serviceName` |
+| `telemetry.mjs` | The OpenTelemetry meter provider and its SigV4-signing OTLP exporter — see below |
 | `<topic>.mjs` | One subject's logic — email template building, validation, a parsing helper |
 
 A pure function belongs in its own file as soon as it has more than one case worth testing.
@@ -151,5 +152,92 @@ event shapes — is set out in the `lambdas-go` skill's testing reference, and a
 - Prefer the **official vendor SDK** over a wrapper. The reason this Lambda is Node at all is
   usually that the official library only exists here
 - **Every added dependency is a new reason this Lambda cannot be Go.** Keep the list short enough
-  that the exception stays justifiable. Powertools is the exception to the exception: it is the
-  platform's logging and metrics standard, so it says nothing about why the Lambda is Node
+  that the exception stays justifiable. Powertools and the OpenTelemetry and signing packages below
+  are the exception to the exception: they are the platform's logging and metrics standard, so they
+  say nothing about why the Lambda is Node
+
+## Metrics: `telemetry.mjs`
+
+The rules are the `lambdas-go` skill's metrics reference; this is the Node code. Neither the
+OpenTelemetry JavaScript exporters nor the ADOT Node package (as of 0.13.0) can sign an OTLP
+*metrics* request with SigV4 — ADOT signs traces and logs only — so the exporter is ours, and small:
+
+```js
+import { randomUUID } from 'node:crypto'
+import { MeterProvider, PeriodicExportingMetricReader } from '@opentelemetry/sdk-metrics'
+import { resourceFromAttributes } from '@opentelemetry/resources'
+import { ProtobufMetricsSerializer } from '@opentelemetry/otlp-transformer'
+import { ExportResultCode } from '@opentelemetry/core'
+import { SignatureV4 } from '@smithy/signature-v4'
+import { Sha256 } from '@aws-crypto/sha256-js'
+import { defaultProvider } from '@aws-sdk/credential-provider-node'
+
+// An OTLP/HTTP metric exporter that signs each request with SigV4 for the
+// "monitoring" service, which CloudWatch's OTLP metrics endpoint requires.
+export function makeMetricExporter({ region, endpoint = `https://monitoring.${region}.amazonaws.com/v1/metrics`, credentials = defaultProvider(), fetchFn = fetch }) {
+  const url = new URL(endpoint)
+  const signer = new SignatureV4({ credentials, region, service: 'monitoring', sha256: Sha256 })
+
+  async function send(resourceMetrics) {
+    const body = ProtobufMetricsSerializer.serializeRequest(resourceMetrics)
+    const { headers } = await signer.sign({
+      method: 'POST',
+      protocol: url.protocol,
+      hostname: url.hostname,
+      port: url.port ? Number(url.port) : undefined,
+      path: url.pathname,
+      headers: { host: url.host, 'content-type': 'application/x-protobuf' },
+      body,
+    })
+    delete headers.host // fetch sets it, from the same URL
+    const response = await fetchFn(url, { method: 'POST', headers, body })
+    if (!response.ok) {
+      throw new Error(`OTLP metrics export failed: ${response.status} ${await response.text()}`)
+    }
+  }
+
+  return {
+    export(resourceMetrics, resultCallback) {
+      send(resourceMetrics).then(
+        () => resultCallback({ code: ExportResultCode.SUCCESS }),
+        (error) => resultCallback({ code: ExportResultCode.FAILED, error }),
+      )
+    },
+    forceFlush: async () => {},
+    shutdown: async () => {},
+  }
+}
+
+export function makeMeterProvider({ exporter, service, namespace, environment }) {
+  return new MeterProvider({
+    resource: resourceFromAttributes({
+      'service.name': service,
+      'service.namespace': namespace,
+      'service.instance.id': randomUUID(),
+      'deployment.environment.name': environment,
+    }),
+    // Flushed by the handler at the end of every invocation; the timer is a backstop.
+    readers: [new PeriodicExportingMetricReader({ exporter, exportIntervalMillis: 3_600_000 })],
+  })
+}
+```
+
+- **The exporter is a factory like everything else**, so a test passes a local `endpoint`, fixed
+  `credentials` and its own `fetchFn`, and asserts the request is signed for the `monitoring`
+  service
+- **`@opentelemetry/otlp-transformer` is a 0.x package** — its API is not yet declared stable. Pin
+  it exactly, and treat an upgrade as a change that re-runs the signing test
+- In the wiring, the meter provider and the Lambda's instruments are built once at module load and
+  passed to `makeHandler`; the handler flushes in a `finally`:
+
+```js
+return async function handler(event, context) {
+  logger.addContext(context)
+  try {
+    /* … */
+  } finally {
+    await meterProvider.forceFlush().catch((error) =>
+      logger.warn('metrics flush failed', { step: 'index.mjs:handler:flush-metrics', error }))
+  }
+}
+```

@@ -99,7 +99,7 @@ do not survive production; the [plugin README](plugins/engineering-conventions) 
 
 | Skill | Covers |
 | --- | --- |
-| `lambdas-go` | Go Lambdas: trigger-based naming, module layout, structured logging, failure handling and idempotency, metrics, tracing and alarms, CI-built `arm64` artifacts and `go.work`, shared libraries, unit and integration testing |
+| `lambdas-go` | Go Lambdas: trigger-based naming, module layout, structured logging, failure handling and idempotency, OpenTelemetry metrics for CloudWatch Omni, tracing and alarms, CI-built `arm64` artifacts and `go.work`, shared libraries, unit and integration testing |
 | `lambdas-node` | Node.js Lambdas: when Node is justified at all, ESM, esbuild bundling, factory-function DI, Powertools logging, `node --test` and integration tests |
 
 ### `documentation-and-planning`

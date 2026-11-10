@@ -1,6 +1,6 @@
 ---
 name: lambdas-node
-description: Node.js AWS Lambda conventions for production — when Node is justified over Go, ESM/.mjs modules, the nodejs runtime on arm64 and index.handler entry point, bundling with esbuild and npm ci in CI, factory-function dependency injection, structured JSON logging with Powertools for AWS Lambda Logger and log levels, idempotency, partial batch failures (batchItemFailures), dead-letter queues, getRemainingTimeInMillis and abortSignal, metrics, tracing and alarms, npm audit, node --test with co-located .test.mjs files and integration tests, and the same trigger-based directory naming as Go Lambdas (api-, api-socket-, alb-, url-, sqs-, sns-, dynamo-, kinesis-, kafka-, s3-, bus-, pipe-, schedule-, cognito-, secrets-, invoke- and the rest). Use when writing, editing, reviewing, testing, building or deploying a Node.js Lambda, or deciding whether a Lambda may be written in Node at all.
+description: Node.js AWS Lambda conventions for production — when Node is justified over Go, ESM/.mjs modules, the nodejs runtime on arm64 and index.handler entry point, bundling with esbuild and npm ci in CI, factory-function dependency injection, structured JSON logging with Powertools for AWS Lambda Logger and log levels, idempotency, partial batch failures (batchItemFailures), dead-letter queues, getRemainingTimeInMillis and abortSignal, OpenTelemetry (OTel) metrics over OTLP to CloudWatch and CloudWatch Omni with a SigV4-signing exporter and forceFlush per invocation, tracing and alarms, npm audit, node --test with co-located .test.mjs files and integration tests, and the same trigger-based directory naming as Go Lambdas (api-, api-socket-, alb-, url-, sqs-, sns-, dynamo-, kinesis-, kafka-, s3-, bus-, pipe-, schedule-, cognito-, secrets-, invoke- and the rest). Use when writing, editing, reviewing, testing, building or deploying a Node.js Lambda, or deciding whether a Lambda may be written in Node at all.
 ---
 
 # Node.js Lambda Conventions
@@ -117,6 +117,7 @@ lambdas/<function-name>/
   .gitignore           # node_modules/, build/
   index.mjs            # factory functions + the exported handler, wired at module load
   logger.mjs           # the Powertools Logger, constructed once
+  telemetry.mjs        # the OpenTelemetry meter provider and its signing exporter
   index.test.mjs
   <topic>.mjs          # one file per subject — templates, validation, a client wrapper
   <topic>.test.mjs
@@ -210,9 +211,19 @@ trigger, not the language. In Node:
 
 ## Observability
 
-**The same as a Go Lambda**: metrics in Embedded Metric Format — Powertools'
-`@aws-lambda-powertools/metrics` writes it — tracing with OpenTelemetry, and the same alarms. See
-the `lambdas-go` skill's observability reference.
+**The same as a Go Lambda** — see the `lambdas-go` skill's observability and metrics references.
+
+- **Metrics are OpenTelemetry metrics**, exported over OTLP to CloudWatch for CloudWatch Omni, by a
+  small SigV4-signing exporter in `telemetry.mjs` — read `reference/structure-and-testing.md` for
+  it.
+  The resource attributes, naming, cardinality and temporality rules are `lambdas-go`'s metrics
+  reference, unchanged
+- **The handler awaits `meterProvider.forceFlush()` in a `finally`** before it returns, catching
+  and logging a failure at `WARN` rather than throwing it
+- Tracing with OpenTelemetry, and the same alarms
+
+**Corrected at 0.3.0:** this section prescribed Embedded Metric Format through Powertools'
+`@aws-lambda-powertools/metrics`. See `lambdas-go`'s metrics reference for why it changed.
 
 ## Testing
 

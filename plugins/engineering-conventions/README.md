@@ -12,7 +12,7 @@ diverged at 0.2.0 where a prototype's choices do not survive production:
 | --- | --- | --- |
 | Logging | Plain-text `[module:file:function:step]` lines at one level | Structured JSON (`log/slog`, Powertools Logger) with shared key names, levels, request and trace IDs |
 | Failure handling | Not covered | `context.Context` and deadlines, idempotency, partial batch responses, dead-letter queues and on-failure destinations, timeouts |
-| Observability | Logs only | Plus EMF metrics, OpenTelemetry tracing, and the alarms every Lambda needs |
+| Observability | Logs only | Plus OpenTelemetry metrics over OTLP to CloudWatch for CloudWatch Omni, OpenTelemetry tracing, and the alarms every Lambda needs |
 | Build and deploy | Terraform builds at plan time on the operator's machine | CI builds reproducible `arm64` artifacts once, deployed by content-addressed key; Node bundled with esbuild |
 | Dependencies | One module per Lambda | Plus a committed `go.work`, `govulncheck` and `npm audit` in CI, grouped automated updates |
 | Testing | Unit tests only | Plus integration tests against a real MySQL and smoke tests against a deployed environment |

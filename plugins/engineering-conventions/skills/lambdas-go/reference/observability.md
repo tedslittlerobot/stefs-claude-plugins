@@ -1,7 +1,8 @@
 # Observability
 
 Logs, metrics, traces and alarms. The key names, the alarm list and the reasoning are
-language-agnostic, and the `lambdas-node` skill defers to this file for them.
+language-agnostic, and the `lambdas-node` skill defers to this file for them. Metrics have a file of
+their own, `metrics.md`.
 
 ## The `logging` Package
 
@@ -100,22 +101,10 @@ func traceRoot(header string) string {
 
 ## Metrics
 
-**What a Lambda does is a metric, not a log line someone has to count.** Emit business metrics —
-users created, messages skipped, emails sent — in CloudWatch **Embedded Metric Format**: a JSON log
-line CloudWatch turns into a metric with no API call and no extra latency.
-
-```json
-{"_aws":{"Timestamp":1794302043512,"CloudWatchMetrics":[{"Namespace":"<project namespace>","Dimensions":[["service"]],"Metrics":[{"Name":"users_created","Unit":"Count"}]}]},"service":"admin-create-user","users_created":1}
-```
-
-- In Go, a small `Metric` function in the `logging` package marshals that document and writes it to
-  stdout; there is no official library to depend on, and the format is one JSON object
-- **Dimensions are low-cardinality** — `service`, an outcome, a trigger source. Never a user,
-  request or message ID: every distinct combination of dimension values is a separate billed custom metric
-- The namespace and metric naming are project values, recorded in its conventions file
-
-Lambda's own metrics — `Invocations`, `Errors`, `Throttles`, `Duration`, `ConcurrentExecutions`,
-and `IteratorAge` for streams — come for free and are what most alarms watch.
+**What a Lambda does is a metric, not a log line someone has to count** — users created, messages
+skipped, emails sent. Metrics are **OpenTelemetry metrics, exported over OTLP to CloudWatch for
+CloudWatch Omni**; read **`metrics.md`** for the target, resource attributes, naming, flushing in
+Lambda, and the `telemetry` package.
 
 ## Tracing
 
@@ -123,6 +112,10 @@ Turn on **active tracing** for every function, and instrument the AWS SDK, outbo
 with **OpenTelemetry** (the AWS Distro for OpenTelemetry), exporting to X-Ray. AWS is steering
 instrumentation toward OpenTelemetry rather than its own X-Ray SDKs, so new code starts there. The
 trace ID in every log line (`xray_trace_id`) is what joins a trace to its logs.
+
+Traces, logs and metrics must name the Lambda the same way — `service.name` is its directory name,
+and `service.namespace` its application — because that is how CloudWatch Omni puts all three on the
+same service in its application map.
 
 ## Alarms
 
@@ -136,6 +129,10 @@ Lambda's author is the one who knows which apply:
 | Asynchronous | Messages in its on-failure destination or dead-letter queue |
 | `sqs-` | The source queue's `ApproximateAgeOfOldestMessage`; its dead-letter queue's `ApproximateNumberOfMessagesVisible` above zero |
 | Stream (`dynamo-`, `kinesis-`, `kafka-`, `docdb-`) | `IteratorAge` — a stalled shard shows here first |
+
+Lambda's and SQS's own metrics are queryable with PromQL alongside the Lambda's OpenTelemetry
+metrics, so an alarm on either — or on both at once, such as `users.created` against
+`Invocations` — is a PromQL alarm.
 
 A dead-letter queue with messages in it means events have been given up on. That always pages
 someone or opens a ticket, never only a dashboard.
