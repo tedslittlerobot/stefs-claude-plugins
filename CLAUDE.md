@@ -130,11 +130,12 @@ what belongs in a project file versus in `architecture/`, `glossary/`, `instruct
 `proposals/` or `requirements/`.
 
 The five `prototype-conventions` skills divide as: four per-stack (`frontend`, `infrastructure`,
-`lambdas-go`, `lambdas-node`) and one per-document-kind (`product-requirements`). The two
-`engineering-conventions` skills are `lambdas-go` and `lambdas-node`, copied from
-`prototype-conventions` at 0.19.0 and diverged at `engineering-conventions` 0.2.0 — logging, failure
-handling, observability, build and deployment, dependency hygiene, testing, the `invoke-` prefix and
-the `/api` route rule. Each divergence is marked **Diverged from `prototype-conventions`:** where it
+`lambdas-go`, `lambdas-node`) and one per-document-kind (`product-requirements`). The three
+`engineering-conventions` skills are `infrastructure`, `lambdas-go` and `lambdas-node`, all copied
+from `prototype-conventions` at 0.19.0. The Lambda skills diverged at `engineering-conventions`
+0.2.0 — logging, failure handling, observability, build and deployment, dependency hygiene, testing,
+the `invoke-` prefix and the `/api` route rule; `infrastructure` was copied at 0.4.0 and has not
+diverged yet. Each divergence is marked **Diverged from `prototype-conventions`:** where it
 happens, saying what the prototype rule is and why production differs; the plugin README tables
 them. **Everything not so marked is still shared**, and a fix to it — a new row in the
 trigger-naming table above all — is a fix to both copies, in the same commit. The conventions

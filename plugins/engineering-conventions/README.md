@@ -1,12 +1,13 @@
 # engineering-conventions
 
-**Engineering conventions for projects built to run in production.** Two model-invoked skills, for
-Go and Node.js AWS Lambdas.
+**Engineering conventions for projects built to run in production.** Three model-invoked skills:
+Terraform and AWS infrastructure, and Go and Node.js AWS Lambdas.
 
 This is the production counterpart to [`prototype-conventions`](../prototype-conventions), whose
 rules are chosen for how quickly a prototype can be built and thrown away. The skills here started
-as copies of that plugin's `lambdas-go` and `lambdas-node` at `prototype-conventions` 0.19.0, and
-diverged at 0.2.0 where a prototype's choices do not survive production:
+as copies of that plugin's `lambdas-go`, `lambdas-node` and `infrastructure` at
+`prototype-conventions` 0.19.0. The Lambda skills diverged at 0.2.0 where a prototype's choices do
+not survive production; `infrastructure`, copied at 0.4.0, has not diverged yet:
 
 | Area | `prototype-conventions` | Here |
 | --- | --- | --- |
@@ -40,6 +41,7 @@ to a skill.
 
 | Skill | Load it when |
 | --- | --- |
+| `infrastructure` | Writing or editing `.tf` files, naming AWS resources, adding infrastructure for a feature, or debugging an apply-time AWS error |
 | `lambdas-go` | Writing, reviewing or testing Go Lambda code, or creating a Lambda directory |
 | `lambdas-node` | Writing a Node Lambda, or deciding whether a Lambda may be Node at all |
 

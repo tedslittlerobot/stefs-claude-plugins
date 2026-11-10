@@ -35,7 +35,7 @@
       "name": "engineering-conventions",
       "source": "./plugins/engineering-conventions",
       "displayName": "Engineering Conventions",
-      "description": "Engineering conventions for projects built to run in production — the counterpart to prototype-conventions. Two skills so far: Go and Node.js AWS Lambdas — trigger-based directory naming, module and package layout, structured JSON logging (slog, Powertools), failure handling (context deadlines, idempotency, partial batch failures, dead-letter queues), OpenTelemetry metrics over OTLP to CloudWatch for CloudWatch Omni, tracing and alarms, CI-built reproducible arm64 artifacts and go.work, govulncheck and npm audit, and unit plus integration testing. Model-invoked on topic match; the plugin registers no hooks and adds no executable code.",
+      "description": "Engineering conventions for projects built to run in production — the counterpart to prototype-conventions. Three skills so far. Terraform and AWS infrastructure — file organisation, tagging and resource naming, S3/CloudFront hosting, Route 53/SES, Cognito and WAF. Go and Node.js AWS Lambdas — trigger-based directory naming, module and package layout, structured JSON logging (slog, Powertools), failure handling (context deadlines, idempotency, partial batch failures, dead-letter queues), OpenTelemetry metrics over OTLP to CloudWatch for CloudWatch Omni, tracing and alarms, CI-built reproducible arm64 artifacts and go.work, govulncheck and npm audit, and unit plus integration testing. Model-invoked on topic match; the plugin registers no hooks and adds no executable code.",
       "author": {
         "name": "Stefan Horner",
         "url": "https://github.com/tedslittlerobot"

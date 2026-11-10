@@ -1,8 +1,8 @@
 {
   "name": "engineering-conventions",
   "displayName": "Engineering Conventions",
-  "version": "0.3.0",
-  "description": "Engineering conventions for projects built to run in production. Go and Node.js AWS Lambdas: trigger-based directory naming, module and package layout, structured JSON logging, failure handling and idempotency, OpenTelemetry metrics for CloudWatch Omni, tracing and alarms, CI-built reproducible arm64 artifacts, dependency hygiene, and unit and integration testing.",
+  "version": "0.4.0",
+  "description": "Engineering conventions for projects built to run in production. Terraform and AWS infrastructure, and Go and Node.js AWS Lambdas: Terraform file organisation, tagging and resource naming, S3/CloudFront hosting, Route 53/SES, Cognito and WAF; trigger-based directory naming, module and package layout, structured JSON logging, failure handling and idempotency, OpenTelemetry metrics for CloudWatch Omni, tracing and alarms, CI-built reproducible arm64 artifacts, dependency hygiene, and unit and integration testing.",
   "author": {
     "name": "Stefan Horner",
     "url": "https://github.com/tedslittlerobot"

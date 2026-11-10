@@ -8,7 +8,7 @@ conventions, and a collection of general-purpose utilities and conventions.
 | Plugin | Covers | Changes a session on its own? |
 | --- | --- | --- |
 | [`prototype-conventions`](plugins/prototype-conventions) | Conventions and guidelines for building **prototypes and proof-of-concept projects — not for production use**. Five model-invoked skills: frontends, infrastructure, Lambdas and product requirements | No — no hooks, no executable code |
-| [`engineering-conventions`](plugins/engineering-conventions) | Engineering conventions for **projects built to run in production**. Two model-invoked skills so far: Go and Node.js Lambdas, diverging from their `prototype-conventions` counterparts where production needs more | No — no hooks, no executable code |
+| [`engineering-conventions`](plugins/engineering-conventions) | Engineering conventions for **projects built to run in production**. Three model-invoked skills so far: Terraform and AWS infrastructure, and Go and Node.js Lambdas, diverging from their `prototype-conventions` counterparts where production needs more | No — no hooks, no executable code |
 | [`documentation-and-planning`](plugins/documentation-and-planning) | Four model-invoked skills carrying the **documentation and planning** conventions: how a project records its own conventions, the markdown rules every document follows, the three tenses of documentation, proposals, plans of action, and the glossary | No — no hooks, no executable code |
 | [`utils`](plugins/utils) | General-purpose commands, skills and agents, including the default-on `auto-summary-commit` workflow, and general conventions not specific to prototypes (`api-design`, `mysql`) | **Yes** — installing it turns commit-per-prompt on. See [The commit hooks](#the-commit-hooks) |
 
@@ -94,11 +94,13 @@ needs.
 ### `engineering-conventions`
 
 For projects built to run in production — the counterpart to `prototype-conventions`. Its skills
-started as copies of that plugin's Lambda skills, and diverge from them where a prototype's choices
-do not survive production; the [plugin README](plugins/engineering-conventions) lists where.
+started as copies of that plugin's Lambda and infrastructure skills, and diverge from them where a
+prototype's choices do not survive production; the [plugin README](plugins/engineering-conventions)
+lists where.
 
 | Skill | Covers |
 | --- | --- |
+| `infrastructure` | Terraform and AWS: file organisation, `default_tags`, `project_prefix` naming, module preferences, Lambda timeouts, S3/CloudFront hosting, Route 53/SES, Cognito, WAF |
 | `lambdas-go` | Go Lambdas: trigger-based naming, module layout, structured logging, failure handling and idempotency, OpenTelemetry metrics for CloudWatch Omni, tracing and alarms, CI-built `arm64` artifacts and `go.work`, shared libraries, unit and integration testing |
 | `lambdas-node` | Node.js Lambdas: when Node is justified at all, ESM, esbuild bundling, factory-function DI, Powertools logging, `node --test` and integration tests |
 
