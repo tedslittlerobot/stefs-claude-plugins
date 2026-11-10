@@ -7,6 +7,23 @@ Use **`lgallard/cognito-user-pool/aws`** for Cognito User Pools. How a given poo
 Most of this file is **apply-time-only traps**: things `terraform plan` accepts and `terraform
 apply` rejects. They are recorded because each one costs a failed apply to rediscover.
 
+## Production Settings
+
+- **`deletion_protection = "ACTIVE"`**, set explicitly. The `lgallard` module defaults to it, but
+  the provider's `aws_cognito_user_pool` defaults to `"INACTIVE"`, and a pool built either way must
+  not depend on which. Deleting a pool deletes every user in it, and Cognito cannot export password
+  hashes — see `stateful-resources.md`
+- **MFA** — `mfa_configuration = "ON"` for a pool whose users hold administrative or sensitive
+  access, `"OPTIONAL"` at least for everyone else, with software-token (TOTP) MFA enabled. SMS MFA
+  brings the SNS configuration and its costs below; prefer TOTP
+- **Threat protection** (compromised-credential and adaptive-authentication checks) needs the
+  `PLUS` feature tier, `user_pool_tier = "PLUS"`, which is billed per active user. Whether a pool
+  has it is a project decision, recorded with its reason
+- **A Hosted UI in production is on a custom domain** in the service's delegated zone, with an ACM
+  certificate in `us-east-1` — not the Cognito-prefix domain. Users type their passwords into it, so
+  it should be on a domain they recognise. The prefix domain remains fine for a pool whose Hosted UI
+  only brokers federation between pools (see "Cognito-to-Cognito SSO" below)
+
 ## Custom Email Content
 
 If a pool needs fully custom email content — a specific house style, or genuine HTML **and**

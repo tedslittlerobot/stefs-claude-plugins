@@ -100,7 +100,7 @@ lists where.
 
 | Skill | Covers |
 | --- | --- |
-| `infrastructure` | Terraform and AWS: file organisation, `default_tags`, `project_prefix` naming, module preferences, Lambda timeouts, S3/CloudFront hosting, Route 53/SES, Cognito, WAF |
+| `infrastructure` | Terraform and AWS: HCP Terraform state, CI-only applies and checks, OIDC roles, tags and environment-aware naming, Lambda timeouts and configuration, stateful-resource protection, Aurora, S3/CloudFront hosting deployed by CI, Route 53/SES, Cognito, WAF |
 | `lambdas-go` | Go Lambdas: trigger-based naming, module layout, structured logging, failure handling and idempotency, OpenTelemetry metrics for CloudWatch Omni, tracing and alarms, CI-built `arm64` artifacts and `go.work`, shared libraries, unit and integration testing |
 | `lambdas-node` | Node.js Lambdas: when Node is justified at all, ESM, esbuild bundling, factory-function DI, Powertools logging, `node --test` and integration tests |
 

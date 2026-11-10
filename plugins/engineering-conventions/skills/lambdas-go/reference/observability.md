@@ -119,8 +119,9 @@ same service in its application map.
 
 ## Alarms
 
-**A Lambda is not done until its alarms exist.** They are defined as infrastructure, but the
-Lambda's author is the one who knows which apply:
+**A Lambda is not done until its alarms exist.** They are defined as infrastructure — how is in the
+`infrastructure` skill's `lambda-functions.md` — but the Lambda's author is the one who knows which
+apply:
 
 | Lambda | Alarm on |
 | --- | --- |

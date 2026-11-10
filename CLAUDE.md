@@ -133,10 +133,12 @@ The five `prototype-conventions` skills divide as: four per-stack (`frontend`, `
 `lambdas-go`, `lambdas-node`) and one per-document-kind (`product-requirements`). The three
 `engineering-conventions` skills are `infrastructure`, `lambdas-go` and `lambdas-node`, all copied
 from `prototype-conventions` at 0.19.0. The Lambda skills diverged at `engineering-conventions`
-0.2.0 — logging, failure handling, observability, build and deployment, dependency hygiene, testing,
-the `invoke-` prefix and the `/api` route rule; `infrastructure` was copied at 0.4.0 and has not
-diverged yet. Each divergence is marked **Diverged from `prototype-conventions`:** where it
-happens, saying what the prototype rule is and why production differs; the plugin README tables
+0.2.0 — logging, failure handling, observability, build and deployment, dependency hygiene, testing
+and the `invoke-` prefix — and `infrastructure` at 0.5.0: CI-only applies, HCP Terraform state,
+environment-aware naming and tags, Lambda timeouts and configuration, stateful resources, frontend
+content deployed by CI, and more. The `/api` route rule was dropped from the Lambda skills at 0.2.0
+and restored at 0.5.0, owned by `infrastructure`, so it is shared again. Each divergence is marked
+**Diverged from `prototype-conventions`:** where it happens, saying what the prototype rule is and why production differs; the plugin README tables
 them. **Everything not so marked is still shared**, and a fix to it — a new row in the
 trigger-naming table above all — is a fix to both copies, in the same commit. The conventions
 skills in `utils` are `api-design` and `mysql`, neither tied to prototypes. The four

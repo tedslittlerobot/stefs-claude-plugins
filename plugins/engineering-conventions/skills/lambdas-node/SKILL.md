@@ -80,7 +80,7 @@ production it ships whatever `npm install` resolved on that machine on that day,
 
 | Trigger | Name |
 | --- | --- |
-| API Gateway HTTP route | `api-<http-method>-<purpose>` |
+| API Gateway HTTP route | `api-<http-method>-<purpose>` (route under an `/api` prefix) |
 | API Gateway WebSocket route | `api-socket-<route>`, dropping the `$` — `api-socket-connect` |
 | Application Load Balancer target | `alb-<http-method>-<purpose>` |
 | Lambda function URL | `url-<purpose>` — no method. **Discouraged**: needs a recorded justification, see `lambdas-go` |
@@ -262,6 +262,8 @@ contract:
 
 - `lambdas-go` skill — the default, and the source of the naming, logging, failure-handling,
   observability, build and documentation rules this skill shares
+- `infrastructure` skill — the Terraform side of a Lambda: its configuration, failure destinations,
+  permissions and alarms, and the timeout rule
 - `conventions` skill, in `documentation-and-planning` where installed — how a registered exception
   is recorded, and why the reason must travel with it
 - `documentation` skill, in `documentation-and-planning` where installed — the Lambda `README.md`

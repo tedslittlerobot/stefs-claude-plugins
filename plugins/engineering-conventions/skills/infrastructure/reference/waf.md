@@ -55,6 +55,15 @@ Apply AWS Managed Rule Groups as a baseline:
 - `AWSManagedRulesCommonRuleSet`
 - `AWSManagedRulesKnownBadInputsRuleSet`
 
+**A rule group new to a Web ACL goes in counting first** — `override_action { count {} }` — and is
+switched to `override_action { none {} }` only once its log entries show what it would have blocked,
+and that none of it is the service's own legitimate traffic. A managed rule that matches a real
+request shape (a large JSON body, an unusual header, a URL-encoded field) turns into an outage the
+moment it blocks. The same goes for moving a group to a new `version`.
+
+- **Pin each managed rule group's `version`** rather than taking whatever AWS makes the default, so
+  a rule change arrives as a reviewed diff rather than as an unexplained block
+
 ### Rate-based rules
 
 **Any Web ACL fronting an API also needs a per-IP `rate_based_statement` rule**, and a tighter one
@@ -91,6 +100,8 @@ group needs an `aws_cloudwatch_log_resource_policy` for that principal — guard
 `depends_on` it.
 
 - Use a **`logging_filter` keeping only `BLOCK`/`COUNT`** requests rather than logging every allowed
-  one
+  one — `COUNT` is what makes a rule group in counting mode reviewable
+- **Set the log group's `retention_in_days` explicitly.** A CloudWatch log group keeps everything
+  forever by default, and is billed for it
 - **Declare `authorization` and `cookie` as `redacted_fields`**, so no bearer token or session
   cookie is ever written into a log record

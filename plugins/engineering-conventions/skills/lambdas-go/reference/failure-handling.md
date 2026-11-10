@@ -109,11 +109,19 @@ next time.
 
 ## Timeouts
 
-- Set the function's timeout from what it does, not to the maximum. A timeout is the only bound on
-  a hung dependency, and a fifteen-minute timeout on a two-second job is fifteen minutes of
-  billed waiting
+- **The timeout is an estimate of the work plus a buffer, and never below 30 seconds** — the
+  `infrastructure` skill has the rule and how the estimate is recorded. Not the maximum: a timeout
+  is the only bound on a hung dependency, and a fifteen-minute timeout on a two-second job is
+  fifteen minutes of billed waiting
 - **An SQS source queue's visibility timeout is at least six times the function's timeout** — AWS's
   own guidance. Shorter, and a message still being processed becomes visible and is delivered a
   second time
-- A synchronous Lambda's timeout sits below its caller's: API Gateway gives up at 29 seconds by
-  default, and Cognito waits five seconds for a trigger
+- **A caller that gives up sooner than the function's timeout is respected by the code, not by the
+  timeout.** API Gateway gives up at about 30 seconds, and Cognito waits only five seconds for a
+  trigger. A `cognito-` Lambda still gets the 30-second floor. Its handler bounds its own work with
+  a context deadline derived from the caller's limit, so it fails fast rather than finishing work
+  nobody is waiting for
+
+**Corrected at `engineering-conventions` 0.5.0:** the last rule said a synchronous Lambda's
+*timeout* sits below its caller's. That contradicted the 30-second floor for every Cognito trigger,
+and put the guard in the one place that cannot tell a slow dependency from a hung one.

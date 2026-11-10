@@ -36,7 +36,7 @@ is visible from the directory name alone**:
 
 | Trigger | Name | Example |
 | --- | --- | --- |
-| API Gateway HTTP route | `api-<http-method>-<purpose>` | `api-get-profile` for `GET /me/profile` |
+| API Gateway HTTP route | `api-<http-method>-<purpose>` | `api-get-profile` for `GET /api/me/profile` |
 | API Gateway WebSocket route | `api-socket-<route>` | `api-socket-connect` for `$connect`, `api-socket-send-message` |
 | Application Load Balancer target | `alb-<http-method>-<purpose>` | `alb-post-webhook` |
 | Lambda function URL | `url-<purpose>` | `url-stripe-webhook` |
@@ -62,6 +62,8 @@ is visible from the directory name alone**:
 | Manual invocation only (`aws lambda invoke`, no route or event source) | `invoke-<purpose>` | `invoke-add-user` |
 | Anything else | the function's purpose | `register-user`, `validate-token` |
 
+- An API route **must** live under an `/api` prefix — see the `infrastructure` skill's
+  frontend-hosting reference for why (one CloudFront path pattern forward-matches every route)
 - An **API Gateway WebSocket route has no HTTP method, so `socket` takes the method's place** —
   `api-socket-<route>`, with the route key's leading `$` dropped (`$connect` → `api-socket-connect`,
   `$default` → `api-socket-default`). The Lambdas behind one API then sort together whichever
@@ -342,6 +344,8 @@ to it.
 ## Related
 
 - `lambdas-node` skill — the Node.js sibling, for a Lambda that cannot be Go
+- `infrastructure` skill — the Terraform side of a Lambda: its configuration, failure destinations,
+  permissions and alarms, the timeout rule, and the `/api` route prefix
 - `conventions` skill, in `documentation-and-planning` where installed — how a registered exception
   (a `url-` or `aurora-` Lambda, a Node Lambda, a shared library) is recorded with its reason
 - `documentation` skill, in `documentation-and-planning` where installed — the Lambda `README.md`
