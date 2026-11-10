@@ -41,8 +41,11 @@ three-line fake instead of a mocked SDK client.
 // dependencies (decryption, sending) are constructed — this is what unit
 // tests exercise directly, with fake decryptCode/sendEmail, rather than
 // mocking the AWS SDK or KMS.
-export function makeHandler({ decryptCode, sendEmail, frontendUrl }) {
-  return async function handler(event) { /* … */ }
+export function makeHandler({ decryptCode, sendEmail, frontendUrl, logger }) {
+  return async function handler(event, context) {
+    logger.addContext(context)
+    /* … */
+  }
 }
 ```
 
@@ -55,7 +58,7 @@ Everything above the exports is the equivalent of Go's `main.go` — and holds t
 **environment variables, client construction, and factory calls only.** No logic.
 
 ```js
-export const handler = makeHandler({ decryptCode, sendEmail, frontendUrl: process.env.FRONTEND_URL })
+export const handler = makeHandler({ decryptCode, sendEmail, frontendUrl: process.env.FRONTEND_URL, logger })
 ```
 
 Because this runs at **module load**, it happens once per container rather than per invocation —
@@ -69,6 +72,7 @@ surfaces as an init failure rather than a per-request error.
 | File | Holds |
 | --- | --- |
 | `index.mjs` | The factories, the handler orchestration, and the wiring |
+| `logger.mjs` | The Powertools `Logger`, constructed once with the Lambda's `serviceName` |
 | `<topic>.mjs` | One subject's logic — email template building, validation, a parsing helper |
 
 A pure function belongs in its own file as soon as it has more than one case worth testing.
@@ -86,7 +90,10 @@ Node's built-in runner, no framework:
 ```js
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
+import { Logger } from '@aws-lambda-powertools/logger'
 import { makeHandler } from './index.mjs'
+
+const context = { awsRequestId: 'test-request', getRemainingTimeInMillis: () => 5000 }
 
 test('sends an email for a sign-up trigger', async () => {
   const sent = []
@@ -94,9 +101,10 @@ test('sends an email for a sign-up trigger', async () => {
     decryptCode: async () => '123456',
     sendEmail: async (args) => { sent.push(args) },
     frontendUrl: 'https://example.test',
+    logger: new Logger({ logLevel: 'SILENT' }),
   })
 
-  await handler({ triggerSource: 'CustomEmailSender_SignUp', userName: 'u', request: { userAttributes: { email: 'a@b.test' } } })
+  await handler({ triggerSource: 'CustomEmailSender_SignUp', userName: 'u', request: { userAttributes: { sub: 's', email: 'a@b.test' } } }, context)
 
   assert.equal(sent.length, 1)
   assert.equal(sent[0].toAddress, 'a@b.test')
@@ -105,7 +113,10 @@ test('sends an email for a sign-up trigger', async () => {
 
 - **Fakes are plain functions**, usually one line, often collecting their arguments into an array so
   the test can assert on what the orchestration *decided* rather than on what a mock recorded
-- **Never mock the AWS SDK and never hit AWS.** The factories exist so that neither is necessary
+- **Never mock the AWS SDK and never hit AWS in a unit test.** The factories exist so that neither
+  is necessary
+- **Assert what is not logged.** Pass a fake logger that records its calls, run the path that
+  handles the decrypted code, and assert the code appears in none of them
 - **Cover the paths that return early.** A handler that skips sending when an attribute is absent
   needs a test asserting **nothing** was sent — that branch is invisible in production
 - **Table-driven tests** for anything with more than one case (every trigger source, every template
@@ -116,11 +127,29 @@ npm test                     # all tests, from the Lambda's own directory
 node --test index.test.mjs   # one file
 ```
 
+### Integration tests
+
+Integration tests sit in `*.integration.test.mjs` beside the file they exercise, and skip unless
+`INTEGRATION` is set, so `npm test` stays fast and needs no network:
+
+```js
+test('reads the user back from the database', { skip: !process.env.INTEGRATION }, async () => {
+  /* … against a real database or a deployed non-production environment … */
+})
+```
+
+What they must cover — a real database for queries, the deployed environment for permissions and
+event shapes — is set out in the `lambdas-go` skill's testing reference, and applies unchanged.
+
 ## Dependencies
 
-- **Pin dependencies** and commit `package-lock.json` — it is what `npm install` at package time
-  resolves against
+- **Pin dependencies** and commit `package-lock.json` — CI's `npm ci` installs exactly what it
+  says, and fails if `package.json` has moved on without it
+- **`esbuild` is a pinned `devDependency`**: it builds the bundle and never ships in it
+- **`npm audit --omit=dev --audit-level=high` runs in CI** and fails the build on a finding, and
+  dependency updates are automated — Renovate or Dependabot, the same as a Go Lambda's
 - Prefer the **official vendor SDK** over a wrapper. The reason this Lambda is Node at all is
   usually that the official library only exists here
 - **Every added dependency is a new reason this Lambda cannot be Go.** Keep the list short enough
-  that the exception stays justifiable
+  that the exception stays justifiable. Powertools is the exception to the exception: it is the
+  platform's logging and metrics standard, so it says nothing about why the Lambda is Node

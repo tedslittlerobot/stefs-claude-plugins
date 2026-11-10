@@ -1,6 +1,6 @@
 ---
 name: lambdas-go
-description: Go AWS Lambda conventions — directory naming by trigger (api-<method>-, api-socket-, alb-<method>-, url-, sqs-, sns-, mq-, dynamo-, kinesis-, kafka-, docdb-, s3-, bus-, pipe-, schedule-, cognito-, logs-, alarm-, email-, iot-, aurora-, lambda-, secrets-, ninja-) for API Gateway, WebSocket, ALB, function URL, queue, topic, stream, schedule/cron and other event-source triggers, one Go module per Lambda compiled to a bootstrap binary, the main.go/handler.go root package with everything else in sub-packages, Go package naming, the structured log line format, file organisation, build commands and testing. Use when writing, editing, reviewing or testing Go Lambda code, creating a new Lambda directory, or deciding which package something belongs in.
+description: Go AWS Lambda conventions for production — directory naming by trigger (api-<method>-, api-socket-, alb-<method>-, url-, sqs-, sns-, mq-, dynamo-, kinesis-, kafka-, docdb-, s3-, bus-, pipe-, schedule-, cognito-, logs-, alarm-, email-, iot-, aurora-, lambda-, secrets-, invoke-) for API Gateway, WebSocket, ALB, function URL, queue, topic, stream, schedule/cron, manually invoked admin and other event-source triggers, one Go module per Lambda compiled to an arm64 bootstrap binary, go.work, the main.go/handler.go root package with everything else in sub-packages, context.Context and deadlines, Go package naming, structured JSON logging with log/slog and log levels, idempotency, partial batch failures (ReportBatchItemFailures), dead-letter queues and on-failure destinations, metrics (EMF), tracing (OpenTelemetry/X-Ray) and alarms, CI-built reproducible artifacts, govulncheck and dependency updates, file organisation, unit and integration testing (go-sqlmock, testcontainers). Use when writing, editing, reviewing or testing Go Lambda code, creating a new Lambda directory, building or deploying a Lambda, adding logging, retries or error handling to one, or deciding which package something belongs in.
 ---
 
 # Go Lambda Conventions
@@ -16,10 +16,14 @@ for the Node.js case.
 
 ## Language & Runtime
 
-- **Go**, version pinned via [`goenv`](https://github.com/go-nv/goenv) —
-  `goenv install <version> && goenv local <version>`
-- Lambda runtime **`provided.al2023`** (Amazon Linux 2023 custom runtime for Go)
-- Each Lambda compiles to a standalone binary named **`bootstrap`**
+- **Go**, version pinned by the `go` and `toolchain` lines of each `go.mod` and of the repository's
+  `go.work`. Those lines are what CI builds with; [`goenv`](https://github.com/go-nv/goenv)
+  (`goenv install <version> && goenv local <version>`) is the local convenience that matches them
+- Lambda runtime **`provided.al2023`** (Amazon Linux 2023 custom runtime for Go), architecture
+  **`arm64`** — Graviton costs about 20% less per GB-second than `x86_64` for the same Go code,
+  and a Go binary cross-compiles to it with one environment variable
+- Each Lambda compiles to a standalone binary named **`bootstrap`**, **built by CI, never on the
+  machine running `terraform apply`** — see `reference/build-and-deploy.md`
 - Each Lambda directory needs a `.gitignore` ignoring the `build/` directory, the
   `bootstrap`/`bootstrap.zip` artefacts, **and a file named after the directory itself** — a bare
   `go build` with no `-o` drops a host binary there beside the source, and without that last line it
@@ -32,7 +36,7 @@ is visible from the directory name alone**:
 
 | Trigger | Name | Example |
 | --- | --- | --- |
-| API Gateway HTTP route | `api-<http-method>-<purpose>` | `api-get-profile` for `GET /api/me/profile` |
+| API Gateway HTTP route | `api-<http-method>-<purpose>` | `api-get-profile` for `GET /me/profile` |
 | API Gateway WebSocket route | `api-socket-<route>` | `api-socket-connect` for `$connect`, `api-socket-send-message` |
 | Application Load Balancer target | `alb-<http-method>-<purpose>` | `alb-post-webhook` |
 | Lambda function URL | `url-<purpose>` | `url-stripe-webhook` |
@@ -55,11 +59,9 @@ is visible from the directory name alone**:
 | Aurora MySQL, from SQL (`lambda_sync` / `lambda_async`) | `aurora-<what-the-lambda-does>` | `aurora-notify-on-signup` |
 | Lambda destination (on success or failure of another function) | `lambda-<what-the-lambda-does>` | `lambda-report-failed-import` |
 | Secrets Manager rotation | `secrets-<what-it-rotates>` | `secrets-aurora-credentials` |
-| Manual invocation only (`aws lambda invoke`, no route or event source) | `ninja-<purpose>` | `ninja-add-user` |
+| Manual invocation only (`aws lambda invoke`, no route or event source) | `invoke-<purpose>` | `invoke-add-user` |
 | Anything else | the function's purpose | `register-user`, `validate-token` |
 
-- An API route **must** live under an `/api` prefix — see the `infrastructure` skill's
-  frontend-hosting reference for why (one CloudFront path pattern forward-matches every route)
 - An **API Gateway WebSocket route has no HTTP method, so `socket` takes the method's place** —
   `api-socket-<route>`, with the route key's leading `$` dropped (`$connect` → `api-socket-connect`,
   `$default` → `api-socket-default`). The Lambdas behind one API then sort together whichever
@@ -69,6 +71,12 @@ is visible from the directory name alone**:
   expects a different response from API Gateway's, so the two are not interchangeable
 - A **`url-` Lambda has no method in its name.** A function URL is a single endpoint that answers
   every method, so there is nothing to put there; any routing on method happens inside the handler
+- **A `url-` Lambda is discouraged, and needs a recorded justification.** A function URL sits in
+  front of nothing: no WAF, no API Gateway throttling, no authorizer, so every request on the
+  internet reaches the code, and authentication (a webhook's signature check, say) is the handler's
+  job alone. Where the design genuinely calls for one — a webhook that must not sit behind the API's
+  authorizer, a response stream API Gateway cannot carry — use it, and record it as a registered
+  exception in the project's conventions with its reason, the way a Node Lambda is recorded
 - **A `schedule-` Lambda's name says how often it runs, then what it does** —
   `schedule-nightly-clear-caches`, `schedule-hourly-sync-users`, `schedule-weekly-send-digest`. The
   question asked of a scheduled job is *when does it run?*, which neither its purpose alone nor
@@ -108,6 +116,11 @@ is visible from the directory name alone**:
 - An **`aurora-` Lambda called with `lambda_sync` runs inside the SQL statement that invokes it**,
   so a failure or a slow response surfaces as a failed or slow query — the same reason
   `cognito-` is worth seeing at a glance
+- **An `aurora-` Lambda is discouraged, and needs a recorded justification.** A synchronous call
+  holds the statement — and any locks its transaction holds — for the Lambda's whole duration, and
+  neither form is undone when the transaction rolls back: the Lambda has already run. Where the
+  design calls for it, use it, and record it as a registered exception in the project's conventions
+  with its reason
 - A **`secrets-` Lambda is named for the secret it rotates**, without a `rotate-`: rotation is the
   only thing Secrets Manager invokes a Lambda for, so the word would distinguish nothing — the same
   reasoning that removed `handler-` from `sqs-` names below
@@ -124,8 +137,18 @@ is visible from the directory name alone**:
   directly as the only kind not visible from its name. Existing unprefixed directories are not
   wrong, and renaming one is a separate decision with Terraform and log-prefix consequences; new
   ones take the `cognito-` prefix
-- The `ninja-` prefix exists so an operational/admin utility is identifiable at a glance and never
+- The `invoke-` prefix exists so an operational/admin utility is identifiable at a glance and never
   mistaken for a user-facing endpoint
+- **An `invoke-` Lambda is invocable only by a restricted set of people.** It does privileged
+  things — `invoke-add-user` creates an account — outside the application, so it skips whatever the
+  application checks and records. Its function policy and the IAM policies around it allow
+  `lambda:InvokeFunction` to an operations or admin role only, never to the general developer or
+  deploy roles; every invocation is auditable (CloudTrail data events for Lambda `Invoke`); and its
+  README's Invocation section is the runbook — who may run it, with what payload, and why
+- **Diverged from `prototype-conventions`:** this prefix was `ninja-`. The name was playful, which
+  suits a prototype, and it said nothing about what the Lambda is — `invoke-` names the only way it
+  is ever triggered, as every other prefix in the table does. The restriction is new as well: in a
+  prototype an unguarded admin Lambda is a convenience, in production it is a backdoor
 - **Sources with no prefix yet take the "anything else" row** — Step Functions tasks, AppSync
   resolvers, CloudFormation custom resources, Lambda@Edge, Firehose transformation, S3 Object
   Lambda, Config rules, CodePipeline actions and the like. Do not invent a prefix for one in a
@@ -159,23 +182,73 @@ table and Go package-naming rules before creating a new Lambda or adding a packa
 
 ## Logging
 
-**Log frequently** — at function entry, before and after significant operations (AWS calls, DB
-queries, external service calls), and at decision points. Under-logging a Lambda is expensive
-because a production trace is often all you get.
+**Structured JSON, one object per line, through `log/slog`** — never `log.Printf` or `fmt.Println`.
+Every line carries the same keys as a Node Lambda's (Powertools for AWS Lambda's names), so one
+CloudWatch Logs Insights query works across every function whatever its language:
 
-Every log line includes the **module**, **file**, **function** and a **unique step identifier**
-within that function:
+| Key | Holds |
+| --- | --- |
+| `timestamp`, `level`, `message` | slog's own `time`, `level`, `msg`, renamed |
+| `service` | The Lambda's directory name |
+| `function_request_id`, `xray_trace_id` | Added from the invocation's `context.Context`, never by hand |
+| `step` | `<file>:<function>:<step-id>` — the unique location of this line |
+| anything else | This line's own fields, `snake_case` |
 
 ```go
-log.Printf("[module:file:function:step] message key=value ...")
-log.Printf("[admin-create-user:handler.go:Handle:cognito-create] creating user email=%s", maskedEmail)
-log.Printf("[admin-create-user:main.go:main:secrets-retrieved] successfully retrieved DB credentials")
+slog.InfoContext(ctx, "creating user", "step", "handler.go:handle:cognito-create", "user_id", userID)
 ```
 
-Include relevant variables for inspection — request IDs, masked email addresses, resource
-identifiers, error messages.
+```json
+{"timestamp":"2026-11-10T09:14:03.512Z","level":"INFO","message":"creating user","service":"admin-create-user","step":"handler.go:handle:cognito-create","user_id":"0193…","function_request_id":"9f1c…","xray_trace_id":"1-6730…"}
+```
 
-**Never log secrets, passwords, tokens, or unmasked PII.**
+**Always log with the `…Context` variants** — the request and trace IDs come from `ctx`, which is
+why every function takes one. The logger itself is set up once in `main.go`; read
+**`reference/observability.md`** for the `logging` package that does it.
+
+| Level | For |
+| --- | --- |
+| `DEBUG` | Before and after each AWS, database or external call, with its detail |
+| `INFO` | Function entry, the outcome, and every decision point — **including the paths that do nothing**, which are the ones you cannot infer from an absence |
+| `WARN` | A handled anomaly: a retry, a skipped record, a fallback taken |
+| `ERROR` | A failure the invocation reports — logged **once**, where it is handled, not at every layer it passes up through |
+
+Production runs at `INFO`. The level comes from the function's application log level
+(`AWS_LAMBDA_LOG_LEVEL`), so `DEBUG` can be turned on for one function with a configuration change
+and no code change.
+
+**Log identifiers, not personal data** — a user ID or Cognito `sub`, a message ID, an object key.
+No email address, masked or not, where an ID would do; **never secrets, passwords, tokens or
+credentials.** How long logs are kept is set on the log group, as infrastructure.
+
+**Diverged from `prototype-conventions`:** this section used to prescribe one plain-text line format
+— `log.Printf("[module:file:function:step] message key=value")` — and "log frequently" at a single
+level. That is cheap to write and easy to grep in a prototype. In production it fails three ways:
+text cannot be filtered or aggregated by field in Logs Insights, a single level means the
+before-and-after-every-call detail is paid for in CloudWatch ingestion on every invocation for ever,
+and nothing ties a line to its request. The `module:file:function:step` identity survives, as
+`service` plus `step`.
+
+## Failure Handling
+
+- **`handle` takes `ctx context.Context` first, and passes it to every call that does I/O** — the
+  SDK, `QueryContext`/`ExecContext`, outbound HTTP. The invocation's deadline lives in that context;
+  a call made without it runs on after the Lambda has been timed out
+- **A Lambda that is not invoked synchronously is idempotent.** Queues, topics, buses, streams and
+  asynchronous invocation all deliver **at least once**, so the same event will arrive twice
+- **A batch handler reports partial failures** (`ReportBatchItemFailures`), so one bad record does
+  not send its whole batch round again
+- **Every asynchronous or event-source Lambda has somewhere for failures to land** — a dead-letter
+  queue or an on-failure destination. A failure with nowhere to land is an event lost silently
+
+Read **`reference/failure-handling.md`** for how each kind of trigger retries, idempotency keys,
+partial batch responses, and timeouts.
+
+## Observability
+
+A Lambda is not done until it has, beyond its logs, **metrics** for what it does (Embedded Metric
+Format), **tracing** across the services it calls, and **alarms** on its errors, throttles and
+failure destinations. Read **`reference/observability.md`** before shipping a new Lambda.
 
 ## File Organisation
 
@@ -193,9 +266,12 @@ sub-package.**
 ## Frameworks & Libraries
 
 - [`github.com/aws/aws-lambda-go`](https://github.com/aws/aws-lambda-go) — event types, handler
-  interface
+  interface, `lambdacontext`
 - [`github.com/aws/aws-sdk-go-v2`](https://github.com/aws/aws-sdk-go-v2) — AWS SDK v2
-- [`github.com/DATA-DOG/go-sqlmock`](https://github.com/DATA-DOG/go-sqlmock) — repository tests
+- `log/slog` — the standard library's structured logger
+- [`github.com/DATA-DOG/go-sqlmock`](https://github.com/DATA-DOG/go-sqlmock) — repository unit tests
+- [`github.com/testcontainers/testcontainers-go`](https://github.com/testcontainers/testcontainers-go)
+  `modules/mysql` — repository integration tests against a real MySQL
 
 ## Required Documentation
 
@@ -212,34 +288,51 @@ Every Lambda directory needs **both**:
 Run from inside a Lambda's own directory:
 
 ```bash
-GOOS=linux GOARCH=amd64 go build -o build/bootstrap .   # build (deployment artifact)
-go test ./...                                            # test
+CGO_ENABLED=0 GOOS=linux GOARCH=arm64 \
+  go build -trimpath -buildvcs=false -ldflags="-s -w" -tags lambda.norpc -o build/bootstrap .
+go test ./...                                            # unit tests
 go test -run TestName ./...                              # single test
 go test -cover ./...                                     # coverage
+go test -tags integration ./...                          # integration tests — needs Docker
 go fmt ./...
+go vet ./...
 golangci-lint run
+govulncheck ./...
 go mod tidy
 ```
 
-All build output goes into a **`build/` directory** within the Lambda's directory; Terraform zips
-`build/bootstrap` for deployment.
+The build line is **exactly the one CI runs**, and run locally it produces the same bytes — that
+reproducibility is what lets CI rebuild every Lambda on every change.
+`reference/build-and-deploy.md` explains each flag, how the artifact is zipped and deployed, and the `go.work` workspace.
+
+All build output goes into a **`build/` directory** within the Lambda's directory.
 
 **A shared library is never built on its own** — it has no `main` and is compiled into each
-consuming Lambda's binary. Only the test, vet, format and tidy commands apply to it.
+consuming Lambda's binary. Only the test, vet, lint, vulnerability, format and tidy commands apply
+to it.
 
 ## References
 
 - **`reference/module-layout.md`** — the module tree, `main.go`/`handler.go` contracts, package
   naming, the sub-package table
+- **`reference/failure-handling.md`** — `context.Context` and deadlines, how each trigger retries,
+  idempotency, partial batch responses, dead-letter queues and on-failure destinations, timeouts
+- **`reference/observability.md`** — the `logging` package, metrics as EMF, tracing, and the
+  alarms every Lambda needs
+- **`reference/build-and-deploy.md`** — the CI build, reproducible artifacts, arm64, deployment by
+  content-addressed artifact, `go.work`, `govulncheck` and dependency updates
 - **`reference/shared-libraries.md`** — when shared source is allowed at all, the register, layout,
-  naming, consuming one, and **the rebuild trap** (read this before editing any shared library)
-- **`reference/testing.md`** — interface-based AWS mocking, `go-sqlmock`, testing `crypto/rand` and
-  `log.Fatalf` paths, coverage expectations
+  naming, consuming one, and keeping its consumers rebuilt
+- **`reference/testing.md`** — interface-based AWS mocking, `go-sqlmock`, integration tests against
+  a real MySQL, deployed-environment smoke tests, testing `crypto/rand` and exit paths,
+  coverage expectations
 - **`reference/schema-md.md`** — the `schema.md` template
 
 ## Related
 
 - `lambdas-node` skill — the Node.js sibling, for a Lambda that cannot be Go
-- `infrastructure` skill — packaging, timeouts, and the `hash_extra` requirement for shared libraries
-- `documentation` skill — the Lambda `README.md` and shared-library `README.md` formats
-- `mysql` skill — the schema the `models` package reads and writes
+- `conventions` skill, in `documentation-and-planning` where installed — how a registered exception
+  (a `url-` or `aurora-` Lambda, a Node Lambda, a shared library) is recorded with its reason
+- `documentation` skill, in `documentation-and-planning` where installed — the Lambda `README.md`
+  and shared-library `README.md` formats
+- `mysql` skill, in `utils` where installed — the schema the `models` package reads and writes

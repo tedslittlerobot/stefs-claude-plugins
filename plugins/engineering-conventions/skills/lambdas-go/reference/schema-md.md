@@ -8,7 +8,7 @@ Three required sections:
 
 1. **Summary** — a brief description of the Lambda's purpose and **how it is invoked** (e.g.
    "Triggered by SQS queue `new-users`", "Invoked directly via AWS CLI/SDK", "API Gateway
-   `POST /api/auth/login`")
+   `POST /auth/login`")
 
 2. **Schema** — the input schema in **TypeScript syntax**, in a fenced code block:
    - use `string` unions for constant/enum options (`"permanent" | "temporary"`)

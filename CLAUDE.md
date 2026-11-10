@@ -21,8 +21,9 @@ It carries four independent plugins, and the split matters when deciding where s
 A rule for how a prototype or proof of concept is built belongs in `prototype-conventions`, and its
 production counterpart — how a stack is built when the project is going to run in production — in
 `engineering-conventions`; one that states how a document is written, where it belongs, or how work
-is proposed and planned belongs in `documentation-and-planning`. A convention that holds whatever the project — production included —
-and fits neither of those belongs in `utils`, as `api-design` and `mysql` do, alongside the skills
+is proposed and planned belongs in `documentation-and-planning`. A convention that holds whatever
+the project — production included — and fits none of those belongs in `utils`, as `api-design` and
+`mysql` do, alongside the skills
 that do something, such as the one that runs at the end of every turn. That distinction is why
 `auto-summary-commit` is not a conventions skill despite being about commits, and why `api-design`
 and `mysql` left `prototype-conventions`: nothing in them is specific to prototypes, and a
@@ -131,9 +132,12 @@ what belongs in a project file versus in `architecture/`, `glossary/`, `instruct
 The five `prototype-conventions` skills divide as: four per-stack (`frontend`, `infrastructure`,
 `lambdas-go`, `lambdas-node`) and one per-document-kind (`product-requirements`). The two
 `engineering-conventions` skills are `lambdas-go` and `lambdas-node`, copied from
-`prototype-conventions` at 0.19.0 with only the opening note changed; they have not yet been reviewed
-for production, and are expected to diverge from their prototype originals as that review lands.
-Until a rule has deliberately diverged, a fix to one copy is a fix to both. The conventions
+`prototype-conventions` at 0.19.0 and diverged at `engineering-conventions` 0.2.0 — logging, failure
+handling, observability, build and deployment, dependency hygiene, testing, the `invoke-` prefix and
+the `/api` route rule. Each divergence is marked **Diverged from `prototype-conventions`:** where it
+happens, saying what the prototype rule is and why production differs; the plugin README tables
+them. **Everything not so marked is still shared**, and a fix to it — a new row in the
+trigger-naming table above all — is a fix to both copies, in the same commit. The conventions
 skills in `utils` are `api-design` and `mysql`, neither tied to prototypes. The four
 `documentation-and-planning` skills are one meta-skill (`conventions`), `documentation` (which also
 carries the markdown rules every document follows, such as the table of contents), `plan-of-action`

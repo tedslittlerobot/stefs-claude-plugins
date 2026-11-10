@@ -21,6 +21,9 @@ lambdas/<function-name>/
   helpers/                    # small, generic helper functions
     <topic>.go
     <topic>_test.go
+  logging/                    # the slog setup — unless a registered shared library provides it
+    logging.go
+    logging_test.go
   <thing>/                    # a larger collection of helpers focused on one subject
   <feature>/                  # the actual business logic, one package per piece of functionality
 ```
@@ -38,7 +41,10 @@ Because sub-packages import off the module path, a Lambda whose `go.mod` declare
 
 Deliberately thin — **wiring, and nothing else.** Its whole job is to:
 
-- resolve the environment variables the Lambda needs
+- configure the default logger, **first** — `slog.SetDefault(logging.New("<lambda-name>"))` — so
+  even a wiring failure is logged in the standard format (see `observability.md`)
+- resolve the environment variables the Lambda needs. A missing required one is logged at `ERROR`
+  and exits non-zero (`os.Exit(1)`): an init failure, surfaced before any event is accepted
 - construct dependencies (MySQL clients, AWS SDK clients, SQS senders, …)
 - instantiate the `Handler` with them
 - call `lambda.Start` (or the equivalent for the event source) with the handler's `handle` method
@@ -49,15 +55,17 @@ Deliberately thin — **wiring, and nothing else.** Its whole job is to:
 
 Holds a `HandlerInterface` and the `Handler` that satisfies it:
 
-- **`HandlerInterface`** declares, at minimum, a `handle` method whose signature takes the Lambda's
-  event type (`events.APIGatewayV2HTTPRequest`, `events.SQSEvent`, …), plus any other handler helper
-  methods. **Assert the implementation** with `var _ HandlerInterface = (*Handler)(nil)`
+- **`HandlerInterface`** declares, at minimum, a `handle` method taking **`ctx context.Context`
+  first** and then the Lambda's event type (`events.APIGatewayV2HTTPRequest`, `events.SQSEvent`,
+  …), and returning the trigger's response type — for SQS and streams, the partial batch response
+  (see `failure-handling.md`) — plus any other handler helper methods. **Assert the
+  implementation** with `var _ HandlerInterface = (*Handler)(nil)`
 - **`Handler`** is a struct holding the dependencies `main.go` created — repositories, SDK clients —
   **each typed as an interface** so tests can substitute a fake. This is the single decision that
   makes the whole Lambda testable
 - **`handle`** controls the Lambda's logic **at a high level only**: parse the event via `input`,
-  call into the business-logic packages, and map their results and errors onto a response. Any real
-  work is delegated to a sub-package
+  call into the business-logic packages — passing `ctx` to each — and map their results and errors
+  onto a response. Any real work is delegated to a sub-package
 
 `handle` and the interface method are **unexported** — nothing outside `package main` ever calls
 them, and the Lambda's own tests live in the same package.
@@ -69,6 +77,7 @@ them, and the Lambda's own tests live in the same package.
 | `input` | Every struct the Lambda's event is parsed into, and all input validation. **No I/O** — parsing and validation only |
 | `models` | All database logic: the structs mirroring table rows, the repository types that read and write them, and the repository interfaces the handler depends on |
 | `helpers` | Small, self-contained helper functions too generic to belong to any one piece of logic (env lookups, JSON response wrapping, …) |
+| `logging` | The `slog` handler and its setup, and the EMF metric writer — see `observability.md`. Absent when a registered shared library provides them |
 | `<thing>` | A larger collection of helpers all focused on one subject, **named for that subject alone** — `cognito`, `anchor`, `password`, `names`, `queue`. Never a `_helpers` suffix |
 | `<feature>` | The business logic itself — one sensibly named package per piece of functionality, which is where all real work happens |
 
@@ -105,10 +114,5 @@ reads:
 
 ## Deployment
 
-Nothing about this layout changes deployment: `go build -o build/bootstrap .` at the Lambda root
-compiles the whole tree, and the `patterns` regexes in each Lambda's Terraform `source_path` block
-(`".*\\.go"`) match nested paths — so sub-package files are still hashed for rebuild detection and
-still packaged.
-
-**Those patterns are relative to the Lambda's own directory**, which is exactly what makes a
-*shared* library a different problem. See `reference/shared-libraries.md`.
+Nothing about this layout changes the build: CI's `go build … -o build/bootstrap .` at the Lambda
+root compiles the whole tree, sub-packages included, into one binary. See `build-and-deploy.md`.

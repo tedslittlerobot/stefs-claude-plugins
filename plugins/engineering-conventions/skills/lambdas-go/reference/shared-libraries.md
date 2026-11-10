@@ -80,85 +80,34 @@ replace bouncer => ../../../../lib/go/bouncer
 The number of `..` segments is however many levels the Lambda directory sits below the repository
 root. `v0.0.0` is a placeholder that is never resolved, because `replace` short-circuits it.
 
-## The Rebuild Trap
+The repository's `go.work` (see `build-and-deploy.md`) also `use`s the library, which is what the
+editor and the repository-wide sweeps go by. The `replace` stays regardless: it is what lets the
+Lambda build on its own with `GOWORK=off`, which is how CI builds every artifact.
 
-**A shared library sits outside the Lambda's `source_path`, so editing it will not trigger a
-rebuild.** This is the most important consequence of allowing shared code at all, and **it fails
-silently**: the deployed `bootstrap` keeps running the old library while the source says otherwise,
-and nothing in a `terraform plan` says so.
+## Keeping Consumers Rebuilt
 
-The cause: `terraform-aws-modules/lambda/aws` hashes the files matched by `patterns` at **plan**
-time — before `commands` runs `go build` — and those patterns resolve **relative to the Lambda's own
-directory.** Files under `lib/go/` match nothing.
+**A change to a shared library is a change to every Lambda that imports it**, and each of those
+must be rebuilt and redeployed. If anything decides which Lambdas to rebuild by looking at which
+directories changed, the library's consumers are exactly the ones it misses: the deployed
+`bootstrap` keeps running the old library while the source says otherwise, and nothing reports it.
 
-So every Lambda consuming a library must bring that library's files into its rebuild hash. **The way
-to do that is `hash_extra`, not a second `source_path` entry.**
+The CI build closes this by not deciding at all. **It rebuilds every Lambda on every change**, and
+because the build is reproducible an unchanged Lambda produces the same artifact and is not updated
+— see `build-and-deploy.md`. A pipeline that does build selectively must treat any change under
+`lib/go/<library-name>/` as a change to every module whose `go.mod` requires it.
 
-### Why not a second `source_path` entry
-
-The second-entry approach is the obvious one, and was what this convention originally prescribed. It
-does close the hash gap — but **it is not hash-only.** For a `source_path` entry with a `path` and
-no `commands`, the module does both `step("zip", …)` and `hash(…)`, so the matched files are
-**packaged as well as hashed**: every consuming Lambda's zip ends up carrying the library's sources
-**and its `_test.go` files** alongside the binary.
-
-`hash_extra` feeds the same content hash and **packages nothing**, so it is the mechanism that
-actually does what is wanted.
-
-### The mechanism
-
-Compute the library's digest once in a `locals` block and hand it to each consumer:
-
-```hcl
-locals {
-  bouncer_source_dir = "${path.module}/../../../lib/go/bouncer"
-
-  # filesha256 per file rather than a hash of concatenated contents, so a change
-  # that moved bytes between two files still moves the digest; sorted, so the
-  # digest is stable across plans.
-  bouncer_source_hash = sha256(join("", [
-    for file in sort(tolist(fileset(local.bouncer_source_dir, "**/*.{go,mod,sum}"))) :
-    filesha256("${local.bouncer_source_dir}/${file}")
-  ]))
-}
-```
-
-```hcl
-module "api_get_users_lambda" {
-  # ...
-  source_path = [
-    {
-      path     = "${path.module}/../lambdas/api-get-users"
-      commands = ["GOOS=linux GOARCH=amd64 go build -o build/bootstrap .", ":zip build/bootstrap"]
-      patterns = ["!.*", ".*\\.go", "go\\.(mod|sum)"]
-    }
-  ]
-
-  # Brings the library's sources into the rebuild hash. NOT optional, and its
-  # absence fails silently.
-  hash_extra = local.bouncer_source_hash
-}
-```
-
-### Verified, not assumed
-
-Confirmed on the first library actually built, by driving the module's own `package.py` directly:
-
-| Check | Result |
-| --- | --- |
-| Editing the library with `hash_extra` set | Artifact hash **moves** ✓ |
-| Editing the library with neither mechanism | Artifact hash **does not move** — the trap is real ✓ |
-| Zip contents with `hash_extra` | `bootstrap` only ✓ |
-| Zip contents with a second `source_path` entry | `bootstrap` **plus ten library files**, `_test.go` included ✗ |
-
-**Every consuming Lambda must have the `hash_extra` entry**, or editing the library silently fails
-to redeploy that Lambda. This is worth checking explicitly whenever a Lambda gains its first import
-of a library.
+**Diverged from `prototype-conventions`:** there, `terraform-aws-modules/lambda/aws` builds each
+Lambda at plan time and decides whether to rebuild by hashing files matched relative to the Lambda's
+own directory — which a library outside it never matches. The prototype skill closes that with a
+`hash_extra` digest of the library's files on every consuming Lambda's module, an entry whose
+absence fails silently. With the build moved to CI there is no plan-time hash to feed, and no entry
+to forget.
 
 ## Testing
 
 A library owns its own tests, run from its own directory (`go test ./...` in
 `lib/go/<library-name>/`).
 
-**Any repository-wide test, coverage or lint sweep must include `lib/go/*`** alongside the
-`lambdas/` trees: a library no Lambda exercises yet is still code that has to compile and pass.
+**Any repository-wide test, coverage, lint or `govulncheck` sweep must include `lib/go/*`**
+alongside the `lambdas/` trees: a library no Lambda exercises yet is still code that has to compile
+and pass. Looping over the modules `go.work` lists covers both.
