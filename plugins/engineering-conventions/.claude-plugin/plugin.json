@@ -1,0 +1,21 @@
+{
+  "name": "engineering-conventions",
+  "displayName": "Engineering Conventions",
+  "version": "0.1.0",
+  "description": "Engineering conventions for projects built to run in production. Go and Node.js AWS Lambdas: trigger-based directory naming, module and package layout, logging, testing and packaging.",
+  "author": {
+    "name": "Stefan Horner",
+    "url": "https://github.com/tedslittlerobot"
+  },
+  "homepage": "https://github.com/tedslittlerobot/stefs-claude-plugins",
+  "repository": "https://github.com/tedslittlerobot/stefs-claude-plugins",
+  "license": "MIT",
+  "keywords": [
+    "conventions",
+    "engineering",
+    "production",
+    "lambda",
+    "go",
+    "nodejs"
+  ]
+}

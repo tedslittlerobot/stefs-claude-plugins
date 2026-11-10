@@ -1,8 +1,8 @@
 {
   "$schema": "https://www.schemastore.org/claude-code-marketplace.json",
   "name": "stefs-plugins",
-  "description": "Stef's Claude Code plugins — conventions for building prototypes and proof-of-concept projects, the documentation and planning conventions that sit beside them, and general-purpose utilities and conventions.",
-  "version": "0.1.0",
+  "description": "Stef's Claude Code plugins — conventions for building prototypes and proof-of-concept projects, engineering conventions for production projects, the documentation and planning conventions that sit beside them, and general-purpose utilities and conventions.",
+  "version": "0.2.0",
   "owner": {
     "name": "Stefan Horner",
     "url": "https://github.com/tedslittlerobot"
@@ -29,6 +29,28 @@
         "prototypes",
         "proof-of-concept",
         "standards"
+      ]
+    },
+    {
+      "name": "engineering-conventions",
+      "source": "./plugins/engineering-conventions",
+      "displayName": "Engineering Conventions",
+      "description": "Engineering conventions for projects built to run in production — the counterpart to prototype-conventions. Two skills so far: Go and Node.js AWS Lambdas (trigger-based directory naming, module and package layout, logging, testing and packaging), copied from prototype-conventions and pending a production review. Model-invoked on topic match; the plugin registers no hooks and adds no executable code.",
+      "author": {
+        "name": "Stefan Horner",
+        "url": "https://github.com/tedslittlerobot"
+      },
+      "homepage": "https://github.com/tedslittlerobot/stefs-claude-plugins",
+      "repository": "https://github.com/tedslittlerobot/stefs-claude-plugins",
+      "license": "MIT",
+      "category": "productivity",
+      "keywords": [
+        "conventions",
+        "engineering",
+        "production",
+        "lambda",
+        "go",
+        "nodejs"
       ]
     },
     {

@@ -1,13 +1,14 @@
 # Stef's Claude Plugins
 
-A [Claude Code](https://code.claude.com/docs) plugin marketplace hosting three plugins:
-conventions for building **prototypes and proof-of-concept projects**, the portable layer of our
-documentation and planning conventions, and a collection of general-purpose utilities and
-conventions.
+A [Claude Code](https://code.claude.com/docs) plugin marketplace hosting four plugins:
+conventions for building **prototypes and proof-of-concept projects**, engineering conventions for
+**projects built to run in production**, the portable layer of our documentation and planning
+conventions, and a collection of general-purpose utilities and conventions.
 
 | Plugin | Covers | Changes a session on its own? |
 | --- | --- | --- |
 | [`prototype-conventions`](plugins/prototype-conventions) | Conventions and guidelines for building **prototypes and proof-of-concept projects — not for production use**. Five model-invoked skills: frontends, infrastructure, Lambdas and product requirements | No — no hooks, no executable code |
+| [`engineering-conventions`](plugins/engineering-conventions) | Engineering conventions for **projects built to run in production**. Two model-invoked skills so far: Go and Node.js Lambdas, copied from `prototype-conventions` and pending a production review | No — no hooks, no executable code |
 | [`documentation-and-planning`](plugins/documentation-and-planning) | Four model-invoked skills carrying the **documentation and planning** conventions: how a project records its own conventions, the markdown rules every document follows, the three tenses of documentation, proposals, plans of action, and the glossary | No — no hooks, no executable code |
 | [`utils`](plugins/utils) | General-purpose commands, skills and agents, including the default-on `auto-summary-commit` workflow, and general conventions not specific to prototypes (`api-design`, `mysql`) | **Yes** — installing it turns commit-per-prompt on. See [The commit hooks](#the-commit-hooks) |
 
@@ -16,6 +17,7 @@ conventions.
 ```
 /plugin marketplace add tedslittlerobot/stefs-claude-plugins
 /plugin install prototype-conventions@stefs-plugins
+/plugin install engineering-conventions@stefs-plugins
 /plugin install documentation-and-planning@stefs-plugins
 /plugin install utils@stefs-plugins
 ```
@@ -25,12 +27,15 @@ Or from the CLI:
 ```bash
 claude plugin marketplace add tedslittlerobot/stefs-claude-plugins
 claude plugin install prototype-conventions@stefs-plugins
+claude plugin install engineering-conventions@stefs-plugins
 claude plugin install documentation-and-planning@stefs-plugins
 claude plugin install utils@stefs-plugins
 ```
 
-The three plugins are independent — install any of them on its own. The two conventions plugins name
-each other's skills in their Related sections, and work best installed together. Verify `utils` with
+The plugins are independent — install any of them on its own. The conventions plugins name each
+other's skills in their Related sections, and work best installed together. A project usually wants
+one of `prototype-conventions` and `engineering-conventions`, not both: where both are installed, a
+prototype follows the first and any other project the second. Verify `utils` with
 `/utils:hello`.
 
 Updating the marketplace —
@@ -51,7 +56,8 @@ claude plugin marketplace add ~/Developer/claude/stefs-claude-plugins
 
 ## The conventions plugins
 
-`prototype-conventions` and `documentation-and-planning` share one model. Conventions come in two
+`prototype-conventions`, `engineering-conventions` and `documentation-and-planning` share one
+model. Conventions come in two
 layers, and keeping them apart is what makes any of this reusable:
 
 | Layer | Lives in | Contains |
@@ -67,9 +73,9 @@ The `conventions` skill, in `documentation-and-planning`, documents this arrange
 including what belongs in a project file versus in architecture documentation, a glossary entry, an
 instruction or a proposal.
 
-Every skill in both plugins is model-invoked — its `description` decides when it loads, so the
-body stays out of context until the work actually calls for it. Nothing here fires on its own:
-neither plugin adds hooks, and neither changes anything about a session in which no skill matches.
+Every skill in these plugins is model-invoked — its `description` decides when it loads, so the
+body stays out of context until the work actually calls for it. Nothing here fires on its own: none
+of them adds hooks, and none changes anything about a session in which no skill matches.
 
 ### `prototype-conventions`
 
@@ -84,6 +90,17 @@ needs.
 | `lambdas-go` | Go Lambdas: trigger-based naming, module layout, package naming, logging, shared libraries, testing |
 | `lambdas-node` | Node.js Lambdas: when Node is justified at all, ESM, factory-function DI, `node --test`, packaging |
 | `product-requirements` | Requirements and user stories: sections, Gherkin, acceptance criteria, test-coverage notes, risk assessment |
+
+### `engineering-conventions`
+
+For projects built to run in production — the counterpart to `prototype-conventions`. Its skills
+started as copies of that plugin's Lambda skills, with only the prototype-only note replaced, and
+have not yet been reviewed for production; they are expected to diverge as that review lands.
+
+| Skill | Covers |
+| --- | --- |
+| `lambdas-go` | Go Lambdas: trigger-based naming, module layout, package naming, logging, shared libraries, testing |
+| `lambdas-node` | Node.js Lambdas: when Node is justified at all, ESM, factory-function DI, `node --test`, packaging |
 
 ### `documentation-and-planning`
 
@@ -149,7 +166,7 @@ To switch it off:
 | Always       | Set `AUTO_SUMMARY_COMMIT=off` in the environment                                |
 | Entirely     | Don't install `utils`, or remove `plugins/utils/hooks/` from your fork |
 
-Installing `prototype-conventions` or `documentation-and-planning` alone changes nothing about a
+Installing any of the conventions plugins alone changes nothing about a
 session until a skill matches.
 
 ## Repository layout
@@ -164,6 +181,7 @@ session until a skill matches.
     │   └── skills/<skill-name>/
     │       ├── SKILL.md            # frontmatter + the core rules
     │       └── reference/*.md      # detail, loaded only when SKILL.md points at it
+    ├── engineering-conventions/    # conventions for production projects, same shape
     ├── documentation-and-planning/ # the documentation and planning skills, same shape
     │   ├── .claude-plugin/plugin.json
     │   └── skills/<skill-name>/
@@ -191,8 +209,8 @@ file.
 - **`reference/*.md` holds the detail**, and `SKILL.md` must point at it explicitly by filename.
   Splitting one skill into per-topic reference files is cheaper than splitting it into several
   skills, since every skill's description competes for trigger match
-- **Keep conventions skills portable** — in `prototype-conventions` and `documentation-and-planning`
-  alike. No service names, no repository paths, no project-specific values. Those belong in the
+- **Keep conventions skills portable** — in `prototype-conventions`, `engineering-conventions` and
+  `documentation-and-planning` alike. No service names, no repository paths, no project-specific values. Those belong in the
   consuming project's `conventions/` file. Where a concrete example genuinely teaches the rule
   better than an abstraction would, frame it as an example
 - **Record the reasoning, and prefer the failure that motivated the rule.** A bare rule gets
@@ -205,6 +223,7 @@ file.
 
 ```bash
 claude plugin validate plugins/prototype-conventions --strict
+claude plugin validate plugins/engineering-conventions --strict
 claude plugin validate plugins/documentation-and-planning --strict
 claude plugin validate plugins/utils --strict
 ```

@@ -9,17 +9,19 @@ no linter; the deliverable is markdown consumed by Claude Code's skill and comma
 the shell scripts `utils`' hooks run. Outside `plugins/utils/hooks/` and
 `plugins/utils/scripts/` there is no executable code at all.
 
-It carries three independent plugins, and the split matters when deciding where something goes:
+It carries four independent plugins, and the split matters when deciding where something goes:
 
 | Plugin | Holds | Registers hooks? |
 | --- | --- | --- |
 | `prototype-conventions` | Rules to follow on topic match — conventions and guidelines for building *prototypes and proof-of-concept projects*, not for production use | No, and must not |
+| `engineering-conventions` | Rules to follow on topic match — conventions and guidelines for building *projects that run in production*; the counterpart to `prototype-conventions` | No, and must not |
 | `documentation-and-planning` | Rules to follow on topic match — the portable layer of *documentation and planning* conventions: markdown, the three tenses of documentation, proposals, plans of action, the glossary | No, and must not |
 | `utils` | General-purpose tooling — commands, agents, and skills that describe an *action* to take — plus general conventions that are not specific to prototypes (`api-design`, `mysql`) | Yes — the two auto-summary-commit hooks |
 
-A rule for how a prototype or proof of concept is built belongs in `prototype-conventions`; one that
-states how a document is written, where it belongs, or how work is proposed and planned belongs in
-`documentation-and-planning`. A convention that holds whatever the project — production included —
+A rule for how a prototype or proof of concept is built belongs in `prototype-conventions`, and its
+production counterpart — how a stack is built when the project is going to run in production — in
+`engineering-conventions`; one that states how a document is written, where it belongs, or how work
+is proposed and planned belongs in `documentation-and-planning`. A convention that holds whatever the project — production included —
 and fits neither of those belongs in `utils`, as `api-design` and `mysql` do, alongside the skills
 that do something, such as the one that runs at the end of every turn. That distinction is why
 `auto-summary-commit` is not a conventions skill despite being about commits, and why `api-design`
@@ -31,11 +33,13 @@ production.
 
 ```
 claude plugin validate plugins/prototype-conventions --strict
+claude plugin validate plugins/engineering-conventions --strict
 claude plugin validate plugins/documentation-and-planning --strict
 claude plugin validate plugins/utils --strict
 /plugin marketplace add tedslittlerobot/stefs-claude-plugins   # consumers; hosted on GitHub
 /plugin marketplace add ~/Developer/claude/stefs-claude-plugins # this clone, to work on the plugins
 /plugin install prototype-conventions@stefs-plugins
+/plugin install engineering-conventions@stefs-plugins
 /plugin install documentation-and-planning@stefs-plugins
 /plugin install utils@stefs-plugins
 /plugin marketplace update stefs-plugins                        # pull the latest commit
@@ -50,8 +54,9 @@ file the change adds is named explicitly from its `SKILL.md`.
 
 **Any change to a plugin's contents bumps that plugin's `version` in
 `plugins/<name>/.claude-plugin/plugin.json`, in the same commit** — a new skill, an edited
-`SKILL.md`, a new or changed `reference/*.md`, a hook script, a command. Both plugins are
-versioned independently; bump the one that changed.
+`SKILL.md`, a new or changed `reference/*.md`, a hook script, a command. Each plugin is
+versioned independently; bump the one that changed. A change to a skill that exists in both
+`prototype-conventions` and `engineering-conventions` is a change to two plugins, and bumps both.
 
 The version is not decoration, it is the install cache key. An installed plugin is copied to
 `~/.claude/plugins/cache/<marketplace>/<plugin>/<version>/`, and `/plugin marketplace update`
@@ -78,6 +83,9 @@ plugins/prototype-conventions/
   skills/<skill-name>/
     SKILL.md                        # YAML frontmatter (name, description) + the always-loaded rules
     reference/*.md                  # detail, loaded only when SKILL.md points at it by filename
+plugins/engineering-conventions/
+  .claude-plugin/plugin.json        # plugin "engineering-conventions"
+  skills/<skill-name>/              # same shape: SKILL.md + reference/*.md
 plugins/documentation-and-planning/
   .claude-plugin/plugin.json        # plugin "documentation-and-planning"
   skills/<skill-name>/              # same shape: SKILL.md + reference/*.md
@@ -105,9 +113,9 @@ a relative or absolute path — the plugin is copied to a versioned cache direct
 
 ### The two-layer model
 
-This is the organising idea behind every skill in `prototype-conventions` and
-`documentation-and-planning`, and the reason those plugins exist. `api-design` and `mysql`, the
-conventions skills in `utils`, follow it too.
+This is the organising idea behind every skill in `prototype-conventions`,
+`engineering-conventions` and `documentation-and-planning`, and the reason those plugins exist.
+`api-design` and `mysql`, the conventions skills in `utils`, follow it too.
 
 | Layer | Lives in | Contains |
 | --- | --- | --- |
@@ -121,7 +129,11 @@ what belongs in a project file versus in `architecture/`, `glossary/`, `instruct
 `proposals/` or `requirements/`.
 
 The five `prototype-conventions` skills divide as: four per-stack (`frontend`, `infrastructure`,
-`lambdas-go`, `lambdas-node`) and one per-document-kind (`product-requirements`). The conventions
+`lambdas-go`, `lambdas-node`) and one per-document-kind (`product-requirements`). The two
+`engineering-conventions` skills are `lambdas-go` and `lambdas-node`, copied from
+`prototype-conventions` at 0.19.0 with only the opening note changed; they have not yet been reviewed
+for production, and are expected to diverge from their prototype originals as that review lands.
+Until a rule has deliberately diverged, a fix to one copy is a fix to both. The conventions
 skills in `utils` are `api-design` and `mysql`, neither tied to prototypes. The four
 `documentation-and-planning` skills are one meta-skill (`conventions`), `documentation` (which also
 carries the markdown rules every document follows, such as the table of contents), `plan-of-action`
@@ -251,7 +263,13 @@ it is made to all five at once; a new skill in that plugin copies it verbatim, a
 `description` ends "Prototype and proof-of-concept projects only — not for production." The plugin
 description is not in context when a skill fires, so the warning cannot live only there.
 
-Every `prototype-conventions` and `documentation-and-planning` `SKILL.md` closes with the same two
+Every `engineering-conventions` `SKILL.md` instead opens with a note that it is for production
+projects, and that a prototype with `prototype-conventions` installed follows that plugin's
+same-named skill — the two plugins carry same-named skills, and both descriptions match the same
+work, so each skill has to say which project it is for.
+
+Every `prototype-conventions`, `engineering-conventions` and `documentation-and-planning` `SKILL.md`
+closes with the same two
 sections, and a new skill should keep the shape: a `## References` section listing each
 `reference/*.md` with a one-line note on what it holds (skills with no `reference/` directory omit
 it), then `## Related` naming the sibling skills that carry adjacent rules. `lambdas-node` is the
