@@ -284,6 +284,13 @@ sent, and it survives context compaction on a long turn. If the file is missing 
 `jq` on the machine, or you invoked yourself), reconstruct it from the conversation as closely as
 you can, and do not smooth out the wording.
 
+**Only what the user typed is a prompt.** A background agent's report (`<agent-message …>`) or a
+task notification (`<task-notification>`) reaches you as a user-turn message, but it is not the
+user's request, and the hook leaves it out of the file. If the file says
+`[no user prompt: …]`, the turn was started by one of those: keep that line as the Prompt section,
+plus any later messages the user typed, and do not reconstruct the agent's report in its place.
+When you reconstruct a prompt yourself, apply the same rule.
+
 If the turn had more than one user message — a correction, an interruption, an extra instruction
 partway — include each in order, separated by a blank line. The record is what was asked across
 the whole turn, not just its opening.

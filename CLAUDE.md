@@ -179,9 +179,9 @@ installed.
 | `Stop` | `stop` | Fingerprints again, diffs against the baseline, and emits `hookSpecificOutput.additionalContext` naming this session's uncommitted paths |
 
 Session state lives in `$TMPDIR/claude-auto-summary-commit-<session id>.*` — `.pre` (baseline),
-`.nudged` (last-raised fingerprint), `.deferred` (carried-forward paths), `.prompt` (the turn's
-prompts, verbatim, for the commit body), `.turnopen` (a turn is in progress) and `.off` (the
-switch).
+`.nudged` (last-raised fingerprint), `.deferred` (carried-forward paths), `.prompt` (the user's
+prompts this turn, verbatim, for the commit body), `.turnopen` (a turn is in progress) and `.off`
+(the switch).
 
 These properties are load-bearing, and a change that breaks any of them will loop, wedge a session
 or produce a mis-attributed commit:
@@ -216,6 +216,14 @@ or produce a mis-attributed commit:
   mid-turn fires `UserPromptSubmit` again; re-snapshotting there folds the work already done into
   the baseline and drops it from the commit. `.turnopen` is cleared at the top of `stop` mode,
   before any early exit, because every path through it ends the turn
+- **The prompt record holds only what the user typed.** `UserPromptSubmit` also fires for
+  messages Claude Code delivers itself — a background agent's report arrives as a prompt opening
+  `<agent-message from="…">`, a finished background task as `<task-notification>` — and
+  recording those put ~150 lines of subagent research into a commit's Prompt section as if the
+  user had asked it. `pre` skips a prompt whose leading tag is one of those, by name; if one opens the turn,
+  it writes a one-line `[no user prompt: …]` marker instead, so the skill does not reconstruct the
+  prompt from the conversation and re-paste the report. It still moves the baseline either way:
+  the turn really has started
 - **A missing baseline means silence, not a guess.** Without the `pre` file there is no way to tell
   the turn's work from what was already there, and a commit that claims to be the turn's work and
   is not costs more than a missed commit
@@ -233,7 +241,10 @@ echo '{"session_id":"t","stop_hook_active":false,"cwd":"'$REPO'"}' | bash plugin
 
 A prompt is captured only when `jq` is present — the fallback parser cannot survive the newlines
 and quoting in real prompt text, and a mangled prompt in a commit body is worse than no prompt at
-all, so `pre` writes nothing rather than something wrong.
+all, so `pre` writes nothing rather than something wrong. Give `pre` a `"prompt"` field to test the
+record: an `<agent-message from="x">` or `<task-notification>` prompt mid-turn must leave the
+`.prompt` file unchanged, one that opens the turn must leave only the `[no user prompt: …]` line,
+and a user prompt that merely starts with similar markup (`<agent-messages> …`) must be kept.
 
 These must all produce no output at all: a turn that changed nothing, a turn that only touched
 gitignored files, a turn that edited a file and reverted it, a tree dirtied before the baseline was

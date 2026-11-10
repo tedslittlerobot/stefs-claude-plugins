@@ -98,6 +98,28 @@ snapshot() {
   done < <(git status --porcelain -z --no-renames --untracked-files=all 2>/dev/null)
 }
 
+# --- tell the user's prompts from the harness's -------------------------------
+#
+# UserPromptSubmit fires for messages Claude Code delivers on its own, not only
+# for what the user types: a background agent's final report arrives as a
+# "prompt" wrapped in <agent-message from="...">, and a finished background task
+# as <task-notification>. Recorded as prompts, they put a subagent's whole
+# report into the commit body's Prompt section as if the user had written it —
+# which is what happened, ~150 lines of research reports quoted as the request.
+#
+# Matched on the leading tag, after any whitespace, and only for these named
+# tags: a user is free to start a prompt with markup of their own. A new kind of
+# harness message is added here by name.
+
+is_harness_message() {
+  local text="$1"
+  text="${text#"${text%%[![:space:]]*}"}"
+  case "$text" in
+    '<agent-message'[[:space:]\>]*|'<task-notification'[[:space:]\>]*) return 0 ;;
+  esac
+  return 1
+}
+
 # --- pre: record the baseline, say nothing -----------------------------------
 
 if [ "$MODE" = "pre" ]; then
@@ -121,7 +143,13 @@ if [ "$MODE" = "pre" ]; then
   # and a mangled prompt in a commit is worse than none.
   if command -v jq >/dev/null 2>&1; then
     PROMPT_TEXT=$(printf '%s' "$HOOK_INPUT" | jq -r '.prompt // ""' 2>/dev/null)
-    if [ -n "$PROMPT_TEXT" ]; then
+    if is_harness_message "$PROMPT_TEXT"; then
+      # Not the user's words. Keep it out of the record, but if it is what
+      # opened the turn, say so — an empty record would leave the skill to
+      # reconstruct the prompt from the conversation, and re-paste it there.
+      [ -s "$PROMPT_FILE" ] ||
+        printf '%s\n' "[no user prompt: this turn was started by a message from Claude Code itself, such as a background agent's report]" >> "$PROMPT_FILE" 2>/dev/null
+    elif [ -n "$PROMPT_TEXT" ]; then
       [ -s "$PROMPT_FILE" ] && printf '\n' >> "$PROMPT_FILE" 2>/dev/null
       printf '%s\n' "$PROMPT_TEXT" >> "$PROMPT_FILE" 2>/dev/null
     fi
