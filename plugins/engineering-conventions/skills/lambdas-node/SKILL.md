@@ -65,8 +65,9 @@ npx esbuild index.mjs --bundle --platform=node --target=node<N> --format=esm \
 | `--sourcemap` | With `NODE_OPTIONS=--enable-source-maps` on the function, stack traces point at the source file and line, not the bundle |
 | The `createRequire` banner | Some dependencies are CommonJS and call `require` at run time; inside an ESM bundle that name does not exist without it |
 
-The zip, the content-addressed upload and deployment are **the same as a Go Lambda's** — see the
-build-and-deploy reference in the `lambdas-go` skill.
+The zip and the content-addressed upload are **the same as a Go Lambda's** — see the
+build-and-deploy reference in the `lambdas-go` skill — and so is the deployment, by CI behind a
+`live` alias, in the `infrastructure` skill's `lambda-deployment.md`.
 
 **Diverged from `prototype-conventions`:** the prototype skill has no build step at all —
 `terraform-aws-modules/lambda/aws`, given a plain-string `source_path`, runs `npm install` on the
@@ -263,7 +264,7 @@ contract:
 - `lambdas-go` skill — the default, and the source of the naming, logging, failure-handling,
   observability, build and documentation rules this skill shares
 - `infrastructure` skill — the Terraform side of a Lambda: its configuration, failure destinations,
-  permissions and alarms, and the timeout rule
+  permissions and alarms, the timeout rule, and how CI deploys its code
 - `conventions` skill, in `documentation-and-planning` where installed — how a registered exception
   is recorded, and why the reason must travel with it
 - `documentation` skill, in `documentation-and-planning` where installed — the Lambda `README.md`

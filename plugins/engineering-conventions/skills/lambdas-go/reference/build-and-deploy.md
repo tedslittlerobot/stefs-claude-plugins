@@ -2,8 +2,9 @@
 
 ## One Artifact, Built Once, by CI
 
-**CI builds every Lambda's artifact, and deployment ships that artifact.** Nothing is compiled or
-installed on the machine running `terraform apply`.
+**CI builds every Lambda's artifact, and CI deploys it.** Nothing is compiled or installed on the
+machine running `terraform apply`, and Terraform does not deploy code at all. It creates the
+function, and CI puts the code in it — see the `infrastructure` skill's `lambda-deployment.md`.
 
 **Diverged from `prototype-conventions`:** there, `terraform-aws-modules/lambda/aws` runs
 `go build` (or `npm install`) at plan time on whoever's machine runs Terraform. For one developer on
@@ -41,16 +42,22 @@ Build each Lambda with **`GOWORK=off`**, so it compiles against exactly the vers
   (cd build && TZ=UTC zip -X -q bootstrap.zip bootstrap)
   ```
 
-- **Upload it content-addressed** — `s3://<artifact bucket>/<lambda-name>/<sha256 of the zip>.zip` —
-  and have Terraform point the function at that key (with `terraform-aws-modules/lambda/aws`,
-  `create_package = false` and `s3_existing_package`). A changed Lambda has a new key, and the new
-  key is what makes Terraform update the function
-- **CI records a manifest** — Lambda, key, commit — as its provenance record for each deploy
+- **Upload it content-addressed**: `s3://<artifact bucket>/<lambda-name>/<sha256 of the zip>.zip`
+- **CI records a manifest**, as its provenance record for each build: Lambda, key, commit, and the
+  zip's SHA-256 in **base64**, the form Lambda reports as a function's `CodeSha256`. The deploy step
+  compares that hash with the function's to decide whether to upload, and records the version it
+  published
 
 Together these make **rebuilding every Lambda on every change free at deploy time**: an unchanged
-Lambda produces the same bytes, the same key and no update. That matters because it means there is
+Lambda produces the same bytes, the same hash and no upload. That matters because it means there is
 no change detection to get wrong. Working out which Lambdas a change affects is exactly how a shared
 library's consumers used to go undeployed.
+
+> **Corrected at 0.6.0.** This said to have Terraform point the function at the content-addressed
+> key (`create_package = false`, `s3_existing_package`), so that a new key made the next apply
+> update the code. That made every code release a plan and an apply in every environment, and a
+> rollback a revert run through the same pipeline. CI now deploys the code itself, behind an alias
+> that a rollback moves back.
 
 ## The Workspace
 

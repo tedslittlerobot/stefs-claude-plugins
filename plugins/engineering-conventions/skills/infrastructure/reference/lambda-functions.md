@@ -12,7 +12,7 @@ column):
 | Input | Value | Why |
 | --- | --- | --- |
 | `function_name` | `${var.project_prefix}-${var.environment}-<directory name>` | The directory name is the Lambda's identity in logs and metrics; the prefix and environment make it unique — see "Resource Naming" in `SKILL.md` |
-| `create_package`, `s3_existing_package` | `false`, and the CI-built artifact's content-addressed S3 key | Never built by Terraform — see the `lambdas-go` skill's `build-and-deploy.md` |
+| `create_package`, `local_existing_package`, `ignore_source_code_hash`, `publish` | `false`, the committed placeholder zip, `true`, `false` | CI deploys the code, and Terraform never touches it after creation — see `lambda-deployment.md` |
 | `architectures` | `["arm64"]` | The artifact is built for it, and a mismatch fails at the first invocation, not at deploy |
 | `logging_log_format`, `logging_application_log_level`, `logging_system_log_level` | `"JSON"`, `"INFO"`, `"WARN"` — the module's default format is `"Text"` | The code logs JSON with levels; Lambda then filters by level itself and sets `AWS_LAMBDA_LOG_LEVEL` for the code to read |
 | `cloudwatch_logs_retention_in_days` | Set, always — a project value | The module's default is unset, and a log group with no retention keeps everything forever, billed monthly |
@@ -30,10 +30,12 @@ configuration that makes that behaviour reach somewhere:
 
 | Invoked by | Configure |
 | --- | --- |
-| An asynchronous source (SNS, EventBridge, S3, `aws lambda invoke --invocation-type Event`) | `aws_lambda_function_event_invoke_config` with a `destination_config.on_failure` (usually an SQS queue), and `maximum_retry_attempts` and `maximum_event_age_in_seconds` set explicitly |
+| An asynchronous source (SNS, EventBridge, S3, `aws lambda invoke --invocation-type Event`) On the `live` alias (the alias module's `create_async_event_config = true`): a `destination_on_failure` (usually an SQS queue), and `maximum_retry_attempts` and `maximum_event_age_in_seconds` set explicitly |
 | SQS | The **source queue's** `redrive_policy` to a dead-letter queue, with a `maxReceiveCount`; `function_response_types = ["ReportBatchItemFailures"]` on the event source mapping |
 | A stream (DynamoDB, Kinesis, Kafka, DocumentDB) | On the event source mapping: `function_response_types = ["ReportBatchItemFailures"]`, `bisect_batch_on_function_error = true`, `maximum_retry_attempts` and `maximum_record_age_in_seconds` set, and a `destination_config.on_failure` |
 
+- **Event source mappings and async configuration belong to the `live` alias**, not the function,
+  because the alias is what every trigger invokes — see `lambda-deployment.md`
 - **An SQS source queue's `visibility_timeout_seconds` is derived from the function's timeout**, not
   typed in: `visibility_timeout_seconds = 6 * local.<lambda>_timeout`. AWS recommends at least six
   times, and two numbers maintained separately drift apart
@@ -57,7 +59,8 @@ A manually invoked Lambda is an administrative action, and the `lambdas-go` skil
 an operations role may invoke one and that every invocation is auditable:
 
 - Grant `lambda:InvokeFunction` on `...:function:${var.project_prefix}-${var.environment}-invoke-*`
-  to the operations role, and to nothing else
+  to the operations role, and to nothing else. The operator invokes the alias,
+  `<function name>:live`, which the trailing `*` covers
 - **Record the invocations with CloudTrail data events.** Lambda invocations are data events, which
   a trail does not record by default. An `advanced_event_selector` on the trail selecting
   `eventCategory = Data`, `resources.type = AWS::Lambda::Function`, and `resources.ARN` starting

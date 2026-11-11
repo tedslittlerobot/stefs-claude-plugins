@@ -312,7 +312,7 @@ go mod tidy
 
 The build line is **exactly the one CI runs**, and run locally it produces the same bytes — that
 reproducibility is what lets CI rebuild every Lambda on every change.
-`reference/build-and-deploy.md` explains each flag, how the artifact is zipped and deployed, and
+`reference/build-and-deploy.md` explains each flag, how the artifact is zipped and uploaded, and
 the `go.work` workspace.
 
 All build output goes into a **`build/` directory** within the Lambda's directory.
@@ -332,8 +332,8 @@ to it.
 - **`reference/metrics.md`** — OpenTelemetry metrics for CloudWatch Omni: the OTLP endpoint and
   SigV4, resource attributes, instruments and naming, flushing per invocation, temporality, and
   the `telemetry` package
-- **`reference/build-and-deploy.md`** — the CI build, reproducible artifacts, arm64, deployment by
-  content-addressed artifact, `go.work`, `govulncheck` and dependency updates
+- **`reference/build-and-deploy.md`** — the CI build, reproducible artifacts, arm64, the
+  content-addressed upload and build manifest, `go.work`, `govulncheck` and dependency updates
 - **`reference/shared-libraries.md`** — when shared source is allowed at all, the register, layout,
   naming, consuming one, and keeping its consumers rebuilt
 - **`reference/testing.md`** — interface-based AWS mocking, `go-sqlmock`, integration tests against
@@ -345,7 +345,7 @@ to it.
 
 - `lambdas-node` skill — the Node.js sibling, for a Lambda that cannot be Go
 - `infrastructure` skill — the Terraform side of a Lambda: its configuration, failure destinations,
-  permissions and alarms, the timeout rule, and the `/api` route prefix
+  permissions and alarms, the timeout rule, the `/api` route prefix, and how CI deploys its code
 - `conventions` skill, in `documentation-and-planning` where installed — how a registered exception
   (a `url-` or `aurora-` Lambda, a Node Lambda, a shared library) is recorded with its reason
 - `documentation` skill, in `documentation-and-planning` where installed — the Lambda `README.md`

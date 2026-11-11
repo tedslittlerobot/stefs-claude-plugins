@@ -16,7 +16,7 @@ as copies of that plugin's `lambdas-go`, `lambdas-node` and `infrastructure` at
 | Logging | Plain-text `[module:file:function:step]` lines at one level | Structured JSON (`log/slog`, Powertools Logger) with shared key names, levels, request and trace IDs |
 | Failure handling | Not covered | `context.Context` and deadlines, idempotency, partial batch responses, dead-letter queues and on-failure destinations, timeouts |
 | Observability | Logs only | Plus OpenTelemetry metrics over OTLP to CloudWatch for CloudWatch Omni, OpenTelemetry tracing, and the alarms every Lambda needs |
-| Build and deploy | Terraform builds at plan time on the operator's machine | CI builds reproducible `arm64` artifacts once, deployed by content-addressed key; Node bundled with esbuild |
+| Build and deploy | Terraform builds at plan time on the operator's machine | CI builds reproducible `arm64` artifacts once and deploys them itself, behind a `live` alias; Node bundled with esbuild |
 | Dependencies | One module per Lambda | Plus a committed `go.work`, `govulncheck` and `npm audit` in CI, grouped automated updates |
 | Testing | Unit tests only | Plus integration tests against a real MySQL and smoke tests against a deployed environment |
 | Manual-invocation Lambdas | `ninja-` | `invoke-`, invocable by a restricted operations role only |
@@ -34,6 +34,7 @@ as copies of that plugin's `lambdas-go`, `lambdas-node` and `infrastructure` at
 | Resource names | The environment only where a service is deployed twice in one account | Always `<prefix>-<environment>-<name>`, since environments may share an account; IAM scoped by that prefix |
 | Tags | Project | `Project`, `Environment`, `Owner`, `Repository` |
 | Lambda timeouts | 30 seconds for every Lambda | An estimate plus at least half again, with a 30-second floor and the estimate in a comment |
+| Lambda code | Built and deployed by `terraform apply` | Deployed by CI after the apply: a placeholder package Terraform ignores, `publish-version`, a `live` alias every trigger invokes, rollback by moving the alias |
 | Lambda configuration | Packaging only | JSON logging, retention, tracing, `arm64`, failure destinations, scoped permissions, `invoke-` auditing, alarms |
 | Recorded outputs | Committed `.tfoutputs/*.yaml` after every apply | Dropped — outputs are read on demand |
 | Stateful resources | Disposable | `prevent_destroy`, deletion protection, AWS Backup, KMS rotation |

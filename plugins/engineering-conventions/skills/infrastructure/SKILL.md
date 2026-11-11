@@ -1,6 +1,6 @@
 ---
 name: infrastructure
-description: Terraform and AWS conventions for production — never running apply (CI applies a reviewed plan), HCP Terraform (Terraform Cloud) state in local execution mode, per-environment tfvars and workspaces, outputs fetched on demand, CI checks (fmt, validate, tflint, Checkov/Trivy, provider lock file, drift), OIDC credentials, file organisation, default_tags (Project, Environment, Owner, Repository), project_prefix and environment resource naming, terraform-aws-modules preferences, Lambda timeouts (estimate plus buffer, 30-second floor), Lambda configuration, failure destinations, IAM and alarms, prevent_destroy and deletion protection, Aurora with Secrets Manager, KMS rotation, AWS Backup, and references for S3/CloudFront frontend hosting deployed by CI, the /api route prefix, Route 53/SES (DKIM, DMARC, bounces), Cognito and WAF. Use when writing or editing .tf files, running terraform plan or validate, setting up a Terraform CI pipeline or HCP Terraform workspace, naming or tagging AWS resources, adding infrastructure for a new feature, choosing a Lambda timeout, protecting a database or user pool, or debugging an apply-time AWS error.
+description: Terraform and AWS conventions for production — never running apply (CI applies a reviewed plan), HCP Terraform (Terraform Cloud) state in local execution mode, per-environment tfvars and workspaces, outputs fetched on demand, CI checks (fmt, validate, tflint, Checkov/Trivy, provider lock file, drift), OIDC credentials, file organisation, default_tags (Project, Environment, Owner, Repository), project_prefix and environment resource naming, terraform-aws-modules preferences, Lambda timeouts (estimate plus buffer, 30-second floor), Lambda code deployed by CI (update-function-code, publish-version, a live alias, rollback, CodeDeploy canaries), Lambda configuration, failure destinations, IAM and alarms, prevent_destroy and deletion protection, Aurora with Secrets Manager, KMS rotation, AWS Backup, and references for S3/CloudFront frontend hosting deployed by CI, the /api route prefix, Route 53/SES (DKIM, DMARC, bounces), Cognito and WAF. Use when writing or editing .tf files, running terraform plan or validate, setting up a Terraform CI pipeline or HCP Terraform workspace, naming or tagging AWS resources, adding infrastructure for a new feature, choosing a Lambda timeout, deploying or rolling back Lambda code, protecting a database or user pool, or debugging an apply-time AWS error.
 ---
 
 # Terraform & AWS Conventions
@@ -22,6 +22,9 @@ hardcoded.
 - **NEVER run `terraform apply`.** Applies happen only in CI, from a plan that was reviewed —
   see `reference/state-and-pipeline.md`. `terraform init`, `validate`, `fmt` and `plan` are safe,
   and `plan` runs locally with read-only credentials
+- **Never deploy or roll back Lambda code by hand either** — no `update-function-code`,
+  `publish-version` or `update-alias`. CI deploys code after the apply (see
+  `reference/lambda-deployment.md`), and a rollback is a person's decision
 - Use [terraform-aws-modules](https://registry.terraform.io/namespaces/terraform-aws-modules)
   wherever possible instead of hand-rolled `resource` blocks
 - **Pin every module version explicitly** (`version = "5.1.0"`) — reproducible plans matter more
@@ -204,9 +207,14 @@ it only with a comment naming why. The floor is kept; the flat value is not. A p
 also the bound on a hung dependency and on what it costs, and on the visibility timeout of every
 queue in front of the function, so it has to say something about the work.
 
-**Code is deployed from the CI-built artifact, never built by Terraform** — see the `lambdas-go`
-skill's `build-and-deploy.md`. Everything else about a function's configuration — logging, tracing,
-failure destinations, permissions and alarms — is in `reference/lambda-functions.md`.
+**CI owns a Lambda's code, and Terraform owns everything else about it.** Terraform creates the
+function from a placeholder package, ignores its code from then on, and creates a `live` alias that
+every trigger invokes. After each environment's apply, CI uploads the CI-built artifact, publishes a
+version and moves the alias to it, so a code-only change ships without an apply and a rollback is
+one alias move. The module settings, the deploy step, rollbacks and canaries are in
+`reference/lambda-deployment.md`. How the artifact is built is in the `lambdas-go` skill's
+`build-and-deploy.md`. Everything else about a function's configuration (logging, tracing, failure
+destinations, permissions and alarms) is in `reference/lambda-functions.md`.
 
 ## References
 
@@ -215,6 +223,9 @@ failure destinations, permissions and alarms — is in `reference/lambda-functio
   drift detection
 - **`reference/variables-and-environments.md`** — per-environment `.tfvars`, several deployments in
   one environment, and reading outputs on demand
+- **`reference/lambda-deployment.md`** — CI deploying Lambda code: the placeholder package,
+  `ignore_source_code_hash`, the `live` alias and triggers on it, the deploy step
+  (`update-function-code`, `publish-version`, `update-alias`), rollbacks and CodeDeploy canaries
 - **`reference/lambda-functions.md`** — the Terraform side of a Lambda: configuration, failure
   destinations, permissions, `invoke-` auditing and alarms
 - **`reference/stateful-resources.md`** — `prevent_destroy` and deletion protection, Aurora with

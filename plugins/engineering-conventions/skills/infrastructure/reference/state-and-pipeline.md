@@ -71,25 +71,31 @@ one person's laptop.
 **On merge**, for each environment in the project's promotion order (`dev`, then `stg`, then
 `prod`, say):
 
-6. `terraform plan -out=tfplan`, then `terraform apply tfplan` — **the saved plan, never a fresh
-   `apply`**, which would plan again and apply whatever it found
-7. **A production apply waits for a manual approval that shows the saved plan** — the pull request's
-   plan was a preview, made against state that may have moved since
+6. `terraform plan -out=tfplan -detailed-exitcode`
+7. **Production waits here for a manual approval** showing the saved plan and the Lambdas whose
+   code will change. The pull request's plan was a preview, made against state that may have moved
+   since
+8. `terraform apply tfplan` — **the saved plan, never a fresh `apply`**, which would plan again and
+   apply whatever it found. An empty plan (exit code `0`) skips the apply
+9. **Deploy the Lambda code** — every merge, whether or not there was an apply: upload each changed
+   artifact, publish a version, move the `live` alias. See `lambda-deployment.md`
 
-- **Applies to one workspace never overlap.** HCP Terraform's lock stops a second apply touching the
-  state, but CI should also queue the jobs (a concurrency group per workspace), so the second waits
-  instead of failing on the lock
+- **Applies and deploys to one workspace never overlap.** HCP Terraform's lock stops a second
+  apply touching the state, but CI should also queue the jobs (a concurrency group per workspace),
+  so the second waits instead of failing on the lock
 - **Terraform refuses a saved plan whose state has changed since it was made.** That is the
   protection working — plan again
-- **Nobody applies outside the pipeline**, Claude included. An emergency change made by hand is
-  recorded, and written into the configuration (or reverted by the next apply) the same day
+- **Nobody applies or deploys code outside the pipeline**, Claude included. An emergency change
+  made by hand is recorded, and written into the configuration (or reverted by the next apply) the
+  same day. The one routine exception is a person rolling a Lambda's alias back — see
+  `lambda-deployment.md`
 
 ## Credentials
 
 | Job | AWS role | Can |
 | --- | --- | --- |
 | Pull request plan, drift check, a developer's local plan | **Plan role**, per environment | Read the account; change nothing |
-| Apply on merge | **Apply role**, per environment | Change the environment's resources |
+| Apply and Lambda code deploy on merge | **Apply role**, per environment | Change the environment's resources |
 
 - **The apply role's trust policy names the repository and the protected branch** (or the CI
   environment) in its OIDC subject condition, so a pull request from a branch cannot assume it —
