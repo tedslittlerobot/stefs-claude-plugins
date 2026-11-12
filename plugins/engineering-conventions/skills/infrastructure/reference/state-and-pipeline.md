@@ -1,12 +1,85 @@
 # State and the Pipeline
 
-## State in HCP Terraform
+## Shared State
 
-**Every root's state lives in HCP Terraform** (formerly Terraform Cloud), in **one HCP Terraform
-workspace per root per environment** — `<service>-<environment>`, or
-`<service>-<environment>-<deployment>` for a service deployed more than once in an environment
-(see `variables-and-environments.md`). The workspaces for a repository sit in one HCP Terraform
-project, named in the project's `conventions/terraform.md`.
+**Every root's state lives in a shared remote backend**, never on the machine that ran Terraform.
+There is **one state per root per environment**, named `<service>-<environment>`, or
+`<service>-<environment>-<deployment>` for a service deployed more than once in an environment (see
+`variables-and-environments.md`). Which backend is a project value, recorded in its
+`conventions/terraform.md`. Whichever it is, it must:
+
+- **Lock the state** while a run holds it, so two runs cannot write it at once
+- **Keep every version**, so a state damaged by a bad apply or a botched `state mv` can be restored
+- **Be encrypted at rest and access-controlled** — see "State is sensitive" below
+- **Be reachable from CI with CI's own credentials**, never a person's token
+
+**Plans and applies run in CI whichever backend stores the state** — see "The Pipeline". The
+backend only stores and locks the state.
+
+**Corrected at 0.7.0.** This section used to name HCP Terraform as the only place state could live.
+It is one option among several, and on a repository hosted on GitLab it is usually not the best: it
+adds a second service with its own accounts, tokens and permissions to keep in step with the
+repository's, when GitLab already stores state with the same locking and history.
+
+### Choosing a Backend
+
+| Repository on | Recommended | Why |
+| --- | --- | --- |
+| GitLab | **GitLab-managed Terraform state** (Terraform state administration) | Nothing else to sign up for; access follows project membership, and CI authenticates with the job token it already has |
+| GitHub or elsewhere | **HCP Terraform** (formerly Terraform Cloud), or **an S3 backend** in the project's AWS account | HCP Terraform adds a UI, run history and per-workspace permissions; S3 keeps everything in AWS under the same IAM as the rest |
+
+Other backends that meet the requirements above are fine too — Azure Blob Storage or Google Cloud
+Storage for an organisation already there, or a platform such as Spacelift, env0 or Scalr. The
+rules in this file are written for the three above; for another, record in the project's
+`conventions/terraform.md` how it selects a state, locks it, and grants outputs-only access.
+
+### GitLab-Managed State
+
+The root declares an empty `http` backend, and the wrapper script supplies the state's address at
+`init`:
+
+```hcl
+terraform {
+  required_version = ">= 1.10"
+
+  backend "http" {}
+}
+```
+
+```bash
+# set by the wrapper script, per root and environment; shown with CI's variables
+STATE_URL="${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/terraform/state/<service>-<environment>"
+export TF_HTTP_ADDRESS="$STATE_URL"
+export TF_HTTP_LOCK_ADDRESS="$STATE_URL/lock"
+export TF_HTTP_UNLOCK_ADDRESS="$STATE_URL/lock"
+export TF_HTTP_LOCK_METHOD=POST
+export TF_HTTP_UNLOCK_METHOD=DELETE
+export TF_HTTP_USERNAME=gitlab-ci-token
+export TF_HTTP_PASSWORD="$CI_JOB_TOKEN"
+terraform init -reconfigure -lockfile=readonly
+```
+
+- **The state name in the URL selects the state.** The script derives it from the environment
+  argument, and runs `init -reconfigure` whenever the environment changes, because the address is
+  fixed at `init`
+- **GitLab creates a state on its first write**, so a typo in the name produces an empty state that
+  plans to create everything. The script builds the name only from the environment argument and
+  the root, never from free text, and **a plan for an existing environment that proposes creating
+  everything is stopped, not applied**
+- **In CI, `CI_JOB_TOKEN` authenticates**, with the permissions of the user who triggered the
+  pipeline — nothing is stored. Locally, the script reads the GitLab URL and project ID from the
+  project's conventions, and the person's own personal access token (`api` scope) from their
+  environment — never from a file in the repository
+- **Writing and locking the state needs the Maintainer role; reading it needs Developer.** A plan
+  run as a Developer — locally, or on a merge request a Developer opened — passes `-lock=false`
+- The states are listed, locked, unlocked and removed under the project's **Operate > Terraform
+  states**. Removing a state there is as final as deleting the resources' record — it is never
+  done to tidy up
+
+### HCP Terraform
+
+**One HCP Terraform workspace per state**, named as above. The workspaces for a repository sit in
+one HCP Terraform project, named in the project's `conventions/terraform.md`.
 
 **The workspaces run in Local execution mode** — set as that HCP Terraform project's default
 execution mode, so a new workspace inherits it. HCP Terraform then stores the state, locks it while
@@ -45,9 +118,43 @@ terraform {
 - **A new environment's workspace is created deliberately**, with `terraform workspace new
   <service>-<environment>` from the root, which tags it to match. Check its execution mode is Local
   before its first plan
-- **State is sensitive.** It holds every attribute of every resource, which can include generated
-  passwords and keys. Only CI's token writes it; read access is limited to the people who need it;
-  anything that only needs outputs gets the workspace's "Read outputs only" permission
+- **CI's HCP Terraform token** is a team token scoped to the project's workspaces, stored as a CI
+  secret
+
+### S3
+
+```hcl
+terraform {
+  required_version = ">= 1.10"
+
+  backend "s3" {
+    bucket       = "<state bucket>"
+    region       = "<region>"
+    encrypt      = true
+    use_lockfile = true
+  }
+}
+```
+
+- **The wrapper script passes `-backend-config="key=<service>/<environment>.tfstate"` at `init`**,
+  with `-reconfigure` whenever the environment changes. The key selects the state
+- **`use_lockfile = true` locks with a `.tflock` object beside the state.** It needs Terraform
+  1.10 or later; the DynamoDB lock table it replaces is deprecated, and a new backend does not use
+  one
+- **The bucket has versioning on, public access blocked, encryption, and `prevent_destroy`**, and
+  is created by a small bootstrap root of its own — a root cannot create the bucket its own state
+  lives in. Once the bucket exists, the bootstrap root's state is moved into it with
+  `terraform init -migrate-state`
+- **Locking writes an object**, so a role that plans with the lock taken needs
+  `s3:PutObject` and `s3:DeleteObject` on `<key>.tflock` — and only that — as well as
+  `s3:GetObject` on the state. CI's plan and apply roles are its credentials; nothing else is stored
+
+### State Is Sensitive
+
+**State holds every attribute of every resource**, which can include generated passwords and keys.
+Only CI's apply credentials write it; read access is limited to the people who need it; anything
+that only needs outputs gets the least the backend offers — HCP Terraform's **"Read outputs only"**
+workspace permission, `s3:GetObject` on the one state's key, or on GitLab the Developer role.
 
 **Diverged from `prototype-conventions`:** there, state is a local file on whoever runs Terraform,
 and a CLI workspace per deployment is seeded by copying files into `terraform.tfstate.d/`. Local
@@ -80,9 +187,10 @@ one person's laptop.
 9. **Deploy the Lambda code** — every merge, whether or not there was an apply: upload each changed
    artifact, publish a version, move the `live` alias. See `lambda-deployment.md`
 
-- **Applies and deploys to one workspace never overlap.** HCP Terraform's lock stops a second
-  apply touching the state, but CI should also queue the jobs (a concurrency group per workspace),
-  so the second waits instead of failing on the lock
+- **Applies and deploys to one state never overlap.** The backend's lock stops a second apply
+  touching the state, but CI should also queue the jobs (a concurrency group per state — a
+  `resource_group` on GitLab, a `concurrency` group on GitHub Actions), so the second waits instead
+  of failing on the lock
 - **Terraform refuses a saved plan whose state has changed since it was made.** That is the
   protection working — plan again
 - **Nobody applies or deploys code outside the pipeline**, Claude included. An emergency change
@@ -100,8 +208,7 @@ one person's laptop.
 - **The apply role's trust policy names the repository and the protected branch** (or the CI
   environment) in its OIDC subject condition, so a pull request from a branch cannot assume it —
   however its workflow file has been edited
-- **CI's HCP Terraform token** is a team token scoped to the project's workspaces, stored as a CI
-  secret
+- **CI's access to the state** depends on the backend — see "Shared State"
 
 ## The Provider Lock File
 
@@ -118,7 +225,7 @@ being written. Update the lock file in the same change as a provider version bum
 
 ## Drift
 
-**A scheduled CI job plans every workspace** — daily, or as the project records — with the plan
+**A scheduled CI job plans every state** — daily, or as the project records — with the plan
 role and `terraform plan -detailed-exitcode`. Exit code `2` means the real infrastructure no longer
 matches the configuration, and it opens a ticket. Drift is someone's console change or a resource
 changed by AWS, and the next apply would otherwise undo it with nobody expecting it.

@@ -28,7 +28,7 @@ as copies of that plugin's `lambdas-go`, `lambdas-node` and `infrastructure` at
 | Area | `prototype-conventions` | Here |
 | --- | --- | --- |
 | Applying | A person runs `apply` from their own machine | Only CI applies — a saved plan, reviewed on the pull request, with approval for production |
-| State | A local file; a CLI workspace per deployment | HCP Terraform, one workspace per root per environment, in Local execution mode |
+| State | A local file; a CLI workspace per deployment | A shared remote backend, one state per root per environment — GitLab-managed state for a repository on GitLab, otherwise HCP Terraform (in Local execution mode), S3 or another |
 | Credentials | `saml2aws` and `.aws-credentials.bash` | OIDC roles in CI — a read-only plan role and an apply role per environment; local credentials are a project value |
 | Checks | None | `fmt`, `validate`, `tflint`, a misconfiguration scanner, a multi-platform provider lock file, a scheduled drift check |
 | Resource names | The environment only where a service is deployed twice in one account | Always `<prefix>-<environment>-<name>`, since environments may share an account; IAM scoped by that prefix |
@@ -73,7 +73,7 @@ to a skill.
 
 | Skill | Load it when |
 | --- | --- |
-| `infrastructure` | Writing or editing `.tf` files, setting up a Terraform pipeline or HCP Terraform workspace, naming or tagging AWS resources, choosing a Lambda timeout, adding infrastructure for a feature, or debugging an apply-time AWS error |
+| `infrastructure` | Writing or editing `.tf` files, setting up a Terraform pipeline or state backend, naming or tagging AWS resources, choosing a Lambda timeout, adding infrastructure for a feature, or debugging an apply-time AWS error |
 | `lambdas-go` | Writing, reviewing or testing Go Lambda code, or creating a Lambda directory |
 | `lambdas-node` | Writing a Node Lambda, or deciding whether a Lambda may be Node at all |
 

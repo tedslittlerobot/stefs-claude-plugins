@@ -26,7 +26,7 @@ people.
 CI deploys the frontend after building it, in this order:
 
 1. **Fetch the bucket name and distribution ID on demand** — `terraform output -raw` against the
-   environment's workspace (see `variables-and-environments.md`). Never copy them into CI
+   environment's state (see `variables-and-environments.md`). Never copy them into CI
    configuration, where they go stale the first time the bucket is replaced
 2. **Upload the content-hashed assets first**, with
    `Cache-Control: public, max-age=31536000, immutable` — a file whose name changes when its content

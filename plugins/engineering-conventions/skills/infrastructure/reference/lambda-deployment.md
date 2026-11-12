@@ -136,7 +136,7 @@ aws lambda update-alias --function-name "$fn" --name live --function-version "$v
   progress, and both the apply and `update-function-code` leave one in progress
 - **CI records the version it moved the alias to** in the deploy's manifest, beside the key and the
   commit. That record is what a rollback reads
-- **It runs inside the workspace's concurrency group** (see `state-and-pipeline.md`), so an apply
+- **It runs inside the state's concurrency group** (see `state-and-pipeline.md`), so an apply
   and a deploy to the same environment never overlap
 
 The step needs, on `function:${var.project_prefix}-${var.environment}-*`:

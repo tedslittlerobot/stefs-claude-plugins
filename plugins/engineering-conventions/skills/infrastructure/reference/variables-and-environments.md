@@ -13,11 +13,11 @@ developer run the same script**, so a local plan sees exactly the variables CI's
   2. **Terraform directory**: `tfvars/<environment>.tfvars` inside the root being planned
 - If both exist, pass **both** `-var-file` arguments. The Terraform-directory-level file takes
   precedence for overlapping variables (Terraform is last-wins on duplicate keys)
-- **The script sets `TF_WORKSPACE`** to the environment's HCP Terraform workspace before every
-  command — see `state-and-pipeline.md`
-- **These files are committed**, and are the only source of variable values — HCP Terraform does
-  not evaluate its own workspace variables in Local execution mode. They are named, shared
-  environment configuration — region, prefix, environment, and so on — not secrets. **Never put
+- **The script selects the environment's state** before every command — `TF_WORKSPACE` for HCP
+  Terraform, the state's address or key at `init` for GitLab or S3; see `state-and-pipeline.md`
+- **These files are committed**, and are the only source of variable values — never a variable set
+  in the backend's own UI, which HCP Terraform, for one, ignores in Local execution mode. They are
+  named, shared environment configuration — region, prefix, environment, and so on — not secrets. **Never put
   actual secrets in a `tfvars/*.tfvars` file**; use AWS Secrets Manager (see
   `stateful-resources.md`)
 - **Never remove a `tfvars/` directory or any file inside one** when tidying up or cleaning after
@@ -56,24 +56,25 @@ Two things must be true of the per-deployment files:
   so they build resource names from the same expressions; without distinct prefixes they name the
   same S3 bucket, Web ACL and Origin Access Control. An S3 bucket name is globally unique across all
   of AWS, so this is an outright collision rather than a cosmetic clash
-- **Each gets its own HCP Terraform workspace**, `<service>-<environment>-<deployment>`. One
-  workspace holds one state, so deployments sharing a workspace would share one state — and a plan
-  for one would propose **destroying whatever the other last created**
+- **Each gets its own state**, `<service>-<environment>-<deployment>` (see `state-and-pipeline.md`).
+  Deployments sharing a state would share one record of what exists — and a plan for one would
+  propose **destroying whatever the other last created**
 
-The script sets `TF_WORKSPACE` before **every** command, including `output` — the workspace is what
-decides which deployment's state is read.
+The script selects the state before **every** command, including `output` — the state is what
+decides which deployment's outputs are read.
 
 ## Outputs, Fetched on Demand
 
 **Outputs are read from state when they are needed, never recorded in the repository:**
 
 ```bash
-TF_WORKSPACE=<service>-<environment> terraform output -raw <name>
+terraform output -raw <name>
 ```
 
-through the wrapper script, which sets the workspace. A CI job that only needs an output — the
-frontend deploy needs the bucket name and distribution ID — runs with an HCP Terraform token that
-has the workspace's **"Read outputs only"** permission, not access to the whole state.
+through the wrapper script, which selects the environment's state. A CI job that only needs an
+output — the frontend deploy needs the bucket name and distribution ID — runs with the least access
+to the state its backend offers, not write access to it (see "State Is Sensitive" in
+`state-and-pipeline.md`).
 
 - **Anything one service needs from another is passed in as a variable or read from SSM**, never
   read from another root's outputs at plan time — the roots are applied independently, in no fixed

@@ -1,6 +1,6 @@
 ---
 name: infrastructure
-description: Terraform and AWS conventions for production — never running apply (CI applies a reviewed plan), HCP Terraform (Terraform Cloud) state in local execution mode, per-environment tfvars and workspaces, outputs fetched on demand, CI checks (fmt, validate, tflint, Checkov/Trivy, provider lock file, drift), OIDC credentials, file organisation, default_tags (Project, Environment, Owner, Repository), project_prefix and environment resource naming, terraform-aws-modules preferences, Lambda timeouts (estimate plus buffer, 30-second floor), Lambda code deployed by CI (update-function-code, publish-version, a live alias, rollback, CodeDeploy canaries), Lambda configuration, failure destinations, IAM and alarms, prevent_destroy and deletion protection, Aurora with Secrets Manager, KMS rotation, AWS Backup, and references for S3/CloudFront frontend hosting deployed by CI, the /api route prefix, Route 53/SES (DKIM, DMARC, bounces), Cognito and WAF. Use when writing or editing .tf files, running terraform plan or validate, setting up a Terraform CI pipeline or HCP Terraform workspace, naming or tagging AWS resources, adding infrastructure for a new feature, choosing a Lambda timeout, deploying or rolling back Lambda code, protecting a database or user pool, or debugging an apply-time AWS error.
+description: Terraform and AWS conventions for production — never running apply (CI applies a reviewed plan), shared remote state (GitLab-managed Terraform state, HCP Terraform / Terraform Cloud in local execution mode, an S3 backend with use_lockfile, or another backend), per-environment tfvars and state per environment, outputs fetched on demand, CI checks (fmt, validate, tflint, Checkov/Trivy, provider lock file, drift), OIDC credentials, file organisation, default_tags (Project, Environment, Owner, Repository), project_prefix and environment resource naming, terraform-aws-modules preferences, Lambda timeouts (estimate plus buffer, 30-second floor), Lambda code deployed by CI (update-function-code, publish-version, a live alias, rollback, CodeDeploy canaries), Lambda configuration, failure destinations, IAM and alarms, prevent_destroy and deletion protection, Aurora with Secrets Manager, KMS rotation, AWS Backup, and references for S3/CloudFront frontend hosting deployed by CI, the /api route prefix, Route 53/SES (DKIM, DMARC, bounces), Cognito and WAF. Use when writing or editing .tf files, running terraform plan or validate, setting up a Terraform CI pipeline, a state backend or an HCP Terraform workspace, choosing where Terraform state lives, naming or tagging AWS resources, adding infrastructure for a new feature, choosing a Lambda timeout, deploying or rolling back Lambda code, protecting a database or user pool, or debugging an apply-time AWS error.
 ---
 
 # Terraform & AWS Conventions
@@ -17,8 +17,9 @@ hardcoded.
 
 ## Ground Rules
 
-- **Tool**: [Terraform](https://www.terraform.io/); **Provider**: AWS; **State**: HCP Terraform
-  (formerly Terraform Cloud) — see `reference/state-and-pipeline.md`
+- **Tool**: [Terraform](https://www.terraform.io/); **Provider**: AWS; **State**: a shared remote
+  backend — GitLab-managed state for a repository on GitLab, otherwise HCP Terraform, S3 or
+  another; see `reference/state-and-pipeline.md`
 - **NEVER run `terraform apply`.** Applies happen only in CI, from a plan that was reviewed —
   see `reference/state-and-pipeline.md`. `terraform init`, `validate`, `fmt` and `plan` are safe,
   and `plan` runs locally with read-only credentials
@@ -218,8 +219,8 @@ destinations, permissions and alarms) is in `reference/lambda-functions.md`.
 
 ## References
 
-- **`reference/state-and-pipeline.md`** — HCP Terraform workspaces in local execution mode, the CI
-  pipeline (checks, plan on the pull request, apply on merge), OIDC roles, the provider lock file,
+- **`reference/state-and-pipeline.md`** — shared state and choosing a backend (GitLab-managed
+  state, HCP Terraform workspaces in local execution mode, S3), the CI pipeline (checks, plan on the pull request, apply on merge), OIDC roles, the provider lock file,
   drift detection
 - **`reference/variables-and-environments.md`** — per-environment `.tfvars`, several deployments in
   one environment, and reading outputs on demand

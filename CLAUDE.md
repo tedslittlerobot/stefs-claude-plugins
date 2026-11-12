@@ -137,7 +137,9 @@ from `prototype-conventions` at 0.19.0. The Lambda skills diverged at `engineeri
 and the `invoke-` prefix — and `infrastructure` at 0.5.0: CI-only applies, HCP Terraform state,
 environment-aware naming and tags, Lambda timeouts and configuration, stateful resources, frontend
 content deployed by CI, and more. Since 0.6.0 CI also deploys Lambda code, behind a `live` alias,
-rather than Terraform pointing each function at its artifact. The `/api` route rule was dropped
+rather than Terraform pointing each function at its artifact. Since 0.7.0 state lives in any
+shared backend that locks and versions it — GitLab-managed state recommended for a repository on
+GitLab — where 0.5.0 required HCP Terraform. The `/api` route rule was dropped
 from the Lambda skills at 0.2.0 and restored at 0.5.0, owned by `infrastructure`, so it is shared
 again. Each divergence is marked **Diverged from `prototype-conventions`:** where it happens, saying
 what the prototype rule is and why production differs; the plugin README tables them.
