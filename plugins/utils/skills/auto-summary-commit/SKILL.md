@@ -1,6 +1,6 @@
 ---
 name: auto-summary-commit
-description: The default commit workflow — after ANY prompt that created, edited, deleted, moved or generated files in a git repository, stage the work and commit it straight away onto the current branch, with the prompt and the user-facing summary as the commit body, so every turn leaves an auditable history and a git-level rollback point. Asks first only when something is majorly wrong or an open question blocks the purpose of the prompt. Use at the end of every file-changing prompt (writing code, editing docs, refactoring, fixing a bug, applying review feedback, running a formatter) unless the user has said not to commit. Also use when a prompt says "auto summary commit", "summary commit", "/auto-summary-commit", or asks to commit the work just done. Hooks in this plugin also invoke it by name at the end of a file-changing turn, with the list of paths that turn changed.
+description: The default commit workflow — after ANY prompt that created, edited, deleted, moved or generated files in a git repository, stage the work and commit it straight away onto the current branch, under a Conventional Commits subject line (type(scope): description) with the prompt and the user-facing summary as the commit body, so every turn leaves an auditable history and a git-level rollback point. Asks first only when something is majorly wrong or an open question blocks the purpose of the prompt. Use at the end of every file-changing prompt (writing code, editing docs, refactoring, fixing a bug, applying review feedback, running a formatter) unless the user has said not to commit. Also use when a prompt says "auto summary commit", "summary commit", "/auto-summary-commit", or asks to commit the work just done. Hooks in this plugin also invoke it by name at the end of a file-changing turn, with the list of paths that turn changed.
 ---
 
 # Auto Summary Commit
@@ -239,23 +239,48 @@ and stop. Do not stash and do not offer a smaller commit instead.
 
 ### 4. Write the subject line
 
-**Hard limit: 80 characters** — characters, not words. One line, summarising the whole change:
-the title for the Prompt and Summary sections beneath it, not a restatement of either.
+**Two hard rules, and neither bends to the repository's existing style:**
 
-Match the repository's existing style — read it off `git log --format='%s'` rather than assuming,
-and defer to the project's own conventions file if it records one. Where the log shows no settled
-style, default to lowercase, imperative mood, no trailing full stop and no `type:` prefix: for
-example `rename studies endpoint to study_memberships`, not
-`Refactor: Renamed the /me/studies endpoint to /me/study_memberships.`
+- **It MUST follow the [Conventional Commits](https://www.conventionalcommits.org/) specification:**
+  `<type>[(<scope>)][!]: <description>`
+- **It is at most 80 characters** — characters, not words, and the type and scope count. One line,
+  summarising the whole change: the title for the Prompt and Summary sections beneath it, not a
+  restatement of either.
 
-Summarise the *change*, not the process — what the repo looks like now, not that you were asked to
-do something.
+```
+feat(api): rename studies endpoint to study_memberships
+fix: stop the stop hook re-raising a declined tree
+docs(mysql): add the JSON shorthand rule
+refactor!: drop the v1 users resource
+```
 
-**If the turn's work came from a stage of a Plan of Action, the subject carries that plan's
-prefix** — `<Proposal Name> Proposal <stage>.<section>: ` before the subject above, as in
-`User Invitations Proposal 02.1: add the invitations table`. The 80-character limit covers the
-prefix too. The `plan-of-action` skill in the sibling `documentation-and-planning` plugin gives
-the full rule; this is only the reminder that a plan run's commits are not styled like the rest.
+| Part | Rule |
+| --- | --- |
+| **`type`** | Lowercase, and required. `feat` for a new capability, `fix` for a bug fix — those two are the specification's own. Otherwise one of `docs`, `refactor`, `perf`, `test`, `build`, `ci`, `style`, `chore` or `revert`. Pick by what the change *does*, not by the file type it touches: a new skill in a markdown file is `feat`, a corrected rule in one is `fix` or `docs` |
+| **`(scope)`** | Optional. A noun naming the part of the codebase changed — a package, plugin, service or module — as in `feat(utils): ...`. Leave it out rather than invent one, and use the scopes the log already uses where it has any |
+| **`!`** | Immediately before the colon when the change is breaking — anything a consumer must change to keep working. Say what breaks in the Summary |
+| **`: `** | A colon then exactly one space, both required |
+| **`description`** | What the repo looks like now, not that you were asked to do something. Lowercase, imperative mood, no trailing full stop — `rename studies endpoint to study_memberships`, not `Renamed the /me/studies endpoint to /me/study_memberships.` |
+
+The type set is closed only in the sense that it must be a type: if the project's conventions file
+or its log already uses Conventional Commits with its own types or scopes, use those. What the
+repository's history can *not* do is opt out — a log of unprefixed subjects is a reason to start
+prefixing, not a style to match.
+
+> **Corrected:** this step used to say to match the repository's existing subject style, read off
+> `git log`, and where none was settled to default to lowercase imperative with **no `type:`
+> prefix**. That made every repository's log as consistent as its history happened to be, and left
+> nothing a machine could read: no way to pick the features out of a run of commits, no changelog
+> or version bump from the log, and no single shape for a reviewer to scan. The description part
+> keeps the old default style; the type prefix is now mandatory everywhere.
+
+**If the turn's work came from a stage of a Plan of Action, that plan's reference is the scope** —
+`<Proposal Name> Proposal <stage>.<section>` inside the parentheses, as in
+`feat(User Invitations Proposal 02.1): add the invitations table`, so the subject stays a
+Conventional Commit and `git log --grep 'User Invitations Proposal'` still finds the run. It
+replaces any other scope, and the 80-character limit covers it too. The `plan-of-action` skill in
+the sibling `documentation-and-planning` plugin gives the full rule; this is only the reminder that
+a plan run's commits carry it.
 
 ### 5. Write the body: Prompt, then Summary
 
@@ -348,7 +373,7 @@ Write the message to a file and commit with `-F` — never build a multi-line ma
 # Write the message under your session scratchpad directory, never into the repo.
 MSG=<scratchpad>/commit-message.txt
 cat > "$MSG" <<'EOF'
-<subject line, ≤80 chars>
+<type(scope): description — a Conventional Commit, ≤80 chars>
 
 ## Prompt
 
@@ -380,13 +405,15 @@ did not expect and is not looking; if committing here seems wrong, say so and le
 
 ```bash
 awk 'NR==1 { print length, $0 }' "$MSG"   # must be ≤ 80
+head -1 "$MSG" | grep -Ec '^[a-z]+(\([^()]+\))?!?: [^ ]'  # must be 1: a Conventional Commit
 git log -1 --format='%b' | grep -c '^## ' # must be 2: Prompt and Summary survived --cleanup
 git log -1 --format='%s%n---%n%b'         # confirm subject and body landed intact
 git status --short                        # confirm what, if anything, is still uncommitted
 ```
 
-If the subject came out over 80 characters, shorten it and `git commit --amend -F` the corrected
-file — this is the one amend this skill permits, and only for a commit it just created itself.
+If the subject came out over 80 characters or is not a Conventional Commit, fix it in the message
+file and `git commit --amend -F` the corrected file — this is the one amend this skill permits, and
+only for a commit it just created itself.
 
 Then tell the user the commit was made, with its subject line and short SHA, and name anything
 deliberately left uncommitted.
@@ -405,7 +432,9 @@ deliberately left uncommitted.
   checkout, no rebase, no reset, unless the user asked for one.
 - **Never push.** This skill commits locally and stops. Pushing is a separate, explicit request.
 - **Never amend, reword, or squash a pre-existing commit** — only the one this skill just created,
-  and only to fix an over-length subject.
+  and only to fix a subject that is over-length or not a Conventional Commit.
+- **Never write a subject that is not a Conventional Commit**, whatever the log around it looks
+  like — see step 4.
 - **Never commit secrets.** Credential files, `*.tfvars`, state files such as
   `terraform.tfstate` and anything else the project gitignores are gitignored for a reason; if one
   shows up staged, stop and tell the user rather than committing and fixing it afterwards — a
@@ -414,9 +443,9 @@ deliberately left uncommitted.
 ## Related
 
 - `conventions` skill, in the sibling [`documentation-and-planning`
-  plugin](../../../documentation-and-planning) — where a project records its own commit-message
-  style, and why the project file wins over the default in step 4. It is not required: step 4 falls
-  back to reading the style off `git log` when the skill is not installed
+  plugin](../../../documentation-and-planning) — where a project records its own commit types and
+  scopes, which step 4 uses within the Conventional Commits format. It is not required: step 4
+  falls back to the scopes already in `git log` when the skill is not installed
 - `plan-of-action` skill, in that same sibling plugin — the
-  `<Proposal Name> Proposal <stage>.<section>: ` prefix step 4 applies while a Plan of Action is
-  being implemented, and what each part of it means
+  `<Proposal Name> Proposal <stage>.<section>` reference step 4 puts in the scope while a Plan of
+  Action is being implemented, and what each part of it means

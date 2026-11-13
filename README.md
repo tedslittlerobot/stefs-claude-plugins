@@ -139,7 +139,9 @@ The plugin ships a pair of hooks that drive it:
 
 `UserPromptSubmit` also records the prompt itself, so the commit body can quote what was asked
 rather than a reconstruction of it. Then the skill does the rest: stage exactly those paths, and
-commit onto the current branch with a body of `## Prompt` and `## Summary`.
+commit onto the current branch with a body of `## Prompt` and `## Summary`, under a subject line
+that must follow [Conventional Commits](https://www.conventionalcommits.org/) — `type(scope): description`
+— whatever style the repository's log has used so far.
 
 It commits straight away on the great majority of turns, so every prompt leaves its prompt and
 outcome in `git log` — a history, an audit trail, and a rollback point. Caveats, assumptions and

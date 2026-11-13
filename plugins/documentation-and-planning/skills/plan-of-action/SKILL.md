@@ -1,6 +1,6 @@
 ---
 name: plan-of-action
-description: Turning a settled proposal into a Plan of Action — a staged implementation plan written for an AI agent to carry out, one <n>-<description>.md file per stage in the proposal's plan-of-action/ directory, summarised with every stage's status in plan-of-action/plan.md, each stage opening with a status header, with a checkpoint between stages and human steps called out explicitly. Use when a proposal's design is settled and it is time to plan the build, when writing a plan of action or splitting one into stages, and when implementing one — executing a proposal, working through the next stage, prefixing the commits a plan run makes, or asking what to build next from proposals/.
+description: Turning a settled proposal into a Plan of Action — a staged implementation plan written for an AI agent to carry out, one <n>-<description>.md file per stage in the proposal's plan-of-action/ directory, summarised with every stage's status in plan-of-action/plan.md, each stage opening with a status header, with a checkpoint between stages and human steps called out explicitly. Use when a proposal's design is settled and it is time to plan the build, when writing a plan of action or splitting one into stages, and when implementing one — executing a proposal, working through the next stage, naming the plan in the commits a plan run makes (the Conventional Commits scope), or asking what to build next from proposals/.
 ---
 
 # Plan of Action
@@ -180,7 +180,7 @@ stage that has not started carries a status and nothing else above the preamble.
 - **Update the header as the stage runs, not at the end.** A header that is only made true on
   completion is wrong for exactly the window in which someone is most likely to pick the work up:
   mid-stage, from a new session, with no memory of it
-- **The build record maps steps to commits.** The commit prefix (below) makes a stage's commits
+- **The build record maps steps to commits.** The plan reference in each commit subject (below) makes a stage's commits
   findable from the log; the header is what says which step each one was, and what is still only
   half-committed
 - **A divergence goes in both places.** The full account lives under the step it happened in, where
@@ -251,7 +251,7 @@ deliberately not making them yet.
   in `plan.md` with it when the status changes. The status, the new commit in the build record, a
   divergence just corrected: all of it is part of the step, not tidying to be done afterwards. A
   header updated later is a header that is wrong in between
-- **Commit as the work lands, with a prefixed subject** — see *Commit subjects* below — so where
+- **Commit as the work lands, with the plan reference in its subject** — see *Commit subjects* below — so where
   the run got to is legible from `git log` rather than from memory. A session that resumes a
   part-built plan finds out where it got to that way
 - **When reality contradicts the plan, stop and amend the plan** rather than improvising past it.
@@ -266,17 +266,21 @@ where they are, with the proposal. See the `documentation` skill.
 
 ## Commit subjects
 
-**Every commit made while implementing a plan is prefixed with the proposal and the section of the
-plan it came from:**
+**Every commit made while implementing a plan names the proposal and the section of the plan it
+came from, as the [Conventional Commits](https://www.conventionalcommits.org/) scope:**
 
 ```
-<Proposal Name> Proposal <stage>.<section>: <subject>
+<type>(<Proposal Name> Proposal <stage>.<section>): <description>
 ```
 
 ```
-User Invitations Proposal 02.1: Database updates
-User Invitations Proposal 13.15: Final Testing of Invitations
+feat(User Invitations Proposal 02.1): add the invitations table
+test(User Invitations Proposal 13.15): cover invitation expiry end to end
 ```
+
+On a project whose subjects are not Conventional Commits — this plugin installed without the
+`utils` plugin's `auto-summary-commit` skill, and nothing in the project asking for them — the same
+reference is a plain prefix instead: `User Invitations Proposal 02.1: add the invitations table`.
 
 - **`<Proposal Name>`** is the proposal's own name, as its `proposal.md` title gives it —
   `proposals/261019-user-invitations/` implementing *User Invitations* gives
@@ -287,9 +291,12 @@ User Invitations Proposal 13.15: Final Testing of Invitations
   between a commit and the file it names
 - **`<section>`** is the number of the section *within that stage file* that the commit's work
   belongs to, not a running count of commits
-- **The subject after the colon** is written the way any other commit subject on the project is
-  written — the prefix replaces none of that, and whatever subject-length limit the project holds
-  itself to covers the whole line, prefix included
+- **`<type>`** is chosen for the commit's own change, as for any other commit — `feat`, `fix`,
+  `test`, `docs` and so on. The plan reference takes the scope's place; it does not replace the
+  type
+- **The description after the colon** is written the way any other commit subject on the project
+  is written — the reference replaces none of that, and whatever subject-length limit the project
+  holds itself to covers the whole line, type and reference included
 
 **Several commits may share one prefix.** A section is a unit of the plan, not a unit of committing;
 splitting it across commits where that makes the diffs readable is expected, and needs no
@@ -306,6 +313,13 @@ the last subject in it says exactly which stage and section to pick up from.
 and no mention of sections. That was too coarse in both directions — it made a whole stage the
 smallest committable unit, and it left the commits of a plan run indistinguishable from every other
 commit on the branch.
+
+**Corrected again:** the reference was then a bare prefix, `<Proposal Name> Proposal
+<stage>.<section>: <subject>`, in every project. Once `auto-summary-commit` required every subject
+to be a Conventional Commit, that prefix stood exactly where the type has to go, so a plan run's
+commits were the one kind that could not comply. Moving the reference into the scope keeps both:
+the subject parses as a Conventional Commit, and the reference is still there, verbatim, for
+`--grep`.
 
 ## References
 

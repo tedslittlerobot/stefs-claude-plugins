@@ -218,7 +218,10 @@ or produce a mis-attributed commit:
   to the user verbatim as `Stop hook feedback: ...`, and a long one is truncated mid-sentence in
   the terminal. It carries only what the skill cannot work out for itself — the path list and the
   state-file paths — and leaves the procedure to `SKILL.md`. An earlier version inlined step 3's
-  four options and drifted out of sync with the skill twice before this rule existed
+  four options and drifted out of sync with the skill twice before this rule existed. The one
+  rule it does state is that the subject must be a Conventional Commit, in a single sentence that
+  points at the skill's step 4 rather than spelling the format out — a hard MUST is worth the line,
+  the procedure is not
 - **Only the first prompt of a turn moves the baseline**, gated on `.turnopen`. A message sent
   mid-turn fires `UserPromptSubmit` again; re-snapshotting there folds the work already done into
   the baseline and drops it from the commit. `.turnopen` is cleared at the top of `stop` mode,
